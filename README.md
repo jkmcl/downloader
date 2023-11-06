@@ -23,7 +23,9 @@ Example: Original file `file.zip` with version number `1.0` is renamed to `file-
 The version number is obtained from one of the following:
 
 * Second capturing group of the **Link Pattern**.
-* First capturing group of a separate regular expression known as the **Version Pattern**.
+* The same page containing the URL of the file using a separate regular expression known as the **Version Pattern**. The first capturing group of the **Version Pattern** is assumed to contain the version number.
+
+Both are optional and the version number from the **Version Pattern** takes precedence when both are available.
 
 # Other Features
 

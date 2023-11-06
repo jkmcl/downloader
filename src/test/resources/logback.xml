@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<property name="LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss.SSS" />
+
+	<property name="LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} %-5p [%-6t] %-42.42logger{41} : %m%n" />
+
+	<property name="LOG_FILE" value="${DOWNLOADER_HOME:-.}/logs/application" />
+
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+		<file>${LOG_FILE}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+	</appender>
+
+	<logger name="org" level="INFO" />
+
+	<logger name="org.apache.hc.client5.http.headers" level="OFF" />
+
+	<logger name="org.apache.hc.client5.http.wire" level="OFF" />
+
+	<root level="DEBUG">
+		<appender-ref ref="FILE" />
+	</root>
+
+</configuration>

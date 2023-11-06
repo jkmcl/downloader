@@ -1,0 +1,11 @@
+[
+	{
+		"name": "valid",
+		"fileUrl": "https://localahost/index.html",
+		"outputDirectory": "target/test-classes/testOutput"
+	},
+	{
+		"name": "invalid",
+		"outputDirectory": "target/test-classes/testOutput"
+	}
+]

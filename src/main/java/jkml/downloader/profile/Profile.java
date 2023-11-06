@@ -1,0 +1,108 @@
+package jkml.downloader.profile;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.regex.Pattern;
+
+import jkml.downloader.html.Occurrence;
+import jkml.downloader.http.Referer;
+import jkml.downloader.http.RequestOptions;
+import jkml.downloader.http.UserAgent;
+
+public class Profile {
+
+	public enum Type {
+		STANDARD, GITHUB, MOZILLA
+	}
+
+	private String name;
+
+	private Type type;
+
+	private URI fileUrl;
+
+	private URI pageUrl;
+
+	private Pattern linkPattern;
+
+	private Occurrence linkOccurrence = Occurrence.FIRST;
+
+	private Pattern versionPattern;
+
+	private RequestOptions requestOptions = new RequestOptions(UserAgent.CHROME, Referer.NONE);
+
+	private Path outputDirectory;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
+	public URI getFileUrl() {
+		return fileUrl;
+	}
+
+	public void setFileUrl(URI fileUrl) {
+		this.fileUrl = fileUrl;
+	}
+
+	public URI getPageUrl() {
+		return pageUrl;
+	}
+
+	public void setPageUrl(URI pageUrl) {
+		this.pageUrl = pageUrl;
+	}
+
+	public Pattern getLinkPattern() {
+		return linkPattern;
+	}
+
+	public void setLinkPattern(Pattern linkPattern) {
+		this.linkPattern = linkPattern;
+	}
+
+	public Occurrence getLinkOccurrence() {
+		return linkOccurrence;
+	}
+
+	public void setLinkOccurrence(Occurrence linkOccurrence) {
+		this.linkOccurrence = linkOccurrence;
+	}
+
+	public Pattern getVersionPattern() {
+		return versionPattern;
+	}
+
+	public void setVersionPattern(Pattern versionPattern) {
+		this.versionPattern = versionPattern;
+	}
+
+	public RequestOptions getRequestOptions() {
+		return requestOptions;
+	}
+
+	public void setRequestOptions(RequestOptions requestOptions) {
+		this.requestOptions = requestOptions;
+	}
+
+	public Path getOutputDirectory() {
+		return outputDirectory;
+	}
+
+	public void setOutputDirectory(Path outputDirectory) {
+		this.outputDirectory = outputDirectory;
+	}
+
+}

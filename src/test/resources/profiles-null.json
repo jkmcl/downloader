@@ -1,0 +1,12 @@
+[
+	{
+		"name": "element1",
+		"fileUrl": "https://localahost/index.html",
+		"outputDirectory": "target/test-classes/testOutput"
+	},
+	{
+		"name": "element3",
+		"fileUrl": "https://localahost/index.html",
+		"outputDirectory": "target/test-classes/testOutput"
+	},
+]

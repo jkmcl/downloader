@@ -85,7 +85,7 @@ public class DownloaderCore {
 			formatInfo("Local path: {}", result.filePath());
 			break;
 		case ERROR:
-			formatError("Error occurred: {}", result.errorMessage());
+			formatError("Error: {}", result.errorMessage());
 			break;
 		}
 	}

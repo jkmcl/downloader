@@ -2,6 +2,7 @@ package jkml.downloader.http;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -18,11 +19,10 @@ import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.MessageFormatter;
 
 import jkml.downloader.http.SaveResult.Status;
+import jkml.downloader.util.LangUtils;
 import jkml.downloader.util.PropertiesHelper;
-import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TimeUtils;
 
 public class WebClient implements Closeable {
@@ -64,13 +64,14 @@ public class WebClient implements Closeable {
 			return null;
 		}
 
+		logger.atDebug().log("Local file path: {}", filePath);
+
 		try {
 			var lastMod = Files.getLastModifiedTime(filePath).toInstant();
 			logger.atDebug().log("Local file last modified time: {}", TimeUtils.FORMATTER.format(lastMod));
 			return lastMod;
 		} catch (IOException e) {
-			logger.atError().setCause(e).log("Local file last modified time not available");
-			return null;
+			throw new UncheckedIOException(e);
 		}
 	}
 
@@ -126,8 +127,8 @@ public class WebClient implements Closeable {
 
 	public String readString(URI uri, RequestOptions options) {
 		return execute(createRequest(Method.GET, uri, options), new ResponseToTextHandler(), e -> {
-			logger.atError().setCause(e).log("Failed to retrieve content from {}", uri);
-			return StringUtils.EMPTY;
+			logger.atError().setCause(e).log("Exception caught");
+			return null;
 		});
 	}
 
@@ -146,9 +147,8 @@ public class WebClient implements Closeable {
 		}
 
 		return execute(request, new ResponseToFileHandler(uri, filePath), e -> {
-			var message = MessageFormatter.format("Failed to retrieve response from {}", uri).getMessage();
-			logger.atError().setCause(e).log(message);
-			return new SaveResult(Status.ERROR, message);
+			logger.atError().setCause(e).log("Exception caught");
+			return new SaveResult(Status.ERROR, LangUtils.getRootCause(e).getMessage());
 		});
 	}
 

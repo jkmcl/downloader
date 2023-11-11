@@ -77,7 +77,7 @@ class WebClientTests {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
 		var html = webClient.readString(mockUrl);
-		assertEquals(StringUtils.EMPTY, html);
+		assertEquals(null, html);
 	}
 
 	@Test

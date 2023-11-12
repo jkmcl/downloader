@@ -148,7 +148,8 @@ public class WebClient implements Closeable {
 
 		return execute(request, new ResponseToFileHandler(uri, filePath), e -> {
 			logger.atError().setCause(e).log("Exception caught");
-			return new SaveResult(Status.ERROR, LangUtils.getRootCause(e).getMessage());
+			var rootCause = LangUtils.getRootCause(e);
+			return new SaveResult(Status.ERROR, rootCause.getClass().getName() + ": " + rootCause.getMessage());
 		});
 	}
 

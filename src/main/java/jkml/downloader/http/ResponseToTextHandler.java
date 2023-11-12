@@ -65,7 +65,10 @@ class ResponseToTextHandler extends ResponseHandler<String> {
 
 	@Override
 	public void releaseResources() {
-		buffer.clear();
+		if (buffer != null) {
+			buffer.clear();
+			buffer = null;
+		}
 	}
 
 }

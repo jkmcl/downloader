@@ -49,7 +49,8 @@ class ResponseToTextHandler extends ResponseHandler<String> {
 		if (src.hasArray()) {
 			buffer.append(src.array(), src.arrayOffset() + src.position(), src.remaining());
 		} else {
-			while (src.hasRemaining()) {
+			var remaining = src.remaining();
+			while (remaining-- > 0) {
 				buffer.append(src.get());
 			}
 		}

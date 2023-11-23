@@ -155,9 +155,9 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 			return;
 		}
 
-		do {
+		while (src.hasRemaining()) {
 			channel.write(src);
-		} while (src.hasRemaining());
+		}
 
 		if (endOfStream) {
 			closeChannel();

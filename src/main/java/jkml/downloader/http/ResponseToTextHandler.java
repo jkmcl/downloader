@@ -46,14 +46,7 @@ class ResponseToTextHandler extends ResponseHandler<String> {
 
 	@Override
 	protected void data(ByteBuffer src, boolean endOfStream) throws IOException {
-		if (src.hasArray()) {
-			buffer.append(src.array(), src.arrayOffset() + src.position(), src.remaining());
-		} else {
-			var remaining = src.remaining();
-			while (remaining-- > 0) {
-				buffer.append(src.get());
-			}
-		}
+		buffer.append(src);
 	}
 
 	@Override
@@ -63,7 +56,7 @@ class ResponseToTextHandler extends ResponseHandler<String> {
 
 	@Override
 	public void releaseResources() {
-		buffer = null;
+		// No resource requires release
 	}
 
 }

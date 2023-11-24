@@ -1,7 +1,6 @@
 package jkml.downloader.http;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -46,25 +45,6 @@ class CustomRedirectStrategyTests {
 
 		response.setHeader(REFRESH_HEADER_NAME, REFRESH_HEADER_VALUE);
 		assertTrue(strategy.isRedirected(request, response, context));
-	}
-
-	@Test
-	void testGetLocationURI_default() throws HttpException {
-		HttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_MOVED_PERMANENTLY);
-		response.setHeader(HttpHeaders.LOCATION, TARGET_URL);
-
-		assertNotNull(strategy.getLocationURI(new HttpGet(SOURCE_URL), response, new BasicHttpContext()));
-	}
-
-	@Test
-	void testGetLocationURI_custom() throws HttpException {
-		HttpRequest request = new HttpGet(SOURCE_URL);
-		HttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK);
-		HttpContext context = new BasicHttpContext();
-		response.setHeader(REFRESH_HEADER_NAME, REFRESH_HEADER_VALUE);
-
-		assertTrue(strategy.isRedirected(request, response, context));
-		assertNotNull(strategy.getLocationURI(request, response, context));
 	}
 
 }

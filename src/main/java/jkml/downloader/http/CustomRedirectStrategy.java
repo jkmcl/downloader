@@ -1,11 +1,7 @@
 package jkml.downloader.http;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
-import org.apache.hc.client5.http.utils.URIUtils;
-import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
@@ -24,8 +20,6 @@ class CustomRedirectStrategy extends DefaultRedirectStrategy {
 
 	public static final CustomRedirectStrategy INSTANCE = new CustomRedirectStrategy();
 
-	private static final String REFRESH_URL = "custom.http.refresh.header.url";
-
 	@Override
 	public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
 		// Let default strategy handle standard redirects
@@ -42,33 +36,8 @@ class CustomRedirectStrategy extends DefaultRedirectStrategy {
 			return false;
 		}
 
-		// Add Refresh header URL to context
-		context.setAttribute(REFRESH_URL, location);
+		response.setHeader(HttpHeaders.LOCATION, location);
 		return true;
-	}
-
-    @Override
-    public URI getLocationURI(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException {
-		// Remove Refresh header URL from context
-		var location = (String) context.removeAttribute(REFRESH_URL);
-
-		// Let default strategy handle standard redirects
-		if (location == null) {
-			return super.getLocationURI(request, response, context);
-		}
-
-		// Resolve URL exactly like how default strategy does it
-		var uri = createLocationURI(location);
-		try {
-			if (!uri.isAbsolute()) {
-				// Resolve location URI
-				uri = URIUtils.resolve(request.getUri(), uri);
-			}
-		} catch (URISyntaxException ex) {
-			throw new ProtocolException(ex.getMessage(), ex);
-		}
-
-		return uri;
 	}
 
 }

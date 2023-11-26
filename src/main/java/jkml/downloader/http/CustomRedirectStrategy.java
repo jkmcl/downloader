@@ -9,8 +9,8 @@ import org.apache.hc.core5.http.ProtocolException;
 import org.apache.hc.core5.http.protocol.HttpContext;
 
 /**
- * Handles redirect behavior supported by browsers according to the non-standard
- * Refresh header. Example:
+ * Clone of {@link DefaultRedirectStrategy} that also handles redirect behavior
+ * supported by browsers according to the non-standard Refresh header. Example:
  *
  * <pre>Refresh: 0; URL=https://www.foobar2000.org/files/foobar2000_v1.6.11.exe</pre>
  *
@@ -22,7 +22,7 @@ class CustomRedirectStrategy extends DefaultRedirectStrategy {
 
 	@Override
 	public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
-		// Let default strategy handle standard redirects
+		// Let super class handle standard redirects
 		if (super.isRedirected(request, response, context)) {
 			return true;
 		}
@@ -36,6 +36,7 @@ class CustomRedirectStrategy extends DefaultRedirectStrategy {
 			return false;
 		}
 
+		// Put destination in this header for super class to extract
 		response.setHeader(HttpHeaders.LOCATION, location);
 		return true;
 	}

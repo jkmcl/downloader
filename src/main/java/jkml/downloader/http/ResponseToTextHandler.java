@@ -9,7 +9,6 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpResponse;
-import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.util.ByteArrayBuffer;
 
@@ -22,25 +21,18 @@ class ResponseToTextHandler extends ResponseHandler<String> {
 
 	private ByteArrayBuffer buffer;
 
-	private void preprocess(HttpResponse response, ContentType contentType) {
-		var code = response.getCode();
-		if (code != HttpStatus.SC_OK) {
-			throw new HttpStatusException(code);
-		}
-		if (contentType != null) {
-			charset = contentType.getCharset(charset);
-		}
-	}
-
 	@Override
 	public String handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
-		preprocess(response, null);
+		checkCode(response.getCode());
 		return EntityUtils.toString(response.getEntity(), charset);
 	}
 
 	@Override
 	protected void start(HttpResponse response, ContentType contentType) throws HttpException, IOException {
-		preprocess(response, contentType);
+		checkCode(response.getCode());
+		if (contentType != null) {
+			charset = contentType.getCharset(charset);
+		}
 		buffer = new ByteArrayBuffer(8192);
 	}
 

@@ -67,11 +67,7 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 			throw new IOException("New file is smaller than half of existing file: " + source);
 		}
 
-		if (sourceSize != targetSize) {
-			return;
-		}
-
-		if (Files.mismatch(source, target) == -1L) {
+		if (sourceSize == targetSize && Files.mismatch(source, target) == -1L) {
 			throw new IOException("Content of new file is identical to that of existing file: " + source);
 		}
 	}
@@ -90,15 +86,11 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 
 	private SaveResult preprocess(HttpResponse response) throws IOException {
 		var code = response.getCode();
-
 		if (code == HttpStatus.SC_NOT_MODIFIED) {
 			logger.atInfo().log("Remote file not modified");
 			return new SaveResult(Status.NOT_MODIFIED, path);
 		}
-
-		if (code != HttpStatus.SC_OK) {
-			throw new HttpStatusException(code);
-		}
+		checkCode(code);
 
 		lastMod = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED);
 		if (lastMod == null) {

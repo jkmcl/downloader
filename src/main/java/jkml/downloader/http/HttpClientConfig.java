@@ -10,8 +10,6 @@ import org.apache.hc.core5.util.Timeout;
 
 class HttpClientConfig {
 
-	public static final Timeout CONNECT_TIMEOUT = Timeout.ofSeconds(30);
-
 	public static final Timeout SOCKET_TIMEOUT = Timeout.ofSeconds(30);
 
 	private List<BasicHeader> defaultHeaders;
@@ -36,8 +34,8 @@ class HttpClientConfig {
 
 	public ConnectionConfig createConnectionConfig() {
 		return ConnectionConfig.custom()
-				.setConnectTimeout(CONNECT_TIMEOUT)
 				.setSocketTimeout(SOCKET_TIMEOUT)
+				.setConnectTimeout(SOCKET_TIMEOUT)
 				.setTimeToLive(TimeValue.ofMinutes(1))
 				.setValidateAfterInactivity(TimeValue.ZERO_MILLISECONDS)
 				.build();

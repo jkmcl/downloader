@@ -46,6 +46,7 @@ class HttpAsyncClientAdapter implements HttpClientAdapter {
 				.setDefaultRequestConfig(config.createRequestConfig())
 				.setDefaultHeaders(config.getDefaultHeaders())
 				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
+				.setRetryStrategy(CustomRetryStrategy.INSTANCE)
 				.setUserAgent(config.getUserAgent())
 				.build();
 

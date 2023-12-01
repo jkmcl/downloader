@@ -18,17 +18,16 @@ import org.apache.hc.core5.reactor.IOReactorConfig;
 
 class HttpAsyncClientAdapter implements HttpClientAdapter {
 
-	private CloseableHttpAsyncClient client;
+	private final CloseableHttpAsyncClient client;
 
-	@Override
-	public void initialize(HttpClientConfig config) {
+	public HttpAsyncClientAdapter(HttpClientConfig config) {
 		var tlsConfig = TlsConfig.custom()
 				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
 				.build();
 
 		var connectionManager = PoolingAsyncClientConnectionManagerBuilder.create()
 				.setDefaultTlsConfig(tlsConfig)
-				.setDefaultConnectionConfig(config.createConnectionConfig())
+				.setDefaultConnectionConfig(config.getConnectionConfig())
 				.build();
 
 		var ioReactorConfig = IOReactorConfig.custom()
@@ -43,7 +42,7 @@ class HttpAsyncClientAdapter implements HttpClientAdapter {
 				.setConnectionManager(connectionManager)
 				.setThreadFactory(new DefaultThreadFactory("http", true))
 				.setIOReactorConfig(ioReactorConfig)
-				.setDefaultRequestConfig(config.createRequestConfig())
+				.setDefaultRequestConfig(config.getRequestConfig())
 				.setDefaultHeaders(config.getDefaultHeaders())
 				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
 				.setRetryStrategy(CustomRetryStrategy.INSTANCE)
@@ -55,9 +54,7 @@ class HttpAsyncClientAdapter implements HttpClientAdapter {
 
 	@Override
 	public void close() throws IOException {
-		if (client != null) {
-			client.close();
-		}
+		client.close();
 	}
 
 	@Override

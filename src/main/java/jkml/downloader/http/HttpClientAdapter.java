@@ -10,8 +10,6 @@ import org.apache.hc.core5.http.Method;
 
 interface HttpClientAdapter extends Closeable {
 
-	void initialize(HttpClientConfig config);
-
 	HttpRequest createRequest(Method method, URI uri);
 
 	<T> T execute(HttpRequest request, ResponseHandler<T> responseHandler) throws IOException, ExecutionException, InterruptedException;

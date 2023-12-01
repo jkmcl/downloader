@@ -14,17 +14,16 @@ import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 
 class HttpClassicClientAdapter implements HttpClientAdapter {
 
-	private CloseableHttpClient client;
+	private final CloseableHttpClient client;
 
-	@Override
-	public void initialize(HttpClientConfig config) {
+	public HttpClassicClientAdapter(HttpClientConfig config) {
 		var socketConfig = SocketConfig.custom()
 				.setSoTimeout(HttpClientConfig.SOCKET_TIMEOUT)
 				.build();
 
 		var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
 				.setDefaultSocketConfig(socketConfig)
-				.setDefaultConnectionConfig(config.createConnectionConfig())
+				.setDefaultConnectionConfig(config.getConnectionConfig())
 				.build();
 
 		client = HttpClientBuilder.create()
@@ -32,7 +31,7 @@ class HttpClassicClientAdapter implements HttpClientAdapter {
 				.disableConnectionState()
 				.disableCookieManagement()
 				.setConnectionManager(connectionManager)
-				.setDefaultRequestConfig(config.createRequestConfig())
+				.setDefaultRequestConfig(config.getRequestConfig())
 				.setDefaultHeaders(config.getDefaultHeaders())
 				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
 				.setRetryStrategy(CustomRetryStrategy.INSTANCE)
@@ -42,9 +41,7 @@ class HttpClassicClientAdapter implements HttpClientAdapter {
 
 	@Override
 	public void close() throws IOException {
-		if (client != null) {
-			client.close();
-		}
+		client.close();
 	}
 
 	@Override

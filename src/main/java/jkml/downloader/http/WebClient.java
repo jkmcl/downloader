@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -44,13 +43,11 @@ public class WebClient implements Closeable {
 		userAgentStrings.put(UserAgent.CHROME, chromeUserAgent);
 		userAgentStrings.put(UserAgent.CURL, curlUserAgent);
 
-		var config = new HttpClientConfig();
-		config.setUserAgent(userAgentStrings.get(DEFAULT_USER_AGENT));
-		config.setDefaultHeaders(List.of(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage)));
+		var config = new HttpClientConfig(userAgentStrings.get(DEFAULT_USER_AGENT));
+		config.getDefaultHeaders().add(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage));
 
-		httpClient = classic ? new HttpClassicClientAdapter() : new HttpAsyncClientAdapter();
+		httpClient = classic ? new HttpClassicClientAdapter(config) : new HttpAsyncClientAdapter(config);
 		logger.atDebug().log("HTTP client adapter class: {}", httpClient.getClass().getSimpleName());
-		httpClient.initialize(config);
 	}
 
 	@Override

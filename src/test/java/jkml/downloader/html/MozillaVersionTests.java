@@ -47,8 +47,8 @@ class MozillaVersionTests {
 	}
 
 	@Test
-	void testToString() {
-		assertEquals("1.0.1", MozillaVersion.parse("1.0.1").toString());
+	void testGetSource() {
+		assertEquals("1.0.1", MozillaVersion.parse("1.0.1").getSource());
 	}
 
 	@Test
@@ -72,15 +72,15 @@ class MozillaVersionTests {
 	}
 
 	@Test
-	void testGetPartList() {
-		assertIterableEquals(List.of(), MozillaVersion.parse("0.0.0").getPartList());
-		assertIterableEquals(List.of(0, 0, 1), MozillaVersion.parse("0.0.1").getPartList());
-		assertIterableEquals(List.of(0, 1), MozillaVersion.parse("0.1.0").getPartList());
-		assertIterableEquals(List.of(0, 1, 1), MozillaVersion.parse("0.1.1").getPartList());
-		assertIterableEquals(List.of(1), MozillaVersion.parse("1.0.0").getPartList());
-		assertIterableEquals(List.of(1, 0, 1), MozillaVersion.parse("1.0.1").getPartList());
-		assertIterableEquals(List.of(1, 1), MozillaVersion.parse("1.1.0").getPartList());
-		assertIterableEquals(List.of(1, 1, 1), MozillaVersion.parse("1.1.1").getPartList());
+	void testGetParts() {
+		assertIterableEquals(List.of(), MozillaVersion.parse("0.0.0").getParts());
+		assertIterableEquals(List.of(0, 0, 1), MozillaVersion.parse("0.0.1").getParts());
+		assertIterableEquals(List.of(0, 1), MozillaVersion.parse("0.1.0").getParts());
+		assertIterableEquals(List.of(0, 1, 1), MozillaVersion.parse("0.1.1").getParts());
+		assertIterableEquals(List.of(1), MozillaVersion.parse("1.0.0").getParts());
+		assertIterableEquals(List.of(1, 0, 1), MozillaVersion.parse("1.0.1").getParts());
+		assertIterableEquals(List.of(1, 1), MozillaVersion.parse("1.1.0").getParts());
+		assertIterableEquals(List.of(1, 1, 1), MozillaVersion.parse("1.1.1").getParts());
 	}
 
 	@Test

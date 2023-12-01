@@ -136,7 +136,7 @@ public class PageExtractor {
 
 		// Determine latest version and its link
 		versionList.sort(null);
-		var version = versionList.get(versionList.size() - 1).toString();
+		var version = versionList.get(versionList.size() - 1).getSource();
 		logger.info("Latest version found in page: {}", version);
 		var uri = baseUri.resolve(String.join(StringUtils.EMPTY, version, "/", osLangProduct, "%20Setup%20", version, ".exe"));
 		logger.info("Link derived from latest version: {}", uri);

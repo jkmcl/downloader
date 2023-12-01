@@ -9,21 +9,21 @@ class MozillaVersion implements Comparable<MozillaVersion> {
 
 	private static final Pattern SPLIT_PATTERN = Pattern.compile("\\.");
 
-	private final String string;
+	private final String source;
 
-	private final List<Integer> partList;
+	private final List<Integer> parts;
 
-	private MozillaVersion(String string, List<Integer> partList) {
-		this.string = string;
-		this.partList = partList;
+	private MozillaVersion(String source, List<Integer> parts) {
+		this.source = source;
+		this.parts = parts;
 	}
 
-	public static MozillaVersion parse(String string) {
-		var partList = new ArrayList<Integer>();
+	public static MozillaVersion parse(String source) {
+		var parts = new ArrayList<Integer>();
 
 		var index = -1;
 		var lastNonZeroIndex = -1;
-		for (String part : SPLIT_PATTERN.split(string, -1)) {
+		for (String part : SPLIT_PATTERN.split(source, -1)) {
 			++index;
 			try {
 				var i = Integer.parseInt(part);
@@ -33,27 +33,26 @@ class MozillaVersion implements Comparable<MozillaVersion> {
 				if (i > 0) {
 					lastNonZeroIndex = index;
 				}
-				partList.add(i);
+				parts.add(i);
 			} catch (NumberFormatException e) {
 				throw new IllegalArgumentException("Invalid character(s) in version: " + part);
 			}
 		}
 
-		return new MozillaVersion(string, partList.subList(0, lastNonZeroIndex + 1));
+		return new MozillaVersion(source, parts.subList(0, lastNonZeroIndex + 1));
 	}
 
-	List<Integer> getPartList() {
-		return partList;
+	public String getSource() {
+		return source;
 	}
 
-	@Override
-	public String toString() {
-		return string;
+	public List<Integer> getParts() {
+		return parts;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(partList);
+		return Objects.hash(parts);
 	}
 
 	@Override
@@ -64,19 +63,19 @@ class MozillaVersion implements Comparable<MozillaVersion> {
 		if (!(obj instanceof MozillaVersion)) {
 			return false;
 		}
-		return hashCode() == obj.hashCode();
+		return Objects.equals(parts, ((MozillaVersion) obj).parts);
 	}
 
 	private int getPart(int index) {
-		return (index < partList.size()) ? partList.get(index) : 0;
+		return (index < parts.size()) ? parts.get(index) : 0;
 	}
 
 	@Override
-	public int compareTo(MozillaVersion obj) {
-		var n = Math.max(partList.size(), obj.partList.size());
+	public int compareTo(MozillaVersion other) {
+		var n = Math.max(parts.size(), other.parts.size());
 		for (var i = 0; i < n; ++i) {
 			var thisPart = getPart(i);
-			var thatPart = obj.getPart(i);
+			var thatPart = other.getPart(i);
 			if (thisPart < thatPart) {
 				return -1;
 			}

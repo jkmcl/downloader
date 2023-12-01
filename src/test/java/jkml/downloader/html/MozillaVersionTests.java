@@ -1,9 +1,7 @@
 package jkml.downloader.html;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,38 +15,17 @@ import org.junit.jupiter.params.provider.ValueSource;
 class MozillaVersionTests {
 
 	@Test
-	void testEquals() {
-		var x = MozillaVersion.parse("1");
-		var y = MozillaVersion.parse("1.0");
-		var z = MozillaVersion.parse("1.0.0");
-
-		// Reflexive
-		assertTrue(x.equals(x));
-
-		// Symmetric
-		assertEquals(true, x.equals(y));
-		assertEquals(true, y.equals(x));
-
-		// Transitive
-		assertEquals(true, y.equals(z));
-		assertEquals(true, x.equals(z));
-
-		assertFalse(x.equals(null));
+	void testParseAndGetParts() {
+		assertIterableEquals(List.of(0, 0), MozillaVersion.parse("0.0").getParts());
+		assertIterableEquals(List.of(0, 1), MozillaVersion.parse("0.1").getParts());
+		assertIterableEquals(List.of(1, 0), MozillaVersion.parse("1.0").getParts());
+		assertIterableEquals(List.of(1, 1), MozillaVersion.parse("1.1").getParts());
 	}
 
-	@Test
-	void testHashCode() {
-		var x = MozillaVersion.parse("1");
-		var y = MozillaVersion.parse("1.0");
-		var z = MozillaVersion.parse("1.0.0");
-
-		assertEquals(x.hashCode(), y.hashCode());
-		assertEquals(y.hashCode(), z.hashCode());
-	}
-
-	@Test
-	void testGetSource() {
-		assertEquals("1.0.1", MozillaVersion.parse("1.0.1").getSource());
+	@ParameterizedTest
+	@ValueSource(strings = { "0", "1", "0.1", "1.0" })
+	void testParseAndToString(String value) {
+		assertEquals(value, MozillaVersion.parse(value).toString());
 	}
 
 	@Test
@@ -63,30 +40,10 @@ class MozillaVersionTests {
 	}
 
 	@Test
-	void testParse() {
-		assertEquals(MozillaVersion.parse("0"), MozillaVersion.parse("0.0"));
-		assertEquals(MozillaVersion.parse("1"), MozillaVersion.parse("1.0"));
-
-		assertNotEquals(MozillaVersion.parse("1.0"), MozillaVersion.parse("0.1"));
-		assertNotEquals(MozillaVersion.parse("1.0"), MozillaVersion.parse("1.1"));
-	}
-
-	@Test
-	void testGetParts() {
-		assertIterableEquals(List.of(), MozillaVersion.parse("0.0.0").getParts());
-		assertIterableEquals(List.of(0, 0, 1), MozillaVersion.parse("0.0.1").getParts());
-		assertIterableEquals(List.of(0, 1), MozillaVersion.parse("0.1.0").getParts());
-		assertIterableEquals(List.of(0, 1, 1), MozillaVersion.parse("0.1.1").getParts());
-		assertIterableEquals(List.of(1), MozillaVersion.parse("1.0.0").getParts());
-		assertIterableEquals(List.of(1, 0, 1), MozillaVersion.parse("1.0.1").getParts());
-		assertIterableEquals(List.of(1, 1), MozillaVersion.parse("1.1.0").getParts());
-		assertIterableEquals(List.of(1, 1, 1), MozillaVersion.parse("1.1.1").getParts());
-	}
-
-	@Test
 	void testCompareTo_null() {
 		var version = MozillaVersion.parse("76.0");
-		assertThrows(NullPointerException.class, () -> version.compareTo(null));
+		assertThrows(NullPointerException.class, () -> MozillaVersion.compare(version, null));
+		assertThrows(NullPointerException.class, () -> MozillaVersion.compare(null, version));
 	}
 
 	@Test
@@ -95,9 +52,9 @@ class MozillaVersionTests {
 		var y = MozillaVersion.parse("1.0");
 		var z = MozillaVersion.parse("1.0.0");
 
-		assertEquals(0, x.compareTo(y));
-		assertEquals(0, y.compareTo(z));
-		assertEquals(0, x.compareTo(z));
+		assertEquals(0, MozillaVersion.compare(x, y));
+		assertEquals(0, MozillaVersion.compare(y, z));
+		assertEquals(0, MozillaVersion.compare(z, x));
 	}
 
 	@ParameterizedTest
@@ -106,9 +63,8 @@ class MozillaVersionTests {
 		var olderVersion = MozillaVersion.parse(olderVersionString);
 		var newerVersion = MozillaVersion.parse(newerVersionString);
 
-		assertNotEquals(olderVersion, newerVersion);
-		assertTrue(olderVersion.compareTo(newerVersion) < 0);
-		assertTrue(newerVersion.compareTo(olderVersion) > 0);
+		assertTrue(MozillaVersion.compare(olderVersion, newerVersion) < 0);
+		assertTrue(MozillaVersion.compare(newerVersion, olderVersion) > 0);
 	}
 
 }

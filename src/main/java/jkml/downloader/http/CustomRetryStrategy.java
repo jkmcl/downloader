@@ -18,7 +18,7 @@ class CustomRetryStrategy extends DefaultHttpRequestRetryStrategy {
 
 	public static final CustomRetryStrategy INSTANCE = new CustomRetryStrategy();
 
-	public CustomRetryStrategy() {
+	private CustomRetryStrategy() {
 		super(2, TimeValue.ofSeconds(1));
 	}
 

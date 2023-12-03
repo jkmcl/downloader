@@ -18,23 +18,24 @@ class HttpClassicClientAdapter implements HttpClientAdapter {
 
 	public HttpClassicClientAdapter(HttpClientConfig config) {
 		var socketConfig = SocketConfig.custom()
-				.setSoTimeout(HttpClientConfig.SOCKET_TIMEOUT)
+				.setSoTimeout(HttpClientConfig.TIMEOUT)
 				.build();
 
 		var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-				.setDefaultSocketConfig(socketConfig)
 				.setDefaultConnectionConfig(config.getConnectionConfig())
+				.setDefaultTlsConfig(config.getTlsConfig())
+				.setDefaultSocketConfig(socketConfig)
 				.build();
 
 		client = HttpClientBuilder.create()
 				.disableAuthCaching()
+				.disableAutomaticRetries()
 				.disableConnectionState()
 				.disableCookieManagement()
 				.setConnectionManager(connectionManager)
-				.setDefaultRequestConfig(config.getRequestConfig())
 				.setDefaultHeaders(config.getDefaultHeaders())
+				.setDefaultRequestConfig(config.getRequestConfig())
 				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
-				.setRetryStrategy(CustomRetryStrategy.INSTANCE)
 				.setUserAgent(config.getUserAgent())
 				.build();
 	}

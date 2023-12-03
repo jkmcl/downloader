@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.hc.client5.http.config.TlsConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
@@ -13,7 +12,6 @@ import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.apache.hc.core5.http.nio.support.BasicRequestProducer;
-import org.apache.hc.core5.http2.HttpVersionPolicy;
 import org.apache.hc.core5.reactor.IOReactorConfig;
 
 class HttpAsyncClientAdapter implements HttpClientAdapter {
@@ -21,32 +19,28 @@ class HttpAsyncClientAdapter implements HttpClientAdapter {
 	private final CloseableHttpAsyncClient client;
 
 	public HttpAsyncClientAdapter(HttpClientConfig config) {
-		var tlsConfig = TlsConfig.custom()
-				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
+		var ioReactorConfig = IOReactorConfig.custom()
+				.setSoTimeout(HttpClientConfig.TIMEOUT)
+				.setIoThreadCount(Math.min(Runtime.getRuntime().availableProcessors(), 8))
 				.build();
 
 		var connectionManager = PoolingAsyncClientConnectionManagerBuilder.create()
-				.setDefaultTlsConfig(tlsConfig)
 				.setDefaultConnectionConfig(config.getConnectionConfig())
+				.setDefaultTlsConfig(config.getTlsConfig())
 				.build();
-
-		var ioReactorConfig = IOReactorConfig.custom()
-				.setIoThreadCount(Math.max(Runtime.getRuntime().availableProcessors(), 8))
-                .setSoTimeout(HttpClientConfig.SOCKET_TIMEOUT)
-                .build();
 
 		client = HttpAsyncClientBuilder.create()
 				.disableAuthCaching()
+				.disableAutomaticRetries()
 				.disableConnectionState()
 				.disableCookieManagement()
 				.setConnectionManager(connectionManager)
-				.setThreadFactory(new DefaultThreadFactory("http", true))
-				.setIOReactorConfig(ioReactorConfig)
-				.setDefaultRequestConfig(config.getRequestConfig())
 				.setDefaultHeaders(config.getDefaultHeaders())
+				.setDefaultRequestConfig(config.getRequestConfig())
 				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
-				.setRetryStrategy(CustomRetryStrategy.INSTANCE)
 				.setUserAgent(config.getUserAgent())
+				.setIOReactorConfig(ioReactorConfig)
+				.setThreadFactory(new DefaultThreadFactory("http", true))
 				.build();
 
 		client.start();

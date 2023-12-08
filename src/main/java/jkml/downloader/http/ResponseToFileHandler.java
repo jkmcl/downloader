@@ -96,7 +96,7 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 		if (lastMod == null) {
 			throw new IOException("Remote file last modified time not available");
 		}
-		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.FORMATTER.format(lastMod));
+		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(lastMod));
 
 		checkFileName(uri, response);
 

@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 public class TimeUtils {
 
-	public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+	public static final DateTimeFormatter Formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
 			.withZone(ZoneId.systemDefault());
 
 	private TimeUtils() {

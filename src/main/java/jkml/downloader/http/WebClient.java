@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -65,10 +64,10 @@ public class WebClient implements Closeable {
 
 		try {
 			var lastMod = Files.getLastModifiedTime(filePath).toInstant();
-			logger.atDebug().log("Local file last modified time: {}", TimeUtils.FORMATTER.format(lastMod));
+			logger.atDebug().log("Local file last modified time: {}", TimeUtils.Formatter.format(lastMod));
 			return lastMod;
 		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+			throw new UncheckedIOException(e.getMessage(), e);
 		}
 	}
 
@@ -81,19 +80,14 @@ public class WebClient implements Closeable {
 			return request;
 		}
 
-		if (options.userAgent() != null && options.userAgent() != DEFAULT_USER_AGENT) {
+		if (options.userAgent() != DEFAULT_USER_AGENT) {
 			var ua = userAgentStrings.get(options.userAgent());
 			logger.atDebug().log("Setting custom {}: {}", HttpHeaders.USER_AGENT, ua);
 			request.setHeader(HttpHeaders.USER_AGENT, ua);
 		}
 
 		if (options.referer() == Referer.SELF) {
-			String referer;
-			try {
-				referer = request.getUri().toString();
-			} catch (URISyntaxException e) {
-				throw new IllegalArgumentException(e.getMessage(), e);
-			}
+			var referer = HttpUtils.getUri(request).toString();
 			logger.atDebug().log("Setting {}: {}", HttpHeaders.REFERER, referer);
 			request.setHeader(HttpHeaders.REFERER, referer);
 		}

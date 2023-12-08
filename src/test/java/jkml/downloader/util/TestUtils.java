@@ -15,7 +15,7 @@ public class TestUtils {
 		try {
 			return Path.of(LangUtils.getClassLoader().getResource(name).toURI());
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException(e.getMessage(), e);
 		}
 	}
 
@@ -23,7 +23,7 @@ public class TestUtils {
 		try {
 			return Files.readString(getResoureAsPath(name));
 		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+			throw new UncheckedIOException(e.getMessage(), e);
 		}
 	}
 

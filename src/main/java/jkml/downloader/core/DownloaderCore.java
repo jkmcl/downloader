@@ -80,7 +80,7 @@ public class DownloaderCore {
 			writeInfo("Local file up to date");
 			break;
 		case OK:
-			formatInfo("Downloaded remote file last modified at {}", TimeUtils.FORMATTER.format(result.lastModified()));
+			formatInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
 			formatInfo("File URL:   {}", fileUri);
 			formatInfo("Local path: {}", result.filePath());
 			break;

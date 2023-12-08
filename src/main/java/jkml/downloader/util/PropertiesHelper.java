@@ -15,7 +15,7 @@ public class PropertiesHelper {
 			}
 			properties.load(stream);
 		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+			throw new UncheckedIOException(e.getMessage(), e);
 		}
 	}
 

@@ -10,7 +10,7 @@ class TimeUtilsTests {
 
 	@Test
 	void test() {
-		assertDoesNotThrow(() -> TimeUtils.FORMATTER.format(Instant.now()));
+		assertDoesNotThrow(() -> TimeUtils.Formatter.format(Instant.now()));
 	}
 
 }

@@ -1,9 +1,12 @@
 package jkml.downloader.http;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 
 import org.apache.hc.client5.http.utils.DateUtils;
 import org.apache.hc.core5.http.HttpMessage;
+import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.message.MessageSupport;
 
 class HttpUtils {
@@ -43,6 +46,14 @@ class HttpUtils {
 		}
 
 		return null;
+	}
+
+	public static URI getUri(HttpRequest request) {
+		try {
+			return request.getUri();
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException(e.getMessage(), e);
+		}
 	}
 
 }

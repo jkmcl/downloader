@@ -1,5 +1,6 @@
 package jkml.downloader.core;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -20,7 +21,7 @@ import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TimeUtils;
 
-public class DownloaderCore {
+public class DownloaderCore implements Closeable {
 
 	private final Logger logger = LoggerFactory.getLogger(DownloaderCore.class);
 
@@ -28,9 +29,18 @@ public class DownloaderCore {
 
 	private final PrintWriter writer;
 
-	public DownloaderCore(WebClient webClient) {
+	public DownloaderCore(boolean classic) {
+		this(new WebClient(classic));
+	}
+
+	DownloaderCore(WebClient webClient) {
 		this.webClient = webClient;
 		writer = (System.console() == null) ? null : System.console().writer();
+	}
+
+	@Override
+	public void close() throws IOException {
+		webClient.close();
 	}
 
 	public void download(Path jsonFile) throws IOException {
@@ -67,11 +77,9 @@ public class DownloaderCore {
 		}
 
 		var result = webClient.saveToFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
-		if (result == null) {
-			return;
+		if (result != null) {
+			printResult(fileUri, result);
 		}
-
-		printResult(fileUri, result);
 	}
 
 	void printResult(URI fileUri, SaveResult result) {

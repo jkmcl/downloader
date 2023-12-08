@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import jkml.downloader.core.DownloaderCore;
-import jkml.downloader.http.WebClient;
 
 public class Application {
 
@@ -22,8 +21,8 @@ public class Application {
 			return;
 		}
 
-		try (var webClient = new WebClient("classic".equals(System.getProperty("http.client")))) {
-			new DownloaderCore(webClient).download(file);
+		try (var core = new DownloaderCore("classic".equals(System.getProperty("http.client")))) {
+			core.download(file);
 		}
 	}
 

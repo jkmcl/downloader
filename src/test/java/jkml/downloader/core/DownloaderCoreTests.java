@@ -55,8 +55,7 @@ class DownloaderCoreTests {
 
 	@Test
 	void testDownload() throws IOException {
-		try (var mockedWebClient = mock(WebClient.class)) {
-			var core = new DownloaderCore(mockedWebClient);
+		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			core.download(TestUtils.getResoureAsPath(PROFILES_JSON_FILE_NAME));
 
 			verify(mockedWebClient, times(4)).readString(isA(URI.class), isA(RequestOptions.class));
@@ -71,10 +70,9 @@ class DownloaderCoreTests {
 
 		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
 
-		try (var mockedWebClient = mock(WebClient.class)) {
+		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
-			var core = new DownloaderCore(mockedWebClient);
 			core.download(profile);
 
 			verify(mockedWebClient, times(1)).saveToFile(isA(URI.class), isA(RequestOptions.class), isA(Path.class));
@@ -89,11 +87,10 @@ class DownloaderCoreTests {
 
 		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
 
-		try (var mockedWebClient = mock(WebClient.class)) {
+		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			when(mockedWebClient.readString(any(), any())).thenReturn("<a href=\"file.zip\">Version 1.0</a>");
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
-			var core = new DownloaderCore(mockedWebClient);
 			core.download(profile);
 
 			verify(mockedWebClient, times(1)).readString(isA(URI.class), isA(RequestOptions.class));
@@ -110,11 +107,10 @@ class DownloaderCoreTests {
 
 		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
 
-		try (var mockedWebClient = mock(WebClient.class)) {
+		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			when(mockedWebClient.readString(any(), any())).thenReturn("<a href=\"file.zip\">Version 1.0</a>");
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
-			var core = new DownloaderCore(mockedWebClient);
 			core.download(profile);
 
 			verify(mockedWebClient, times(1)).readString(isA(URI.class), isA(RequestOptions.class));
@@ -130,11 +126,10 @@ class DownloaderCoreTests {
 
 		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
 
-		try (var mockedWebClient = mock(WebClient.class)) {
+		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			when(mockedWebClient.readString(any(), any())).thenReturn(TestUtils.readResourceAsString("firefox.html"));
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
-			var core = new DownloaderCore(mockedWebClient);
 			core.download(profile);
 
 			verify(mockedWebClient, times(1)).readString(isA(URI.class), isA(RequestOptions.class));
@@ -156,12 +151,11 @@ class DownloaderCoreTests {
 
 		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
 
-		try (var mockedWebClient = mock(WebClient.class)) {
+		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			when(mockedWebClient.readString(eq(URI.create("https://localhost/page.html")), any())).thenReturn(html1);
 			when(mockedWebClient.readString(eq(URI.create("https://localhost/account/project/releases/expanded_assets/v1.0")), any())).thenReturn(html2);
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
-			var core = new DownloaderCore(mockedWebClient);
 			core.download(profile);
 
 			verify(mockedWebClient, times(2)).readString(isA(URI.class), isA(RequestOptions.class));
@@ -172,9 +166,7 @@ class DownloaderCoreTests {
 	@Test
 	void testPrintResult() {
 		var fileUri = URI.create("https://localhost/index.html");
-		try (var mockedWebClient = mock(WebClient.class)) {
-			var core = new DownloaderCore(mockedWebClient);
-
+		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			var result = new SaveResult(SaveResult.Status.OK, Path.of("index.html"), Instant.now());
 			core.printResult(fileUri, result);
 
@@ -183,7 +175,6 @@ class DownloaderCoreTests {
 
 			result = new SaveResult(SaveResult.Status.ERROR, "Some error");
 			core.printResult(fileUri, result);
-
 		} catch (Exception e) {
 			fail();
 		}

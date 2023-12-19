@@ -22,8 +22,10 @@ import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jkml.downloader.http.FileResult;
 import jkml.downloader.http.RequestOptions;
-import jkml.downloader.http.SaveResult;
+import jkml.downloader.http.Status;
+import jkml.downloader.http.TextResult;
 import jkml.downloader.http.WebClient;
 import jkml.downloader.profile.Profile;
 import jkml.downloader.profile.Profile.Type;
@@ -53,9 +55,20 @@ class DownloaderCoreTests {
 		logger.atInfo().log();
 	}
 
+	private static TextResult createTextResult(String text) {
+		return new TextResult(Status.OK, text);
+	}
+
+	private static FileResult createFileResult() {
+		return new FileResult(Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
+	}
+
 	@Test
 	void testDownload() throws IOException {
 		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
+			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(createFileResult());
+			when(mockedWebClient.readString(any(), any())).thenReturn(createTextResult(""));
+
 			core.download(TestUtils.getResoureAsPath(PROFILES_JSON_FILE_NAME));
 
 			verify(mockedWebClient, times(4)).readString(isA(URI.class), isA(RequestOptions.class));
@@ -68,7 +81,7 @@ class DownloaderCoreTests {
 		var profile = createProfile(Type.STANDARD);
 		profile.setFileUrl(URI.create("https://localhost/file.zip"));
 
-		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
+		var result = createFileResult();
 
 		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
@@ -85,10 +98,10 @@ class DownloaderCoreTests {
 		profile.setPageUrl(URI.create("https://localhost/page.html"));
 		profile.setLinkPattern(Pattern.compile(" href=\"(file\\.zip)\""));
 
-		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
+		var result = createFileResult();
 
 		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
-			when(mockedWebClient.readString(any(), any())).thenReturn("<a href=\"file.zip\">Version 1.0</a>");
+			when(mockedWebClient.readString(any(), any())).thenReturn(createTextResult("<a href=\"file.zip\">Version 1.0</a>"));
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
 			core.download(profile);
@@ -105,10 +118,10 @@ class DownloaderCoreTests {
 		profile.setLinkPattern(Pattern.compile(" href=\"(file\\.zip)\""));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
+		var result = createFileResult();
 
 		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
-			when(mockedWebClient.readString(any(), any())).thenReturn("<a href=\"file.zip\">Version 1.0</a>");
+			when(mockedWebClient.readString(any(), any())).thenReturn(createTextResult("<a href=\"file.zip\">Version 1.0</a>"));
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
 			core.download(profile);
@@ -124,10 +137,10 @@ class DownloaderCoreTests {
 		profile.setPageUrl(URI.create("https://localhost/pub/firefox/releases/"));
 		profile.setLinkPattern(Pattern.compile("win64/en-US/Firefox"));
 
-		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
+		var result = createFileResult();
 
 		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
-			when(mockedWebClient.readString(any(), any())).thenReturn(TestUtils.readResourceAsString("firefox.html"));
+			when(mockedWebClient.readString(any(), any())).thenReturn(createTextResult(TestUtils.readResourceAsString("firefox.html")));
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
 			core.download(profile);
@@ -149,11 +162,11 @@ class DownloaderCoreTests {
 
 		var html2 = "<a href=\"file.zip\">Version 1.0</a>";
 
-		var result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("/tmp/file.zip"));
+		var result = createFileResult();
 
 		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
-			when(mockedWebClient.readString(eq(URI.create("https://localhost/page.html")), any())).thenReturn(html1);
-			when(mockedWebClient.readString(eq(URI.create("https://localhost/account/project/releases/expanded_assets/v1.0")), any())).thenReturn(html2);
+			when(mockedWebClient.readString(eq(URI.create("https://localhost/page.html")), any())).thenReturn(createTextResult(html1));
+			when(mockedWebClient.readString(eq(URI.create("https://localhost/account/project/releases/expanded_assets/v1.0")), any())).thenReturn(createTextResult(html2));
 			when(mockedWebClient.saveToFile(any(), any(), any())).thenReturn(result);
 
 			core.download(profile);
@@ -167,13 +180,13 @@ class DownloaderCoreTests {
 	void testPrintResult() {
 		var fileUri = URI.create("https://localhost/index.html");
 		try (var mockedWebClient = mock(WebClient.class); var core = new DownloaderCore(mockedWebClient)) {
-			var result = new SaveResult(SaveResult.Status.OK, Path.of("index.html"), Instant.now());
+			var result = new FileResult(Status.OK, Path.of("index.html"), Instant.now());
 			core.printResult(fileUri, result);
 
-			result = new SaveResult(SaveResult.Status.NOT_MODIFIED, Path.of("index.html"));
+			result = createFileResult();
 			core.printResult(fileUri, result);
 
-			result = new SaveResult(SaveResult.Status.ERROR, "Some error");
+			result = new FileResult(Status.ERROR, new Exception("Some error"));
 			core.printResult(fileUri, result);
 		} catch (Exception e) {
 			fail();

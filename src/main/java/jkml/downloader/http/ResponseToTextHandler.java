@@ -15,16 +15,16 @@ import org.apache.hc.core5.util.ByteArrayBuffer;
 /**
  * Based on org.apache.hc.client5.http.async.methods.SimpleAsyncEntityConsumer
  */
-class ResponseToTextHandler extends ResponseHandler<String> {
+class ResponseToTextHandler extends ResponseHandler<TextResult> {
 
 	private Charset charset = StandardCharsets.UTF_8;
 
 	private ByteArrayBuffer buffer;
 
 	@Override
-	public String handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
+	public TextResult handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
 		checkCode(response.getCode());
-		return EntityUtils.toString(response.getEntity(), charset);
+		return new TextResult(Status.OK, EntityUtils.toString(response.getEntity(), charset));
 	}
 
 	@Override
@@ -42,8 +42,8 @@ class ResponseToTextHandler extends ResponseHandler<String> {
 	}
 
 	@Override
-	protected String buildResult() {
-		return new String(buffer.toByteArray(), charset);
+	protected TextResult buildResult() {
+		return new TextResult(Status.OK, new String(buffer.toByteArray(), charset));
 	}
 
 	@Override

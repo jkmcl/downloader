@@ -5,9 +5,7 @@ import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import jkml.downloader.html.Occurrence;
-import jkml.downloader.http.Referer;
 import jkml.downloader.http.RequestOptions;
-import jkml.downloader.http.UserAgent;
 
 public class Profile {
 
@@ -29,7 +27,7 @@ public class Profile {
 
 	private Pattern versionPattern;
 
-	private RequestOptions requestOptions = new RequestOptions(UserAgent.CHROME, Referer.NONE);
+	private RequestOptions requestOptions = new RequestOptions();
 
 	private Path outputDirectory;
 

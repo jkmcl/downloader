@@ -20,11 +20,10 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jkml.downloader.http.SaveResult.Status;
 import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.TimeUtils;
 
-class ResponseToFileHandler extends ResponseHandler<SaveResult> {
+class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private final Logger logger = LoggerFactory.getLogger(ResponseToFileHandler.class);
 
@@ -38,7 +37,7 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 
 	private WritableByteChannel channel = null;
 
-	private SaveResult result = null;
+	private FileResult result = null;
 
 	public ResponseToFileHandler(URI uri, Path path) {
 		this.uri = uri;
@@ -84,11 +83,11 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 		}
 	}
 
-	private SaveResult preprocess(HttpResponse response) throws IOException {
+	private FileResult preprocess(HttpResponse response) throws IOException {
 		var code = response.getCode();
 		if (code == HttpStatus.SC_NOT_MODIFIED) {
 			logger.atInfo().log("Remote file not modified");
-			return new SaveResult(Status.NOT_MODIFIED, path);
+			return new FileResult(Status.NOT_MODIFIED, path);
 		}
 		checkCode(code);
 
@@ -106,7 +105,7 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 		return null;
 	}
 
-	private SaveResult postprocess() throws IOException {
+	private FileResult postprocess() throws IOException {
 		logger.atInfo().log("Finished saving remote content");
 
 		checkFileContent(tmpPath, path);
@@ -115,11 +114,11 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 			Files.setLastModifiedTime(path, FileTime.from(lastMod));
 		}
 
-		return new SaveResult(Status.OK, path, Files.getLastModifiedTime(path).toInstant());
+		return new FileResult(Status.OK, path, Files.getLastModifiedTime(path).toInstant());
 	}
 
 	@Override
-	public SaveResult handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
+	public FileResult handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
 		if ((result = preprocess(response)) != null) {
 			return result;
 		}
@@ -158,7 +157,7 @@ class ResponseToFileHandler extends ResponseHandler<SaveResult> {
 	}
 
 	@Override
-	protected SaveResult buildResult() {
+	protected FileResult buildResult() {
 		return result;
 	}
 

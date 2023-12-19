@@ -13,7 +13,9 @@ import org.slf4j.helpers.MessageFormatter;
 
 import jkml.downloader.html.FileInfo;
 import jkml.downloader.html.PageExtractor;
-import jkml.downloader.http.SaveResult;
+import jkml.downloader.http.FileResult;
+import jkml.downloader.http.RequestOptions;
+import jkml.downloader.http.Status;
 import jkml.downloader.http.WebClient;
 import jkml.downloader.profile.Profile;
 import jkml.downloader.profile.ProfileManager;
@@ -77,12 +79,10 @@ public class DownloaderCore implements Closeable {
 		}
 
 		var result = webClient.saveToFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
-		if (result != null) {
-			printResult(fileUri, result);
-		}
+		printResult(fileUri, result);
 	}
 
-	void printResult(URI fileUri, SaveResult result) {
+	void printResult(URI fileUri, FileResult result) {
 		switch (result.status()) {
 		case NOT_MODIFIED:
 			writeInfo("Local file up to date");
@@ -93,18 +93,26 @@ public class DownloaderCore implements Closeable {
 			formatInfo("Local path: {}", result.filePath());
 			break;
 		case ERROR:
-			formatError("Error occurred: {}", result.errorMessage());
+			formatError("Error occurred: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
 			break;
 		}
+	}
+
+	private String downloadPage(URI uri, RequestOptions options) {
+		var result = webClient.readString(uri, options);
+		if (result.status() != Status.OK) {
+			formatError("Error occurred: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
+			return null;
+		}
+		return result.text();
 	}
 
 	private FileInfo findFileInfo(Profile profile) {
 		var pageUri = profile.getPageUrl();
 
 		// Download page containing file info
-		var pageHtml = webClient.readString(pageUri, profile.getRequestOptions());
+		var pageHtml = downloadPage(pageUri, profile.getRequestOptions());
 		if (pageHtml == null) {
-			formatError("Failed to download page from {}", pageUri);
 			return null;
 		}
 
@@ -138,9 +146,8 @@ public class DownloaderCore implements Closeable {
 		}
 
 		for (var fragmentUri : fragmentUriList) {
-			var fragmentHtml = webClient.readString(fragmentUri, profile.getRequestOptions());
+			var fragmentHtml = downloadPage(fragmentUri, profile.getRequestOptions());
 			if (fragmentHtml == null) {
-				formatError("Failed to download page fragment from {}", fragmentUri);
 				return null;
 			}
 

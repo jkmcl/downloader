@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
-import jkml.downloader.http.SaveResult.Status;
 import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TestUtils;
@@ -68,16 +68,16 @@ class WebClientTests {
 	void testReadString_Success() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
 
-		var html = webClient.readString(mockUrl);
-		assertFalse(StringUtils.isNullOrBlank(html));
+		var result = webClient.readString(mockUrl);
+		assertFalse(StringUtils.isNullOrBlank(result.text()));
 	}
 
 	@Test
 	void testReadString_Failure() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
-		var html = webClient.readString(mockUrl);
-		assertEquals(null, html);
+		var result = webClient.readString(mockUrl);
+		assertNull(null, result.text());
 	}
 
 	@Test
@@ -86,8 +86,8 @@ class WebClientTests {
 
 		var options = new RequestOptions(UserAgent.CURL, Referer.SELF);
 
-		var html = webClient.readString(mockUrl, options);
-		assertFalse(StringUtils.isNullOrBlank(html));
+		var result = webClient.readString(mockUrl, options);
+		assertFalse(StringUtils.isNullOrBlank(result.text()));
 	}
 
 	@Test

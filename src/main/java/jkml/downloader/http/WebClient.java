@@ -18,7 +18,6 @@ import org.apache.hc.core5.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jkml.downloader.http.SaveResult.Status;
 import jkml.downloader.util.LangUtils;
 import jkml.downloader.util.PropertiesHelper;
 import jkml.downloader.util.TimeUtils;
@@ -80,13 +79,13 @@ public class WebClient implements Closeable {
 			return request;
 		}
 
-		if (options.userAgent() != DEFAULT_USER_AGENT) {
-			var ua = userAgentStrings.get(options.userAgent());
+		if (options.getUserAgent() != DEFAULT_USER_AGENT) {
+			var ua = userAgentStrings.get(options.getUserAgent());
 			logger.atDebug().log("Setting custom {}: {}", HttpHeaders.USER_AGENT, ua);
 			request.setHeader(HttpHeaders.USER_AGENT, ua);
 		}
 
-		if (options.referer() == Referer.SELF) {
+		if (options.getReferer() == Referer.SELF) {
 			var referer = HttpUtils.getUri(request).toString();
 			logger.atDebug().log("Setting {}: {}", HttpHeaders.REFERER, referer);
 			request.setHeader(HttpHeaders.REFERER, referer);
@@ -112,14 +111,15 @@ public class WebClient implements Closeable {
 	 * the encoding in the response header (if any), failing that, "ISO-8859-1" is
 	 * used.
 	 */
-	public String readString(URI uri) {
+	public TextResult readString(URI uri) {
 		return readString(uri, null);
 	}
 
-	public String readString(URI uri, RequestOptions options) {
+	public TextResult readString(URI uri, RequestOptions options) {
 		return execute(createRequest(Method.GET, uri, options), new ResponseToTextHandler(), e -> {
 			logger.atError().setCause(e).log("Exception caught");
-			return null;
+			var rootCause = LangUtils.getRootCause(e);
+			return new TextResult(Status.ERROR, rootCause);
 		});
 	}
 
@@ -127,7 +127,7 @@ public class WebClient implements Closeable {
 	 * Download remote file if local file does not exist or is older than remote
 	 * file
 	 */
-	public SaveResult saveToFile(URI uri, RequestOptions options, Path filePath) {
+	public FileResult saveToFile(URI uri, RequestOptions options, Path filePath) {
 		var lastMod = getLastModifiedTime(filePath);
 
 		var request = createRequest(Method.GET, uri, options);
@@ -140,7 +140,7 @@ public class WebClient implements Closeable {
 		return execute(request, new ResponseToFileHandler(uri, filePath), e -> {
 			logger.atError().setCause(e).log("Exception caught");
 			var rootCause = LangUtils.getRootCause(e);
-			return new SaveResult(Status.ERROR, rootCause.getClass().getName() + ": " + rootCause.getMessage());
+			return new FileResult(Status.ERROR, rootCause);
 		});
 	}
 

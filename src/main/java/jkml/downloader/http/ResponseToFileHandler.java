@@ -11,7 +11,6 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -115,19 +114,6 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 		}
 
 		return new FileResult(Status.OK, path, Files.getLastModifiedTime(path).toInstant());
-	}
-
-	@Override
-	public FileResult handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
-		if ((result = preprocess(response)) != null) {
-			return result;
-		}
-
-		try (var inputStream = response.getEntity().getContent()) {
-			Files.copy(inputStream, tmpPath, StandardCopyOption.REPLACE_EXISTING);
-		}
-
-		return postprocess();
 	}
 
 	@Override

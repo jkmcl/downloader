@@ -5,11 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpResponse;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.util.ByteArrayBuffer;
 
 /**
@@ -20,12 +18,6 @@ class ResponseToTextHandler extends ResponseHandler<TextResult> {
 	private Charset charset = StandardCharsets.UTF_8;
 
 	private ByteArrayBuffer buffer;
-
-	@Override
-	public TextResult handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
-		checkCode(response.getCode());
-		return new TextResult(Status.OK, EntityUtils.toString(response.getEntity(), charset));
-	}
 
 	@Override
 	protected void start(HttpResponse response, ContentType contentType) throws HttpException, IOException {

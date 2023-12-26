@@ -21,7 +21,7 @@ public class Application {
 			return;
 		}
 
-		try (var core = new DownloaderCore("classic".equals(System.getProperty("http.client")))) {
+		try (var core = new DownloaderCore()) {
 			core.download(file);
 		}
 	}

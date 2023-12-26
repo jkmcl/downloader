@@ -46,7 +46,7 @@ class WebClientTests {
 	static WireMockExtension wireMockExt = WireMockExtension.newInstance().options(WireMockConfiguration.wireMockConfig().dynamicPort()).build();
 
 	protected WebClient createWebClient() {
-		return new WebClient(true);
+		return new WebClient();
 	}
 
 	@BeforeAll

@@ -11,10 +11,13 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.message.BasicHttpRequest;
+import org.apache.hc.core5.http.nio.support.BasicRequestProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +33,9 @@ public class WebClient implements Closeable {
 
 	private final Map<UserAgent, String> userAgentStrings = new EnumMap<>(UserAgent.class);
 
-	private final HttpClientAdapter httpClient;
+	private final CloseableHttpAsyncClient httpClient;
 
-	public WebClient(boolean classic) {
+	public WebClient() {
 		var propertiesHelper = new PropertiesHelper("http.properties");
 		var chromeUserAgent = propertiesHelper.getRequiredProperty("user-agent.chrome");
 		var curlUserAgent = propertiesHelper.getRequiredProperty("user-agent.curl");
@@ -41,11 +44,11 @@ public class WebClient implements Closeable {
 		userAgentStrings.put(UserAgent.CHROME, chromeUserAgent);
 		userAgentStrings.put(UserAgent.CURL, curlUserAgent);
 
-		var config = new HttpClientConfig(userAgentStrings.get(DEFAULT_USER_AGENT));
-		config.getDefaultHeaders().add(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage));
-
-		httpClient = classic ? new HttpClassicClientAdapter(config) : new HttpAsyncClientAdapter(config);
-		logger.atDebug().log("HTTP client adapter class: {}", httpClient.getClass().getSimpleName());
+		httpClient = new HttpClientBuilder()
+				.userAgent(userAgentStrings.get(DEFAULT_USER_AGENT))
+				.defaultHeaders(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage))
+				.build();
+		httpClient.start();
 	}
 
 	@Override
@@ -73,7 +76,7 @@ public class WebClient implements Closeable {
 	private HttpRequest createRequest(Method method, URI uri, RequestOptions options) {
 		logger.atInfo().log("Creating {} request to {}", method, uri);
 
-		var request = httpClient.createRequest(method, uri);
+		var request = new BasicHttpRequest(method, uri);
 
 		if (options == null) {
 			return request;
@@ -97,7 +100,7 @@ public class WebClient implements Closeable {
 	private <T> T execute(HttpRequest request, ResponseHandler<T> responseHandler, Function<Exception, T> exceptionHandler) {
 		logger.atInfo().log("Sending request");
 		try {
-			return httpClient.execute(request, responseHandler);
+			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, null).get();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			return exceptionHandler.apply(e);

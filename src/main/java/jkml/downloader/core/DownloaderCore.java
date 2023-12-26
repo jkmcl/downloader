@@ -31,8 +31,8 @@ public class DownloaderCore implements Closeable {
 
 	private final PrintWriter writer;
 
-	public DownloaderCore(boolean classic) {
-		this(new WebClient(classic));
+	public DownloaderCore() {
+		this(new WebClient());
 	}
 
 	DownloaderCore(WebClient webClient) {

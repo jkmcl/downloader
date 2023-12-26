@@ -20,9 +20,6 @@ class CustomRedirectStrategy extends DefaultRedirectStrategy {
 
 	public static final CustomRedirectStrategy INSTANCE = new CustomRedirectStrategy();
 
-	private CustomRedirectStrategy() {
-	}
-
 	@Override
 	public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
 		// Let super class handle standard redirects

@@ -3,16 +3,14 @@ package jkml.downloader.http;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.protocol.RedirectStrategy;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.HttpRequest;
-import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.message.BasicClassicHttpResponse;
+import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.message.BasicHttpRequest;
+import org.apache.hc.core5.http.message.BasicHttpResponse;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
-import org.apache.hc.core5.http.protocol.HttpContext;
 import org.junit.jupiter.api.Test;
 
 class CustomRedirectStrategyTests {
@@ -29,22 +27,29 @@ class CustomRedirectStrategyTests {
 
 	@Test
 	void testIsRedirected_default() throws HttpException {
-		HttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_MOVED_PERMANENTLY);
+		var context = new BasicHttpContext();
+		var request = new BasicHttpRequest(Method.GET, SOURCE_URL);
+		var response = new BasicHttpResponse(HttpStatus.SC_MOVED_PERMANENTLY);
 		response.setHeader(HttpHeaders.LOCATION, TARGET_URL);
 
-		assertTrue(strategy.isRedirected(new HttpGet(SOURCE_URL), response, new BasicHttpContext()));
+		assertTrue(strategy.isRedirected(request, response, context));
 	}
 
 	@Test
 	void testIsRedirected_custom() throws HttpException {
-		HttpRequest request = new HttpGet(SOURCE_URL);
-		HttpResponse response = new BasicClassicHttpResponse(HttpStatus.SC_OK);
-		HttpContext context = new BasicHttpContext();
+		var context = new BasicHttpContext();
+		var request = new BasicHttpRequest(Method.GET, SOURCE_URL);
 
-		assertFalse(strategy.isRedirected(request, response, context));
+		var response1 = new BasicHttpResponse(HttpStatus.SC_OK);
+		assertFalse(strategy.isRedirected(request, response1, context));
 
-		response.setHeader(REFRESH_HEADER_NAME, REFRESH_HEADER_VALUE);
-		assertTrue(strategy.isRedirected(request, response, context));
+		var response2 = new BasicHttpResponse(HttpStatus.SC_BAD_REQUEST);
+		response2.setHeader(REFRESH_HEADER_NAME, REFRESH_HEADER_VALUE);
+		assertFalse(strategy.isRedirected(request, response2, context));
+
+		var response3 = new BasicHttpResponse(HttpStatus.SC_OK);
+		response3.setHeader(REFRESH_HEADER_NAME, REFRESH_HEADER_VALUE);
+		assertTrue(strategy.isRedirected(request, response3, context));
 	}
 
 }

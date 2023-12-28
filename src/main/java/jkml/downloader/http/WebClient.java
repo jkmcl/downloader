@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -46,7 +47,7 @@ public class WebClient implements Closeable {
 
 		httpClient = new HttpClientBuilder()
 				.userAgent(userAgentStrings.get(DEFAULT_USER_AGENT))
-				.defaultHeaders(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage))
+				.defaultHeaders(List.of(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage)))
 				.build();
 		httpClient.start();
 	}

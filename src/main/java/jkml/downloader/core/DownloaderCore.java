@@ -12,7 +12,7 @@ import org.slf4j.event.Level;
 import org.slf4j.helpers.MessageFormatter;
 
 import jkml.downloader.html.FileInfo;
-import jkml.downloader.html.PageExtractor;
+import jkml.downloader.html.PageScraper;
 import jkml.downloader.http.FileResult;
 import jkml.downloader.http.RequestOptions;
 import jkml.downloader.http.Status;
@@ -116,21 +116,21 @@ public class DownloaderCore implements Closeable {
 			return null;
 		}
 
-		var pageExtractor = new PageExtractor(pageUri, pageHtml);
+		var pageScraper = new PageScraper(pageUri, pageHtml);
 
 		if (profile.getType() == Profile.Type.MOZILLA) {
-			var fileInfo = pageExtractor.extractMozillaFileInfo(profile.getLinkPattern().toString());
+			var fileInfo = pageScraper.extractMozillaFileInfo(profile.getLinkPattern().toString());
 			if (fileInfo == null) {
 				writeError("File link cannot be derived from page");
 			}
 			return fileInfo;
 		}
 
-		var fileInfo = pageExtractor.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
+		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
 
 		if (fileInfo == null) {
 			if (profile.getType() == Profile.Type.GITHUB) {
-				return findFileInfoInGitHubPageFragments(profile, pageExtractor);
+				return findFileInfoInGitHubPageFragments(profile, pageScraper);
 			}
 			formatError("File link not found in page from {}", pageUri);
 		}
@@ -138,8 +138,8 @@ public class DownloaderCore implements Closeable {
 		return fileInfo;
 	}
 
-	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageExtractor pageExtractor) {
-		var fragmentUriList = pageExtractor.extractGitHubPageFragmentUriList();
+	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageScraper pageScraper) {
+		var fragmentUriList = pageScraper.extractGitHubPageFragmentUriList();
 		if (fragmentUriList.isEmpty()) {
 			writeError("Page fragment link not found");
 			return null;
@@ -151,8 +151,8 @@ public class DownloaderCore implements Closeable {
 				return null;
 			}
 
-			var fragExtractor = new PageExtractor(fragmentUri, fragmentHtml);
-			var fileInfo = fragExtractor.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
+			var fragmentScraper = new PageScraper(fragmentUri, fragmentHtml);
+			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
 			if (fileInfo != null) {
 				return fileInfo;
 			}

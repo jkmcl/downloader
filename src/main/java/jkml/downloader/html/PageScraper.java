@@ -11,17 +11,17 @@ import org.slf4j.LoggerFactory;
 
 import jkml.downloader.util.StringUtils;
 
-public class PageExtractor {
+public class PageScraper {
 
 	private static final Pattern GITHUB_PAGE_FRAGMENT_URI_PATTERN = Pattern.compile("src=(\"?)(\\S+/expanded_assets/\\S+)(\\1)");
 
-	private final Logger logger = LoggerFactory.getLogger(PageExtractor.class);
+	private final Logger logger = LoggerFactory.getLogger(PageScraper.class);
 
 	private final URI baseUri;
 
 	private final String html;
 
-	public PageExtractor(URI baseUri, String html) {
+	public PageScraper(URI baseUri, String html) {
 		this.baseUri = baseUri;
 		this.html = html;
 	}

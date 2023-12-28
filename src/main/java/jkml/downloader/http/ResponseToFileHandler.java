@@ -109,9 +109,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 		checkFileContent(tmpPath, path);
 		Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
-		if (lastMod != null) {
-			Files.setLastModifiedTime(path, FileTime.from(lastMod));
-		}
+		Files.setLastModifiedTime(path, FileTime.from(lastMod));
 
 		return new FileResult(Status.OK, path, Files.getLastModifiedTime(path).toInstant());
 	}
@@ -122,7 +120,9 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			return;
 		}
 
-		channel = Files.newByteChannel(tmpPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE,
+		channel = Files.newByteChannel(tmpPath,
+				StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE,
 				StandardOpenOption.TRUNCATE_EXISTING);
 	}
 
@@ -132,9 +132,9 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			return;
 		}
 
-		while (src.hasRemaining()) {
+		do {
 			channel.write(src);
-		}
+		} while (src.hasRemaining());
 
 		if (endOfStream) {
 			closeChannel();

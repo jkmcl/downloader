@@ -1,8 +1,6 @@
 package jkml.downloader.http;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -19,19 +17,19 @@ import org.apache.hc.core5.util.Timeout;
 
 class HttpClientBuilder {
 
-	public static final Timeout TIMEOUT = Timeout.ofSeconds(30);
+	private static final Timeout TIMEOUT = Timeout.ofSeconds(30);
 
 	private String userAgent;
 
-	private final List<Header> defaultHeaders = new ArrayList<>();
+	private Collection<Header> defaultHeaders;
 
-	HttpClientBuilder userAgent(String value) {
+	public HttpClientBuilder userAgent(String value) {
 		userAgent = value;
 		return this;
 	}
 
-	HttpClientBuilder defaultHeaders(Header... values) {
-		Collections.addAll(defaultHeaders, values);
+	public HttpClientBuilder defaultHeaders(Collection<Header> value) {
+		defaultHeaders = value;
 		return this;
 	}
 
@@ -48,19 +46,18 @@ class HttpClientBuilder {
 				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
 				.build();
 
+		var connectionManager = PoolingAsyncClientConnectionManagerBuilder.create()
+				.setDefaultConnectionConfig(connectionConfig)
+				.setDefaultTlsConfig(tlsConfig)
+				.build();
+
 		var requestConfig = RequestConfig.custom()
 				.setConnectionKeepAlive(TimeValue.ofMinutes(1))
 				.build();
 
-
 		var ioReactorConfig = IOReactorConfig.custom()
-				.setSoTimeout(HttpClientBuilder.TIMEOUT)
 				.setIoThreadCount(Math.min(Runtime.getRuntime().availableProcessors(), 8))
-				.build();
-
-		var connectionManager = PoolingAsyncClientConnectionManagerBuilder.create()
-				.setDefaultConnectionConfig(connectionConfig)
-				.setDefaultTlsConfig(tlsConfig)
+				.setSoTimeout(HttpClientBuilder.TIMEOUT)
 				.build();
 
 		return HttpAsyncClientBuilder.create()
@@ -71,10 +68,10 @@ class HttpClientBuilder {
 				.setConnectionManager(connectionManager)
 				.setDefaultHeaders(defaultHeaders)
 				.setDefaultRequestConfig(requestConfig)
-				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
-				.setUserAgent(userAgent)
 				.setIOReactorConfig(ioReactorConfig)
+				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
 				.setThreadFactory(new DefaultThreadFactory("http", true))
+				.setUserAgent(userAgent)
 				.build();
 	}
 

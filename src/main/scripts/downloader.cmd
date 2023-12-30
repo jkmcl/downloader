@@ -10,4 +10,4 @@ if not "%JAVA_HOME%" == "" goto hasJavaHome
 	exit /b 1
 :hasJavaHome
 
-"%JAVA_HOME%\bin\java.exe" -jar "%DOWNLOADER_HOME%\downloader.jar" %*
+"%JAVA_HOME%\bin\java.exe" -jar "%DOWNLOADER_HOME%\@project.build.finalName@" %*

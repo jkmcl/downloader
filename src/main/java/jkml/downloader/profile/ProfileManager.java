@@ -17,7 +17,7 @@ import jkml.downloader.util.StringUtils;
 
 public class ProfileManager {
 
-	private final Logger log = LoggerFactory.getLogger(ProfileManager.class);
+	private final Logger logger = LoggerFactory.getLogger(ProfileManager.class);
 
 	static Profile sanitizeProfile(Profile profile) {
 		if (profile.getType() != null || profile.getPageUrl() == null) {
@@ -105,8 +105,8 @@ public class ProfileManager {
 			if (errors.isEmpty()) {
 				profileList.add(profile);
 			} else {
-				log.error("Invalid profile: {}", profile.getName());
-				errors.forEach(log::error);
+				logger.error("Invalid profile: {}", profile.getName());
+				errors.forEach(logger::error);
 			}
 		}
 

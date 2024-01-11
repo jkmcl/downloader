@@ -78,14 +78,14 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			channel.close();
 			channel = null;
 		} catch (IOException e) {
-			logger.atError().setCause(e).log("Failed to close channel");
+			logger.error("Failed to close channel", e);
 		}
 	}
 
 	private FileResult preprocess(HttpResponse response) throws IOException {
 		var code = response.getCode();
 		if (code == HttpStatus.SC_NOT_MODIFIED) {
-			logger.atInfo().log("Remote file not modified");
+			logger.info("Remote file not modified");
 			return new FileResult(Status.NOT_MODIFIED, path);
 		}
 		checkCode(code);
@@ -100,12 +100,12 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 		tmpPath = path.resolveSibling(path.getFileName() + ".partial");
 
-		logger.atInfo().log("Saving remote content");
+		logger.info("Saving remote content");
 		return null;
 	}
 
 	private FileResult postprocess() throws IOException {
-		logger.atInfo().log("Finished saving remote content");
+		logger.info("Finished saving remote content");
 
 		checkFileContent(tmpPath, path);
 		Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);

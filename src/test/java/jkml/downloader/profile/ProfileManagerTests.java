@@ -22,7 +22,7 @@ class ProfileManagerTests {
 
 	private static final String PROFILES_FILE_NAME = "profiles.json";
 
-	private final Logger log = LoggerFactory.getLogger(ProfileManagerTests.class);
+	private final Logger logger = LoggerFactory.getLogger(ProfileManagerTests.class);
 
 	private static Profile createProfile() {
 		var profile = new Profile();
@@ -41,7 +41,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate1() {
-		log.info("Testing profile validation - pass with fileUrl and without pageUrl");
+		logger.info("Testing profile validation - pass with fileUrl and without pageUrl");
 		var profile = createProfile();
 		profile.setPageUrl(null);
 		var errMsgList = ProfileManager.validateProfile(profile);
@@ -50,7 +50,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate2() {
-		log.info("Testing profile validation - pass with pageUrl and without fileUrl");
+		logger.info("Testing profile validation - pass with pageUrl and without fileUrl");
 		var profile = createProfile();
 		profile.setFileUrl(null);
 		var errMsgList = ProfileManager.validateProfile(profile);
@@ -59,7 +59,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate3() {
-		log.info("Testing profile validation - fail with fileUrl and with pageUrl");
+		logger.info("Testing profile validation - fail with fileUrl and with pageUrl");
 		var profile = createProfile();
 		var errMsgList = ProfileManager.validateProfile(profile);
 		assertEquals(1, errMsgList.size());
@@ -67,7 +67,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate4() {
-		log.info("Testing profile validation - fail without fileUrl and without pageUrl");
+		logger.info("Testing profile validation - fail without fileUrl and without pageUrl");
 		var profile = createProfile();
 		profile.setFileUrl(null);
 		profile.setPageUrl(null);
@@ -77,7 +77,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate5() {
-		log.info("Testing profile validation - fail without outputDirectory");
+		logger.info("Testing profile validation - fail without outputDirectory");
 		var profile = createProfile();
 		profile.setPageUrl(null);
 		profile.setOutputDirectory(null);
@@ -87,7 +87,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate6() {
-		log.info("Testing profile validation - fail with pageUrl and without linkPattern");
+		logger.info("Testing profile validation - fail with pageUrl and without linkPattern");
 		var profile = createProfile();
 		profile.setFileUrl(null);
 		profile.setLinkPattern(null);
@@ -97,7 +97,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate7() {
-		log.info("Testing profile validation - fail with null or empty name");
+		logger.info("Testing profile validation - fail with null or empty name");
 		var profile = createProfile();
 		profile.setName("");
 		profile.setPageUrl(null);
@@ -107,7 +107,7 @@ class ProfileManagerTests {
 
 	@Test
 	void testValidate8() {
-		log.info("Testing GitHub profile validation - fail with missing link pattern");
+		logger.info("Testing GitHub profile validation - fail with missing link pattern");
 		var profile = createProfile();
 		profile.setFileUrl(null);
 		profile.setLinkPattern(null);

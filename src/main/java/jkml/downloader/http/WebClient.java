@@ -59,11 +59,11 @@ public class WebClient implements Closeable {
 
 	private Instant getLastModifiedTime(Path filePath) {
 		if (Files.notExists(filePath)) {
-			logger.atDebug().log("Local file does not exist");
+			logger.debug("Local file does not exist");
 			return null;
 		}
 
-		logger.atDebug().log("Local file path: {}", filePath);
+		logger.debug("Local file path: {}", filePath);
 
 		try {
 			var lastMod = Files.getLastModifiedTime(filePath).toInstant();
@@ -75,7 +75,7 @@ public class WebClient implements Closeable {
 	}
 
 	private HttpRequest createRequest(Method method, URI uri, RequestOptions options) {
-		logger.atInfo().log("Creating {} request to {}", method, uri);
+		logger.info("Creating {} request to {}", method, uri);
 
 		var request = new BasicHttpRequest(method, uri);
 
@@ -85,13 +85,13 @@ public class WebClient implements Closeable {
 
 		if (options.getUserAgent() != DEFAULT_USER_AGENT) {
 			var ua = userAgentStrings.get(options.getUserAgent());
-			logger.atDebug().log("Setting custom {}: {}", HttpHeaders.USER_AGENT, ua);
+			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, ua);
 			request.setHeader(HttpHeaders.USER_AGENT, ua);
 		}
 
 		if (options.getReferer() == Referer.SELF) {
 			var referer = HttpUtils.getUri(request).toString();
-			logger.atDebug().log("Setting {}: {}", HttpHeaders.REFERER, referer);
+			logger.debug("Setting {}: {}", HttpHeaders.REFERER, referer);
 			request.setHeader(HttpHeaders.REFERER, referer);
 		}
 
@@ -99,7 +99,7 @@ public class WebClient implements Closeable {
 	}
 
 	private <T> T execute(HttpRequest request, ResponseHandler<T> responseHandler, Function<Exception, T> exceptionHandler) {
-		logger.atInfo().log("Sending request");
+		logger.info("Sending request");
 		try {
 			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, null).get();
 		} catch (InterruptedException e) {
@@ -121,7 +121,7 @@ public class WebClient implements Closeable {
 
 	public TextResult readString(URI uri, RequestOptions options) {
 		return execute(createRequest(Method.GET, uri, options), new ResponseToTextHandler(), e -> {
-			logger.atError().setCause(e).log("Exception caught");
+			logger.error("Exception caught", e);
 			var rootCause = LangUtils.getRootCause(e);
 			return new TextResult(Status.ERROR, rootCause);
 		});
@@ -142,7 +142,7 @@ public class WebClient implements Closeable {
 		}
 
 		return execute(request, new ResponseToFileHandler(uri, filePath), e -> {
-			logger.atError().setCause(e).log("Exception caught");
+			logger.error("Exception caught", e);
 			var rootCause = LangUtils.getRootCause(e);
 			return new FileResult(Status.ERROR, rootCause);
 		});

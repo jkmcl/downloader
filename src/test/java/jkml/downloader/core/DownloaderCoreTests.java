@@ -29,6 +29,7 @@ import jkml.downloader.http.TextResult;
 import jkml.downloader.http.WebClient;
 import jkml.downloader.profile.Profile;
 import jkml.downloader.profile.Profile.Type;
+import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TestUtils;
 
 class DownloaderCoreTests {
@@ -47,12 +48,12 @@ class DownloaderCoreTests {
 
 	@BeforeEach
 	void beforeEach(TestInfo testInfo) {
-		logger.atInfo().log("# Executing {}", testInfo.getDisplayName());
+		logger.info("# Executing {}", testInfo.getDisplayName());
 	}
 
 	@AfterEach
 	void afterEach() {
-		logger.atInfo().log();
+		logger.info(StringUtils.EMPTY);
 	}
 
 	private static TextResult createTextResult(String text) {

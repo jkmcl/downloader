@@ -13,6 +13,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TestUtils;
 
 class PageScraperTests {
@@ -21,12 +22,12 @@ class PageScraperTests {
 
 	@BeforeEach
 	void beforeEach(TestInfo testInfo) {
-		logger.atInfo().log("# Executing {}", testInfo.getDisplayName());
+		logger.info("# Executing {}", testInfo.getDisplayName());
 	}
 
 	@AfterEach
 	void afterEach() {
-		logger.atInfo().log();
+		logger.info(StringUtils.EMPTY);
 	}
 
 	@Test

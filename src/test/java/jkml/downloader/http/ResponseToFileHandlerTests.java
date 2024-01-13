@@ -16,7 +16,7 @@ import jkml.downloader.util.TestUtils;
 
 class ResponseToFileHandlerTests {
 
-	private static Path outDir = TestUtils.getOutputDirectory();
+	private static Path outDir = TestUtils.outputDirectory();
 
 	private static Path source = outDir.resolve("source.txt");
 

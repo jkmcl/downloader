@@ -26,6 +26,10 @@ public class PageScraper {
 		this.html = html;
 	}
 
+	public URI getBaseUri() {
+		return baseUri;
+	}
+
 	/**
 	 * Extract URI and optionally version of file
 	 *

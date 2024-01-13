@@ -38,7 +38,7 @@ class WebClientTests {
 
 	private static URI mockUrl;
 
-	private final Path outputDirectory = TestUtils.getOutputDirectory();
+	private final Path outDir = TestUtils.outputDirectory();
 
 	private WebClient webClient;
 
@@ -95,8 +95,8 @@ class WebClientTests {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(
 				ok("Hello world!").withHeader(HttpHeaders.LAST_MODIFIED, DateUtils.formatStandardDate(Instant.now()))));
 
-		Files.createDirectories(outputDirectory);
-		var localFilePath = outputDirectory.resolve(FileUtils.getFileName(mockUrl));
+		Files.createDirectories(outDir);
+		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
 
 		var result = webClient.saveToFile(mockUrl, null, localFilePath);
 
@@ -111,12 +111,12 @@ class WebClientTests {
 	void testSaveToFile_NotModified() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(aResponse().withStatus(304)));
 
-		Files.createDirectories(outputDirectory);
-		var localFilePath = outputDirectory.resolve(FileUtils.getFileName(mockUrl));
+		Files.createDirectories(outDir);
+		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
 		Files.writeString(localFilePath, "");
 		Files.setLastModifiedTime(localFilePath, FileTime.from(Instant.now()));
 
-		var result = webClient.saveToFile(mockUrl, null, outputDirectory.resolve(FileUtils.getFileName(mockUrl)));
+		var result = webClient.saveToFile(mockUrl, null, outDir.resolve(FileUtils.getFileName(mockUrl)));
 
 		assertEquals(Status.NOT_MODIFIED, result.status());
 		assertEquals(localFilePath, result.filePath());

@@ -12,9 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jkml.downloader.html.Occurrence;
-import jkml.downloader.http.Referer;
 import jkml.downloader.http.RequestOptions;
-import jkml.downloader.http.UserAgent;
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.TestUtils;
 
@@ -32,10 +30,9 @@ class ProfileManagerTests {
 		profile.setPageUrl(URI.create("https://localhost/page.html"));
 		profile.setLinkPattern(Pattern.compile("(file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("[.0-9]+"));
-		profile.setOutputDirectory(TestUtils.getOutputDirectory());
+		profile.setOutputDirectory(TestUtils.outputDirectory());
 		profile.setLinkOccurrence(Occurrence.FIRST);
-		profile.setRequestOptions(new RequestOptions(
-				UserAgent.CHROME, Referer.NONE));
+		profile.setRequestOptions(new RequestOptions());
 		return profile;
 	}
 

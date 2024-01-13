@@ -98,7 +98,7 @@ public class DownloaderCore implements Closeable {
 		}
 	}
 
-	private String downloadPage(URI uri, RequestOptions options) {
+	String downloadPage(URI uri, RequestOptions options) {
 		var result = webClient.readString(uri, options);
 		if (result.status() != Status.OK) {
 			formatError("Error occurred: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
@@ -151,7 +151,8 @@ public class DownloaderCore implements Closeable {
 				return null;
 			}
 
-			var fragmentScraper = new PageScraper(fragmentUri, fragmentHtml);
+			// Use parent base URL for link resolution
+			var fragmentScraper = new PageScraper(pageScraper.getBaseUri(), fragmentHtml);
 			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
 			if (fileInfo != null) {
 				return fileInfo;

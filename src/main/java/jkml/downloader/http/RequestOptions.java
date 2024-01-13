@@ -7,6 +7,7 @@ public class RequestOptions {
 	private Referer referer = Referer.NONE;
 
 	public RequestOptions() {
+		// Default constructor required for JSON binding via setters
 	}
 
 	public RequestOptions(UserAgent userAgent, Referer referer) {

@@ -23,7 +23,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
@@ -36,18 +39,16 @@ class WebClientTests {
 
 	private static final String MOCK_URL_PATH = "/dir1/file1";
 
-	private static URI mockUrl;
+	private static final Logger logger = LoggerFactory.getLogger(WebClientTests.class);
 
-	private final Path outDir = TestUtils.outputDirectory();
+	private static final Path outDir = TestUtils.outputDirectory();
+
+	private static URI mockUrl;
 
 	private WebClient webClient;
 
 	@RegisterExtension
-	static WireMockExtension wireMockExt = WireMockExtension.newInstance().options(WireMockConfiguration.wireMockConfig().dynamicPort()).build();
-
-	protected WebClient createWebClient() {
-		return new WebClient();
-	}
+	private static final WireMockExtension wireMockExt = WireMockExtension.newInstance().options(WireMockConfiguration.wireMockConfig().dynamicPort()).build();
 
 	@BeforeAll
 	static void beforeAll() {
@@ -55,13 +56,15 @@ class WebClientTests {
 	}
 
 	@BeforeEach
-	void beforeEach() {
-		webClient = createWebClient();
+	void beforeEach(TestInfo testInfo) {
+		logger.info("# Executing {}", testInfo.getDisplayName());
+		webClient = new WebClient();
 	}
 
 	@AfterEach
 	void afterEach() throws IOException {
 		webClient.close();
+		logger.info(StringUtils.EMPTY);
 	}
 
 	@Test

@@ -18,7 +18,7 @@ import jkml.downloader.util.TestUtils;
 
 class PageScraperTests {
 
-	private final Logger logger = LoggerFactory.getLogger(PageScraperTests.class);
+	private static final Logger logger = LoggerFactory.getLogger(PageScraperTests.class);
 
 	@BeforeEach
 	void beforeEach(TestInfo testInfo) {

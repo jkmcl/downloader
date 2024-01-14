@@ -35,9 +35,9 @@ class DownloaderCoreTests {
 
 	private static final String PROFILES_JSON_FILE_NAME = "profiles.json";
 
-	private static final Path outDir = TestUtils.outputDirectory();
+	private static final Logger logger = LoggerFactory.getLogger(DownloaderCoreTests.class);
 
-	private final Logger logger = LoggerFactory.getLogger(DownloaderCoreTests.class);
+	private static final Path outDir = TestUtils.outputDirectory();
 
 	private static Profile createProfile(Type type) {
 		var profile = new Profile();

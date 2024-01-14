@@ -20,7 +20,7 @@ class ProfileManagerTests {
 
 	private static final String PROFILES_FILE_NAME = "profiles.json";
 
-	private final Logger logger = LoggerFactory.getLogger(ProfileManagerTests.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProfileManagerTests.class);
 
 	private static Profile createProfile() {
 		var profile = new Profile();

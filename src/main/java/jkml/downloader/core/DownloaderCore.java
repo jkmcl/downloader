@@ -152,7 +152,7 @@ public class DownloaderCore implements Closeable {
 			}
 
 			// Use parent base URL for link resolution
-			var fragmentScraper = new PageScraper(pageScraper.getBaseUri(), fragmentHtml);
+			var fragmentScraper = new PageScraper(profile.getPageUrl(), fragmentHtml);
 			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
 			if (fileInfo != null) {
 				return fileInfo;

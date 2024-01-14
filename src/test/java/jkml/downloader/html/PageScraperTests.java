@@ -38,44 +38,27 @@ class PageScraperTests {
 		FileInfo fileInfo;
 
 		// Link not found (no match)
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/not_exist\\.txt)\""), Occurrence.FIRST);
+		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/not_exist\\.txt)\""), Occurrence.FIRST, null);
 		assertNull(fileInfo);
 
 		// Link not found (no capturing group)
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\".+/file\\.txt\""), Occurrence.FIRST);
+		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\".+/file\\.txt\""), Occurrence.FIRST, null);
 		assertNull(fileInfo);
 
 		// Link only
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/file\\.txt)\""), Occurrence.FIRST);
+		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/file\\.txt)\""), Occurrence.FIRST, null);
 		assertEquals("https://localhost/dir2/v1.0/file.txt", fileInfo.uri().toString());
 		assertNull(fileInfo.version());
 
 		// Link only (last occurrence)
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/other\\.txt)\""), Occurrence.LAST);
+		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/other\\.txt)\""), Occurrence.LAST, null);
 		assertEquals("https://localhost/dir4/v3.0/other.txt", fileInfo.uri().toString());
 		assertNull(fileInfo.version());
 
-		// Link and version in link
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/v([.0-9]+)/file\\.txt)\""), Occurrence.FIRST);
+		// Link and version
+		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/v([.0-9]+)/file\\.txt)\""), Occurrence.FIRST, null);
 		assertEquals("https://localhost/dir2/v1.0/file.txt", fileInfo.uri().toString());
 		assertEquals("1.0", fileInfo.version());
-	}
-
-	@Test
-	void testExtractFileInfo2() {
-		var baseUri = URI.create("https://localhost/dir1");
-		var html = "<a href=\"dir2/v1.0/file.txt\">File v2.0</a>\n<a href=\"dir4/v3.0/other.txt\">Other v4.0</a>";
-		var scraper = new PageScraper(baseUri, html);
-		FileInfo fileInfo;
-
-		// Link not found (no match)
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/not_exist\\.txt)\""), Occurrence.FIRST, null);
-		assertNull(fileInfo);
-
-		// Link found but no version pattern
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/file\\.txt)\""), Occurrence.FIRST, null);
-		assertEquals("https://localhost/dir2/v1.0/file.txt", fileInfo.uri().toString());
-		assertNull(fileInfo.version());
 
 		// Link and version in page
 		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/file\\.txt)\""), Occurrence.FIRST, Pattern.compile(">File v([.0-9]+)<"));

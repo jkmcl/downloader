@@ -26,27 +26,17 @@ public class PageScraper {
 		this.html = html;
 	}
 
-	public URI getBaseUri() {
-		return baseUri;
-	}
-
-	/**
-	 * Extract URI and optionally version of file
-	 *
-	 * @param linkPattern Regular expression of the file URL. The URL is expected to
-	 *                    be in capturing group 1. Version is extracted from the
-	 *                    optional capturing group 2
-	 */
-	public FileInfo extractFileInfo(Pattern linkPattern, Occurrence linkOccurrence) {
-		var matcher = linkPattern.matcher(html);
+	public FileInfo extractFileInfo(Pattern linkPattern, Occurrence linkOccurrence, Pattern versionPattern) {
 		MatchResult matchResult = null;
+
+		// Find link
+		var matcher = linkPattern.matcher(html);
 		while (matcher.find()) {
 			matchResult = matcher.toMatchResult();
 			if (linkOccurrence != Occurrence.LAST) {
 				break;
 			}
 		}
-
 		if (matchResult == null || matchResult.groupCount() < 1) {
 			logger.info("Link not found");
 			return null;
@@ -59,14 +49,20 @@ public class PageScraper {
 		// Resolve link
 		var fileUri = resolve(link);
 
+		// Find version in page
+		if (versionPattern != null) {
+			return new FileInfo(fileUri, extractVersion(versionPattern));
+		}
+
+		// Find version in link
 		if (matchResult.groupCount() < 2) {
+			logger.info("Version not found in link");
 			return new FileInfo(fileUri, null);
 		}
 
 		// Extract version
 		var version = matchResult.group(2);
 		logger.info("Version found in link: {}", version);
-
 		return new FileInfo(fileUri, version);
 	}
 
@@ -79,24 +75,6 @@ public class PageScraper {
 		return uri;
 	}
 
-	/**
-	 * Extract link and optionally version of file
-	 *
-	 * @param linkPattern    Regular expression of the file URL. The URL is expected
-	 *                       to be in capturing group 1.
-	 * @param versionPattern The regular expression used to find the version string
-	 *                       in the page. The actual version number must be in
-	 *                       capturing group 1. Can be null
-	 */
-	public FileInfo extractFileInfo(Pattern linkPattern, Occurrence linkOccurrence, Pattern versionPattern) {
-		var result = extractFileInfo(linkPattern, linkOccurrence);
-		if (result == null || versionPattern == null) {
-			return result;
-		}
-
-		return new FileInfo(result.uri(), extractVersion(versionPattern));
-	}
-
 	String extractVersion(Pattern pattern) {
 		String version = null;
 
@@ -105,23 +83,15 @@ public class PageScraper {
 			version = matcher.group(1);
 		}
 
-		if (version != null) {
-			logger.info("Version found in page: {}", version);
-		} else {
+		if (version == null) {
 			logger.info("Version not found in page");
+		} else {
+			logger.info("Version found in page: {}", version);
 		}
 
 		return version;
 	}
 
-	/**
-	 * Extract link and version from Mozilla page
-	 * @param html          The HTML page
-	 * @param baseUri       The HTML page URL which will be used to resolve the file URL if the latter is relative
-	 * @param osLangProduct Example: "win64/en-US/Firefox" or "win64/en-US/Thunderbird"
-	 *
-	 * @return
-	 */
 	public FileInfo extractMozillaFileInfo(String osLangProduct) {
 		var matcher = Pattern.compile(baseUri.getPath() + "(\\d+(\\.\\d+)*)/").matcher(html);
 
@@ -148,9 +118,6 @@ public class PageScraper {
 		return new FileInfo(uri, version);
 	}
 
-	/**
-	 * Extract GitHub page fragment URLs
-	 */
 	public List<URI> extractGitHubPageFragmentUriList() {
 		var result = new ArrayList<URI>();
 

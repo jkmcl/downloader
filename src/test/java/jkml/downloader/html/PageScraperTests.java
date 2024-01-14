@@ -2,6 +2,7 @@ package jkml.downloader.html;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.util.regex.Pattern;
@@ -87,7 +88,7 @@ class PageScraperTests {
 	@Test
 	void testExtractMozillaFileInfo() {
 		var baseUri = URI.create("https://download-installer.cdn.mozilla.net/pub/firefox/releases/");
-		var html = "";
+		var html = StringUtils.EMPTY;
 		var osLangProduct = "win64/en-US/Firefox";
 		var scraper = new PageScraper(baseUri, html);
 		assertNull(scraper.extractMozillaFileInfo(osLangProduct));
@@ -120,12 +121,17 @@ class PageScraperTests {
 		var baseUri = URI.create("https://github.com/google/guetzli/releases");
 		var html = "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0.1\" >"
 				+ "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0\" >";
+
+		// Found
 		var scraper = new PageScraper(baseUri, html);
 		var actual = scraper.extractGitHubPageFragmentUriList();
-
 		assertEquals(2, actual.size());
 		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0.1", actual.get(0).toString());
 		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0", actual.get(1).toString());
+
+		// Not found
+		scraper = new PageScraper(baseUri, StringUtils.EMPTY);
+		assertTrue(scraper.extractGitHubPageFragmentUriList().isEmpty());
 	}
 
 }

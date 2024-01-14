@@ -116,7 +116,7 @@ class WebClientTests {
 
 		Files.createDirectories(outDir);
 		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
-		Files.writeString(localFilePath, "");
+		Files.writeString(localFilePath, StringUtils.EMPTY);
 		Files.setLastModifiedTime(localFilePath, FileTime.from(Instant.now()));
 
 		var result = webClient.saveToFile(mockUrl, null, outDir.resolve(FileUtils.getFileName(mockUrl)));

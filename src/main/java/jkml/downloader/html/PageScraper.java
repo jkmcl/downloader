@@ -27,10 +27,9 @@ public class PageScraper {
 	}
 
 	public FileInfo extractFileInfo(Pattern linkPattern, Occurrence linkOccurrence, Pattern versionPattern) {
-		MatchResult matchResult = null;
-
 		// Find link
 		var matcher = linkPattern.matcher(html);
+		MatchResult matchResult = null;
 		while (matcher.find()) {
 			matchResult = matcher.toMatchResult();
 			if (linkOccurrence != Occurrence.LAST) {
@@ -42,27 +41,20 @@ public class PageScraper {
 			return null;
 		}
 
-		// Extract link
 		var link = matchResult.group(1);
 		logger.info("Link found: {}", link);
 
 		// Resolve link
 		var fileUri = resolve(link);
 
-		// Find version in page
+		// Find version
+		String version = null;
 		if (versionPattern != null) {
-			return new FileInfo(fileUri, extractVersion(versionPattern));
+			version = extractVersion(versionPattern);
+		} else if (matchResult.groupCount() >= 2) {
+			version = matchResult.group(2);
+			logger.info("Version in link: {}", version);
 		}
-
-		// Find version in link
-		if (matchResult.groupCount() < 2) {
-			logger.info("Version not found in link");
-			return new FileInfo(fileUri, null);
-		}
-
-		// Extract version
-		var version = matchResult.group(2);
-		logger.info("Version found in link: {}", version);
 		return new FileInfo(fileUri, version);
 	}
 

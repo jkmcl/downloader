@@ -96,7 +96,7 @@ class ProfileManagerTests {
 	void testValidate7() {
 		logger.info("Testing profile validation - fail with null or empty name");
 		var profile = createProfile();
-		profile.setName("");
+		profile.setName(null);
 		profile.setPageUrl(null);
 		var errMsgList = ProfileManager.validateProfile(profile);
 		assertEquals(1, errMsgList.size());

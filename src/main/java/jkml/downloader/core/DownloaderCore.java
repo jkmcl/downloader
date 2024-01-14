@@ -49,7 +49,7 @@ public class DownloaderCore implements Closeable {
 		var profileManager = new ProfileManager();
 		for (var profile : profileManager.loadProfiles(jsonFile)) {
 			download(profile);
-			writeInfo(StringUtils.EMPTY);
+			printInfo(StringUtils.EMPTY);
 		}
 	}
 
@@ -57,7 +57,7 @@ public class DownloaderCore implements Closeable {
 		URI fileUri = null;
 		String fileName;
 
-		formatInfo("Looking for new version of {}", profile.getName());
+		printInfo("Looking for new version of {}", profile.getName());
 
 		if (profile.getFileUrl() != null) {
 			fileUri = profile.getFileUrl();
@@ -85,23 +85,23 @@ public class DownloaderCore implements Closeable {
 	void printResult(URI fileUri, FileResult result) {
 		switch (result.status()) {
 		case NOT_MODIFIED:
-			writeInfo("Local file up to date");
+			printInfo("Local file up to date");
 			break;
 		case OK:
-			formatInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
-			formatInfo("File URL:   {}", fileUri);
-			formatInfo("Local path: {}", result.filePath());
+			printInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
+			printInfo("URL:  {}", fileUri);
+			printInfo("Path: {}", result.filePath());
 			break;
 		case ERROR:
-			formatError("Error occurred: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
+			printError("Error occurred during file download: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
 			break;
 		}
 	}
 
-	String downloadPage(URI uri, RequestOptions options) {
+	private String downloadPage(URI uri, RequestOptions options) {
 		var result = webClient.readString(uri, options);
 		if (result.status() != Status.OK) {
-			formatError("Error occurred: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
+			printError("Error occurred during page download: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
 			return null;
 		}
 		return result.text();
@@ -121,7 +121,7 @@ public class DownloaderCore implements Closeable {
 		if (profile.getType() == Profile.Type.MOZILLA) {
 			var fileInfo = pageScraper.extractMozillaFileInfo(profile.getLinkPattern().toString());
 			if (fileInfo == null) {
-				writeError("File link cannot be derived from page");
+				printError("File link cannot be derived from page");
 			}
 			return fileInfo;
 		}
@@ -132,7 +132,7 @@ public class DownloaderCore implements Closeable {
 			if (profile.getType() == Profile.Type.GITHUB) {
 				return findFileInfoInGitHubPageFragments(profile, pageScraper);
 			}
-			formatError("File link not found in page from {}", pageUri);
+			printError("File link not found in page");
 		}
 
 		return fileInfo;
@@ -141,7 +141,7 @@ public class DownloaderCore implements Closeable {
 	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageScraper pageScraper) {
 		var fragmentUriList = pageScraper.extractGitHubPageFragmentUriList();
 		if (fragmentUriList.isEmpty()) {
-			writeError("Page fragment link not found");
+			printError("File link and page fragment link not found in page");
 			return null;
 		}
 
@@ -159,27 +159,19 @@ public class DownloaderCore implements Closeable {
 			}
 		}
 
-		writeError("File link not found in any page fragment");
+		printError("File link not found in any page fragment");
 		return null;
 	}
 
-	private void formatInfo(String format, Object... arguments) {
-		writeLine(Level.INFO, MessageFormatter.basicArrayFormat(format, arguments));
+	private void printInfo(String format, Object... arguments) {
+		printLine(Level.INFO, MessageFormatter.basicArrayFormat(format, arguments));
 	}
 
-	private void formatError(String format, Object... arguments) {
-		writeLine(Level.ERROR, MessageFormatter.basicArrayFormat(format, arguments));
+	private void printError(String format, Object... arguments) {
+		printLine(Level.ERROR, MessageFormatter.basicArrayFormat(format, arguments));
 	}
 
-	private void writeInfo(String message) {
-		writeLine(Level.INFO, message);
-	}
-
-	private void writeError(String message) {
-		writeLine(Level.ERROR, message);
-	}
-
-	private void writeLine(Level level, String message) {
+	private void printLine(Level level, String message) {
 		logger.atLevel(level).log(message);
 		if (writer != null) {
 			writer.print(message);

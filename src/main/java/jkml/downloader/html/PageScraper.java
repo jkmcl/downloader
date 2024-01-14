@@ -48,13 +48,13 @@ public class PageScraper {
 		}
 
 		if (matchResult == null || matchResult.groupCount() < 1) {
-			logger.info("Link not found in page");
+			logger.info("Link not found");
 			return null;
 		}
 
 		// Extract link
 		var link = matchResult.group(1);
-		logger.info("Link found in page: {}", link);
+		logger.info("Link found: {}", link);
 
 		// Resolve link
 		var fileUri = resolve(link);
@@ -159,6 +159,10 @@ public class PageScraper {
 			var link = matcher.group(2);
 			logger.info("Page fragment link found: {}", link);
 			result.add(resolve(link));
+		}
+
+		if (result.isEmpty()) {
+			logger.info("Page fragment link not found");
 		}
 
 		return result;

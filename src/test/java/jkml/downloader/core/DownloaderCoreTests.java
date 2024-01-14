@@ -1,8 +1,6 @@
 package jkml.downloader.core;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -43,7 +41,7 @@ class DownloaderCoreTests {
 
 	private static Profile createProfile(Type type) {
 		var profile = new Profile();
-		profile.setName("name");
+		profile.setName("Something");
 		profile.setType(type);
 		profile.setOutputDirectory(outDir);
 		return profile;
@@ -61,6 +59,10 @@ class DownloaderCoreTests {
 
 	private static TextResult text(String text) {
 		return new TextResult(Status.OK, text);
+	}
+
+	private static TextResult textNotFound() {
+		return new TextResult(Status.ERROR, new Exception("Not found"));
 	}
 
 	private static FileResult fileNotModified() {
@@ -89,19 +91,6 @@ class DownloaderCoreTests {
 	}
 
 	@Test
-	void testDownloadPage() throws IOException {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
-
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
-			when(mockWebClient.readString(eq(pageUri), anyRequestOptions())).thenReturn(new TextResult(Status.OK, "Hello"));
-			assertNotNull(core.downloadPage(pageUri, new RequestOptions()));
-
-			when(mockWebClient.readString(eq(pageUri), anyRequestOptions())).thenReturn(new TextResult(Status.ERROR, new Exception()));
-			assertNull(core.downloadPage(pageUri, new RequestOptions()));
-		}
-	}
-
-	@Test
 	void testDownload_direct() throws IOException {
 		var fileUri = URI.create("https://localhost/downloads/file-1.0.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
@@ -115,6 +104,41 @@ class DownloaderCoreTests {
 			core.download(profile);
 
 			assertDownload(mockWebClient, fileUri, filePath);
+		}
+	}
+
+	@Test
+	void testDownload_noPage() throws IOException {
+		var pageUri = URI.create("https://localhost/downloads/page.html");
+
+		var profile = createProfile(Type.STANDARD);
+		profile.setPageUrl(pageUri);
+		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
+
+		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+			when(mockWebClient.readString(eq(pageUri), anyRequestOptions())).thenReturn(textNotFound());
+
+			core.download(profile);
+
+			verify(mockWebClient).readString(eq(pageUri), anyRequestOptions());
+		}
+	}
+
+	@Test
+	void testDownload_noFileLinkInPage() throws IOException {
+		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageHtml = "No file link";
+
+		var profile = createProfile(Type.STANDARD);
+		profile.setPageUrl(pageUri);
+		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
+
+		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+			when(mockWebClient.readString(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
+
+			core.download(profile);
+
+			verify(mockWebClient).readString(eq(pageUri), anyRequestOptions());
 		}
 	}
 
@@ -183,14 +207,77 @@ class DownloaderCoreTests {
 	}
 
 	@Test
+	void testDownload_GitHub_noPageFragmentLink() throws IOException {
+		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageHtml = "No file or page fragment link";
+
+		var profile = createProfile(Type.GITHUB);
+		profile.setPageUrl(pageUri);
+		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
+
+		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+			when(mockWebClient.readString(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
+
+			core.download(profile);
+
+			verify(mockWebClient).readString(eq(pageUri), anyRequestOptions());
+		}
+	}
+
+	@Test
+	void testDownload_GitHub_noPageFragment() throws IOException {
+		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
+		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
+
+		var profile = createProfile(Type.GITHUB);
+		profile.setPageUrl(pageUri);
+		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
+
+		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+			when(mockWebClient.readString(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.readString(eq(pageFragmentUri), anyRequestOptions())).thenReturn(textNotFound());
+
+			core.download(profile);
+
+			verify(mockWebClient).readString(eq(pageUri), anyRequestOptions());
+			verify(mockWebClient).readString(eq(pageFragmentUri), anyRequestOptions());
+		}
+	}
+
+	@Test
+	void testDownload_GitHub_noFileLinkInPageFragment() throws IOException {
+		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
+		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
+		var pageFragmentHtml = "No link in page fragment";
+
+		var profile = createProfile(Type.GITHUB);
+		profile.setPageUrl(pageUri);
+		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
+
+		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+			when(mockWebClient.readString(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.readString(eq(pageFragmentUri), anyRequestOptions())).thenReturn(text(pageFragmentHtml));
+
+			core.download(profile);
+
+			verify(mockWebClient).readString(eq(pageUri), anyRequestOptions());
+			verify(mockWebClient).readString(eq(pageFragmentUri), anyRequestOptions());
+		}
+	}
+
+	@Test
 	void testDownload_GitHub() throws IOException {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
-		var fileUri = URI.create("https://localhost/downloads/latest/file.zip");
-		var filePath = outDir.resolve("file-1.0.zip");
-		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >"
-				+ "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v0.1\" >";
+		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
 		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
 		var pageFragmentHtml = "<a href=\"./latest/file.zip\">Version 1.0</a>";
+		var fileUri = URI.create("https://localhost/downloads/latest/file.zip");
+		var filePath = outDir.resolve("file-1.0.zip");
 
 		var profile = createProfile(Type.GITHUB);
 		profile.setPageUrl(pageUri);
@@ -230,21 +317,16 @@ class DownloaderCoreTests {
 	}
 
 	@Test
-	void testPrintResult() {
+	void testPrintResult() throws IOException {
 		var fileUri = URI.create("https://localhost/index.html");
 		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
-			var result = new FileResult(Status.OK, Path.of("index.html"), Instant.now());
-			core.printResult(fileUri, result);
-
-			result = fileNotModified();
-			core.printResult(fileUri, result);
-
-			result = new FileResult(Status.ERROR, new Exception("Some error"));
-
-			core.printResult(fileUri, result);
-		} catch (Exception e) {
-			fail();
+			assertDoesNotThrow(() -> {
+				core.printResult(fileUri, new FileResult(Status.OK, Path.of("index.html"), Instant.now()));
+				core.printResult(fileUri, fileNotModified());
+				core.printResult(fileUri, new FileResult(Status.ERROR, new Exception("Some error")));
+			});
 		}
+
 	}
 
 }

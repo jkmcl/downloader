@@ -53,7 +53,7 @@ public class PageScraper {
 			version = extractVersion(versionPattern);
 		} else if (matchResult.groupCount() >= 2) {
 			version = matchResult.group(2);
-			logger.info("Version in link: {}", version);
+			logger.info("Version found in link: {}", version);
 		}
 		return new FileInfo(fileUri, version);
 	}
@@ -75,9 +75,7 @@ public class PageScraper {
 			version = matcher.group(1);
 		}
 
-		if (version == null) {
-			logger.info("Version not found in page");
-		} else {
+		if (version != null) {
 			logger.info("Version found in page: {}", version);
 		}
 

@@ -83,18 +83,18 @@
 			<plugin>
 				<groupId>io.github.git-commit-id</groupId>
 				<artifactId>git-commit-id-maven-plugin</artifactId>
+				<!-- See https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/src/main/java/pl/project13/maven/git/GitCommitIdMojo.java -->
 				<configuration>
 					<generateGitPropertiesFile>true</generateGitPropertiesFile>
 					<failOnNoGitDirectory>false</failOnNoGitDirectory>
 					<offline>true</offline>
-					<excludeProperties>
-						<excludeProperty>git.build.host</excludeProperty>
-						<excludeProperty>git.build.user.*</excludeProperty>
-						<excludeProperty>git.commit.message.*</excludeProperty>
-						<excludeProperty>git.commit.user.*</excludeProperty>
-						<excludeProperty>git.local.*</excludeProperty>
-						<excludeProperty>git.remote.*</excludeProperty>
-					</excludeProperties>
+					<includeOnlyProperties>
+						<includeOnlyProperty>git.build.time</includeOnlyProperty>
+						<includeOnlyProperty>git.build.version</includeOnlyProperty>
+						<includeOnlyProperty>git.commit.id</includeOnlyProperty>
+						<includeOnlyProperty>git.commit.time</includeOnlyProperty>
+						<includeOnlyProperty>git.dirty</includeOnlyProperty>
+					</includeOnlyProperties>
 				</configuration>
 			</plugin>
 

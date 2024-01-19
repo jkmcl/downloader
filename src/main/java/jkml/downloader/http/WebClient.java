@@ -28,8 +28,6 @@ import jkml.downloader.util.TimeUtils;
 
 public class WebClient implements Closeable {
 
-	private static final UserAgent DEFAULT_USER_AGENT = UserAgent.CHROME;
-
 	private final Logger logger = LoggerFactory.getLogger(WebClient.class);
 
 	private final Map<UserAgent, String> userAgentStrings = new EnumMap<>(UserAgent.class);
@@ -46,7 +44,7 @@ public class WebClient implements Closeable {
 		userAgentStrings.put(UserAgent.CURL, curlUserAgent);
 
 		httpClient = new HttpClientBuilder()
-				.userAgent(userAgentStrings.get(DEFAULT_USER_AGENT))
+				.userAgent(userAgentStrings.get(RequestOptions.DEFAULT_USER_AGENT))
 				.defaultHeaders(List.of(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage)))
 				.build();
 		httpClient.start();
@@ -83,7 +81,7 @@ public class WebClient implements Closeable {
 			return request;
 		}
 
-		if (options.getUserAgent() != DEFAULT_USER_AGENT) {
+		if (options.getUserAgent() != RequestOptions.DEFAULT_USER_AGENT) {
 			var ua = userAgentStrings.get(options.getUserAgent());
 			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, ua);
 			request.setHeader(HttpHeaders.USER_AGENT, ua);

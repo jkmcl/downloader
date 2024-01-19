@@ -2,12 +2,17 @@ package jkml.downloader.http;
 
 public class RequestOptions {
 
-	private UserAgent userAgent = UserAgent.CHROME;
+	public static final UserAgent DEFAULT_USER_AGENT = UserAgent.CHROME;
 
-	private Referer referer = Referer.NONE;
+	public static final Referer DEFAULT_REFERER = Referer.NONE;
+
+	private final UserAgent userAgent;
+
+	private final Referer referer;
 
 	public RequestOptions() {
-		// Default constructor required for JSON binding via setters
+		// Default constructor required by Gson for deserialization
+		this(DEFAULT_USER_AGENT, DEFAULT_REFERER);
 	}
 
 	public RequestOptions(UserAgent userAgent, Referer referer) {
@@ -19,16 +24,8 @@ public class RequestOptions {
 		return userAgent;
 	}
 
-	public void setUserAgent(UserAgent userAgent) {
-		this.userAgent = userAgent;
-	}
-
 	public Referer getReferer() {
 		return referer;
-	}
-
-	public void setReferer(Referer referer) {
-		this.referer = referer;
 	}
 
 }

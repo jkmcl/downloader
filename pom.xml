@@ -9,7 +9,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.1</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath />
 	</parent>
 
 	<groupId>jkml</groupId>
@@ -81,24 +81,6 @@
 		<plugins>
 
 			<plugin>
-				<groupId>io.github.git-commit-id</groupId>
-				<artifactId>git-commit-id-maven-plugin</artifactId>
-				<!-- See https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/src/main/java/pl/project13/maven/git/GitCommitIdMojo.java -->
-				<configuration>
-					<generateGitPropertiesFile>true</generateGitPropertiesFile>
-					<failOnNoGitDirectory>false</failOnNoGitDirectory>
-					<offline>true</offline>
-					<includeOnlyProperties>
-						<includeOnlyProperty>git.build.time</includeOnlyProperty>
-						<includeOnlyProperty>git.build.version</includeOnlyProperty>
-						<includeOnlyProperty>git.commit.id</includeOnlyProperty>
-						<includeOnlyProperty>git.commit.time</includeOnlyProperty>
-						<includeOnlyProperty>git.dirty</includeOnlyProperty>
-					</includeOnlyProperties>
-				</configuration>
-			</plugin>
-
-			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>${jacoco.version}</version>
@@ -116,6 +98,23 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>io.github.git-commit-id</groupId>
+				<artifactId>git-commit-id-maven-plugin</artifactId>
+				<!-- See https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/src/main/java/pl/project13/maven/git/GitCommitIdMojo.java -->
+				<configuration>
+					<generateGitPropertiesFile>true</generateGitPropertiesFile>
+					<failOnNoGitDirectory>false</failOnNoGitDirectory>
+					<offline>true</offline>
+					<includeOnlyProperties>
+						<includeOnlyProperty>git.build.time</includeOnlyProperty>
+						<includeOnlyProperty>git.commit.id</includeOnlyProperty>
+						<includeOnlyProperty>git.commit.time</includeOnlyProperty>
+						<includeOnlyProperty>git.dirty</includeOnlyProperty>
+					</includeOnlyProperties>
+				</configuration>
 			</plugin>
 
 			<plugin>

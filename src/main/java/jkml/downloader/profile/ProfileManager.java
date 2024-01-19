@@ -5,12 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.GsonBuilder;
 
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.StringUtils;
@@ -84,13 +81,7 @@ public class ProfileManager {
 	public List<Profile> loadProfiles(Path jsonFile) throws IOException {
 		Profile[] profileArray = null;
 		try (var reader = Files.newBufferedReader(jsonFile)) {
-			// @formatter:off
-			var gson = new GsonBuilder()
-					.registerTypeHierarchyAdapter(Path.class, GsonTypeAdapters.PATH)
-					.registerTypeAdapter(Pattern.class, GsonTypeAdapters.PATTERN)
-					.disableHtmlEscaping()
-					.create();
-			// @formatter:on
+			var gson = GsonUtils.createGson();
 			profileArray = gson.fromJson(reader, Profile[].class);
 		}
 

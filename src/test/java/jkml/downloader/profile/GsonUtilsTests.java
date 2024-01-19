@@ -8,27 +8,22 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonPrimitive;
 
-class GsonTypeAdaptersTests {
-
-	private final GsonBuilder gsonBuilder = new GsonBuilder().disableHtmlEscaping();
+class GsonUtilsTests {
 
 	@Test
-	void testPath() throws IOException {
-		var gson = gsonBuilder.registerTypeHierarchyAdapter(Path.class, GsonTypeAdapters.PATH).create();
+	void testPatternAdapter() throws IOException {
 		var source = "expected";
-		var adapter = gson.getAdapter(Path.class);
+		var adapter = GsonUtils.createGson().getAdapter(Pattern.class);
 		var object = adapter.fromJsonTree(new JsonPrimitive(source));
 		assertEquals("\"" + source + "\"", adapter.toJsonTree(object).toString());
 	}
 
 	@Test
-	void testPattern() throws IOException {
-		var gson = gsonBuilder.registerTypeAdapter(Pattern.class, GsonTypeAdapters.PATTERN).create();
+	void testPathAdapter() throws IOException {
 		var source = "expected";
-		var adapter = gson.getAdapter(Pattern.class);
+		var adapter = GsonUtils.createGson().getAdapter(Path.class);
 		var object = adapter.fromJsonTree(new JsonPrimitive(source));
 		assertEquals("\"" + source + "\"", adapter.toJsonTree(object).toString());
 	}

@@ -4,16 +4,27 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-class GsonTypeAdapters {
+public class GsonUtils {
 
-	private GsonTypeAdapters() {
+	private GsonUtils() {
 	}
 
-	public static final TypeAdapter<Pattern> PATTERN = new TypeAdapter<Pattern>() {
+	public static Gson createGson() {
+		return new GsonBuilder()
+				.disableHtmlEscaping()
+				.disableJdkUnsafe()
+				.registerTypeAdapter(Pattern.class, GsonUtils.PatternAdapter)
+				.registerTypeHierarchyAdapter(Path.class, GsonUtils.PathAdapter)
+				.create();
+	}
+
+	static final TypeAdapter<Pattern> PatternAdapter = new TypeAdapter<Pattern>() {
 
 		@Override
 		public Pattern read(JsonReader in) throws IOException {
@@ -27,7 +38,7 @@ class GsonTypeAdapters {
 
 	}.nullSafe();
 
-	public static final TypeAdapter<Path> PATH = new TypeAdapter<Path>() {
+	static final TypeAdapter<Path> PathAdapter = new TypeAdapter<Path>() {
 
 		@Override
 		public Path read(JsonReader in) throws IOException {

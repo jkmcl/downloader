@@ -27,7 +27,7 @@ public class ProfileManager {
 		}
 
 		host = host.toLowerCase();
-		if (host.equals("github.com") || host.endsWith(".github.com")) {
+		if ("github.com".equals(host) || host.endsWith(".github.com")) {
 			profile.setType(Type.GITHUB);
 		} else if (host.endsWith(".cdn.mozilla.net")) {
 			profile.setType(Type.MOZILLA);
@@ -81,8 +81,7 @@ public class ProfileManager {
 	public List<Profile> loadProfiles(Path jsonFile) throws IOException {
 		Profile[] profileArray = null;
 		try (var reader = Files.newBufferedReader(jsonFile)) {
-			var gson = GsonUtils.createGson();
-			profileArray = gson.fromJson(reader, Profile[].class);
+			profileArray = GsonUtils.createGson().fromJson(reader, Profile[].class);
 		}
 
 		// Validate profiles

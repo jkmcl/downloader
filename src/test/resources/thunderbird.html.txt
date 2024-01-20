@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+        <head>
+                <meta charset="UTF-8">
+                <title>Directory Listing: /pub/thunderbird/releases/</title>
+        </head>
+        <body>
+                <h1>Index of /pub/thunderbird/releases/</h1>
+                <table>
+                        <tr>
+                                <th>Type</th>
+                                <th>Name</th>
+                                <th>Size</th>
+                                <th>Last Modified</th>
+                        </tr>
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/">..</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/releases/115.5.2/">115.5.2/</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/releases/115.6.0/">115.6.0/</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/releases/115.6.1/">115.6.1/</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/releases/116.0b1/">116.0b1/</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/releases/custom-updates/">custom-updates/</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/releases/latest-beta/">latest-beta/</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        <tr>
+                                <td>Dir</td>
+                                <td><a href="/pub/thunderbird/releases/latest/">latest/</a></td>
+                                <td></td>
+                                <td></td>
+                        </tr>
+                        
+                        
+                </table>
+        </body>
+</html>

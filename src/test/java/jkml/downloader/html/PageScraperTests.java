@@ -98,22 +98,22 @@ class PageScraperTests {
 	void testExtractMozillaFileInfo_Firefox() {
 		var baseStr = "https://download-installer.cdn.mozilla.net/pub/firefox/releases/";
 		var baseUri = URI.create(baseStr);
-		var html = TestUtils.readResourceAsString("firefox.html");
+		var html = TestUtils.readResourceAsString("firefox.html.txt");
 		var osLangProduct = "win64/en-US/Firefox";
 		var scraper = new PageScraper(baseUri, html);
 		var fileInfo = scraper.extractMozillaFileInfo(osLangProduct);
-		assertEquals(baseStr + "78.0.2/win64/en-US/Firefox%20Setup%2078.0.2.exe", fileInfo.uri().toString());
+		assertEquals(baseStr + "121.0.1/win64/en-US/Firefox%20Setup%20121.0.1.exe", fileInfo.uri().toString());
 	}
 
 	@Test
 	void testExtractMozillaFileInfo_Thunderbird() {
 		var baseStr = "https://download-installer.cdn.mozilla.net/pub/thunderbird/releases/";
 		var baseUri = URI.create(baseStr);
-		var html = TestUtils.readResourceAsString("thunderbird.html");
+		var html = TestUtils.readResourceAsString("thunderbird.html.txt");
 		var osLangProduct = "win64/en-US/Thunderbird";
 		var scraper = new PageScraper(baseUri, html);
 		var fileInfo = scraper.extractMozillaFileInfo(osLangProduct);
-		assertEquals(baseStr + "78.0/win64/en-US/Thunderbird%20Setup%2078.0.exe", fileInfo.uri().toString());
+		assertEquals(baseStr + "115.6.1/win64/en-US/Thunderbird%20Setup%20115.6.1.exe", fileInfo.uri().toString());
 	}
 
 	@Test

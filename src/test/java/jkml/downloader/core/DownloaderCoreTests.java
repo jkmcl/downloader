@@ -298,9 +298,9 @@ class DownloaderCoreTests {
 	@Test
 	void testDownload_Mozilla() throws IOException {
 		var pageUri = URI.create("https://localhost/pub/firefox/releases/");
-		var pageHtml = TestUtils.readResourceAsString("firefox.html");
-		var fileUri = URI.create("https://localhost/pub/firefox/releases/78.0.2/win64/en-US/Firefox%20Setup%2078.0.2.exe");
-		var filePath = outDir.resolve("Firefox Setup 78.0.2.exe");
+		var pageHtml = TestUtils.readResourceAsString("firefox.html.txt");
+		var fileUri = URI.create("https://localhost/pub/firefox/releases/121.0.1/win64/en-US/Firefox%20Setup%20121.0.1.exe");
+		var filePath = outDir.resolve("Firefox Setup 121.0.1.exe");
 
 		var profile = createProfile(Type.MOZILLA);
 		profile.setPageUrl(pageUri);

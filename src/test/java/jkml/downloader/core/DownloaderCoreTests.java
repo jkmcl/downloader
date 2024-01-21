@@ -65,7 +65,7 @@ class DownloaderCoreTests {
 	}
 
 	private static FileResult file() {
-		return new FileResult(Path.of("mockFilePath.tmp"), Instant.now());
+		return new FileResult(Instant.now());
 	}
 
 	private static FileResult fileNotModified() {

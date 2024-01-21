@@ -1,20 +1,19 @@
 package jkml.downloader.http;
 
-import java.nio.file.Path;
 import java.time.Instant;
 
-public record FileResult(Status status, Path filePath, Instant lastModified, Throwable exception) {
+public record FileResult(Status status, Instant lastModified, Throwable exception) {
 
-	public FileResult(Path path, Instant lastModified) {
-		this(Status.OK, path, lastModified, null);
+	public FileResult(Instant lastModified) {
+		this(Status.OK, lastModified, null);
 	}
 
 	public FileResult() {
-		this(Status.NOT_MODIFIED, null, null, null);
+		this(Status.NOT_MODIFIED, null, null);
 	}
 
 	public FileResult(Throwable exception) {
-		this(Status.ERROR, null, null, exception);
+		this(Status.ERROR, null, exception);
 	}
 
 }

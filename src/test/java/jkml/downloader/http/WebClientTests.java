@@ -128,7 +128,6 @@ class WebClientTests {
 		var result = webClient.saveToFile(mockUrl, null, localFilePath);
 
 		assertEquals(Status.OK, result.status());
-		assertEquals(localFilePath, result.filePath());
 		assertTrue(Files.exists(localFilePath));
 
 		Files.delete(localFilePath);
@@ -146,7 +145,6 @@ class WebClientTests {
 		var result = webClient.saveToFile(mockUrl, null, outDir.resolve(FileUtils.getFileName(mockUrl)));
 
 		assertEquals(Status.NOT_MODIFIED, result.status());
-		assertEquals(null, result.filePath());
 		assertTrue(Files.exists(localFilePath));
 
 		Files.delete(localFilePath);

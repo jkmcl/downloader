@@ -111,7 +111,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 		Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
 		Files.setLastModifiedTime(path, FileTime.from(lastMod));
 
-		return new FileResult(path, Files.getLastModifiedTime(path).toInstant());
+		return new FileResult(Files.getLastModifiedTime(path).toInstant());
 	}
 
 	@Override

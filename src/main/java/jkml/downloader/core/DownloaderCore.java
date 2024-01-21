@@ -103,7 +103,7 @@ public class DownloaderCore implements Closeable {
 		case OK:
 			printInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
 			printInfo("URL:  {}", uri);
-			printInfo("Path: {}", result.filePath());
+			printInfo("Path: {}", path);
 			break;
 		case ERROR:
 			printErrorDuringOperation("file download", result.exception());

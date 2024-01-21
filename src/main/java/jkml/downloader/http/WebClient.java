@@ -95,6 +95,7 @@ public class WebClient implements Closeable {
 		}
 
 		if (options.getReferer() == Referer.SELF) {
+			// Get the URI from the request as BasicHttpRequest re-assembles it
 			var value = HttpUtils.getUri(request).toString();
 			logger.debug("Setting {}: {}", HttpHeaders.REFERER, value);
 			request.setHeader(HttpHeaders.REFERER, value);

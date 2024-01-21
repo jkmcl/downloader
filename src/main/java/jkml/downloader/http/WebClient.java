@@ -116,14 +116,9 @@ public class WebClient implements Closeable {
 	}
 
 	/**
-	 * Retrieve content and return it as a String. The content is converted using
-	 * the encoding in the response header (if any), failing that, UTF-8 is used.
+	 * Retrieve the response body as a String.
 	 */
-	public TextResult readString(URI uri) {
-		return readString(uri, null);
-	}
-
-	public TextResult readString(URI uri, RequestOptions options) {
+	public TextResult getContent(URI uri, RequestOptions options) {
 		return execute(createRequest(Method.GET, uri, options), null, new ResponseToTextHandler(), e -> {
 			logger.error(EXCEPTION_MESSAGE, e);
 			return new TextResult(LangUtils.getRootCause(e));
@@ -131,8 +126,8 @@ public class WebClient implements Closeable {
 	}
 
 	/**
-	 * Download remote file if local file does not exist or is older than remote
-	 * file
+	 * Download the file if it does not exist locally or if it is newer than the
+	 * local copy.
 	 */
 	public FileResult saveToFile(URI uri, RequestOptions options, Path filePath) {
 		var lastMod = getLastModifiedTime(filePath);
@@ -151,9 +146,12 @@ public class WebClient implements Closeable {
 	}
 
 	/**
+	 * Retrieve the location header value in the redirect (3xx) response.
 	 */
 	public LinkResult getLocation(URI uri, RequestOptions options) {
 		var context = new BasicHttpContext();
+
+		// Disable auto-redirect to obtain the location header
 		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
 
 		return execute(createRequest(Method.GET, uri, options), context, new ResponseToLinkHandler(), e -> {

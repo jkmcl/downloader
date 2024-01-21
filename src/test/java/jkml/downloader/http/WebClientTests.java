@@ -90,31 +90,21 @@ class WebClientTests {
 	}
 
 	@Test
-	void testReadString_Success() throws Exception {
+	void testGetContent_Success() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
 
-		var result = webClient.readString(mockUrl);
+		var result = webClient.getContent(mockUrl, null);
 		assertEquals(Status.OK, result.status());
 		assertFalse(StringUtils.isNullOrBlank(result.text()));
 	}
 
 	@Test
-	void testReadString_Failure() throws Exception {
+	void testGetContent_Failure() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
-		var result = webClient.readString(mockUrl);
+		var result = webClient.getContent(mockUrl, null);
 		assertEquals(Status.ERROR, result.status());
 		assertNotNull(result.exception());
-	}
-
-	@Test
-	void testReadString_CustomOptions() throws Exception {
-		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
-
-		var options = new RequestOptions(UserAgent.CURL, Referer.SELF);
-
-		var result = webClient.readString(mockUrl, options);
-		assertFalse(StringUtils.isNullOrBlank(result.text()));
 	}
 
 	@Test

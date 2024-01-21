@@ -93,8 +93,8 @@ public class DownloaderCore implements Closeable {
 		downloadFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
 	}
 
-	private void downloadFile(URI uri, RequestOptions options, Path path) {
-		var result = webClient.saveToFile(uri, options, path);
+	private void downloadFile(URI uri, RequestOptions options, Path filePath) {
+		var result = webClient.saveToFile(uri, options, filePath);
 
 		switch (result.status()) {
 		case NOT_MODIFIED:
@@ -103,7 +103,7 @@ public class DownloaderCore implements Closeable {
 		case OK:
 			printInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
 			printInfo("URL:  {}", uri);
-			printInfo("Path: {}", path);
+			printInfo("Path: {}", filePath);
 			break;
 		case ERROR:
 			printErrorDuringOperation("file download", result.exception());
@@ -112,7 +112,7 @@ public class DownloaderCore implements Closeable {
 	}
 
 	private String getPage(URI uri, RequestOptions options) {
-		var result = webClient.readString(uri, options);
+		var result = webClient.getContent(uri, options);
 		if (result.status() != Status.OK) {
 			printErrorDuringOperation("page retrieval", result.exception());
 			return null;

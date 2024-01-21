@@ -28,7 +28,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private final URI uri;
 
-	private final Path path;
+	private final Path filePath;
 
 	private Instant lastMod = null;
 
@@ -38,9 +38,9 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private FileResult result = null;
 
-	public ResponseToFileHandler(URI uri, Path path) {
+	public ResponseToFileHandler(URI uri, Path filePath) {
 		this.uri = uri;
-		this.path = path;
+		this.filePath = filePath;
 	}
 
 	private static void checkFileName(URI uri, HttpResponse response) throws IOException {
@@ -98,7 +98,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 		checkFileName(uri, response);
 
-		tmpPath = path.resolveSibling(path.getFileName() + ".partial");
+		tmpPath = filePath.resolveSibling(filePath.getFileName() + ".partial");
 
 		logger.info("Saving remote content");
 		return null;
@@ -107,11 +107,11 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 	private FileResult postprocess() throws IOException {
 		logger.info("Finished saving remote content");
 
-		checkFileContent(tmpPath, path);
-		Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
-		Files.setLastModifiedTime(path, FileTime.from(lastMod));
+		checkFileContent(tmpPath, filePath);
+		Files.move(tmpPath, filePath, StandardCopyOption.REPLACE_EXISTING);
+		Files.setLastModifiedTime(filePath, FileTime.from(lastMod));
 
-		return new FileResult(Files.getLastModifiedTime(path).toInstant());
+		return new FileResult(Files.getLastModifiedTime(filePath).toInstant());
 	}
 
 	@Override

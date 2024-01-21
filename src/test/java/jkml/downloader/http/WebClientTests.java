@@ -4,9 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.seeOther;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,6 +21,7 @@ import java.time.Instant;
 
 import org.apache.hc.client5.http.utils.DateUtils;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.Method;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,10 +71,30 @@ class WebClientTests {
 	}
 
 	@Test
+	void testCreateRequest() {
+		var request = webClient.createRequest(Method.GET, mockUrl, null);
+		assertNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
+		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
+
+		request = webClient.createRequest(Method.GET, mockUrl, new RequestOptions(UserAgent.CHROME, null));
+		assertNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
+		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
+
+		request = webClient.createRequest(Method.GET, mockUrl, new RequestOptions(UserAgent.CURL, null));
+		assertNotNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
+		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
+
+		request = webClient.createRequest(Method.GET, mockUrl, new RequestOptions(null, Referer.SELF));
+		assertNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
+		assertEquals(mockUrl, URI.create(request.getFirstHeader(HttpHeaders.REFERER).getValue()));
+	}
+
+	@Test
 	void testReadString_Success() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
 
 		var result = webClient.readString(mockUrl);
+		assertEquals(Status.OK, result.status());
 		assertFalse(StringUtils.isNullOrBlank(result.text()));
 	}
 
@@ -80,7 +103,8 @@ class WebClientTests {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
 		var result = webClient.readString(mockUrl);
-		assertNull(null, result.text());
+		assertEquals(Status.ERROR, result.status());
+		assertNotNull(result.exception());
 	}
 
 	@Test
@@ -122,10 +146,31 @@ class WebClientTests {
 		var result = webClient.saveToFile(mockUrl, null, outDir.resolve(FileUtils.getFileName(mockUrl)));
 
 		assertEquals(Status.NOT_MODIFIED, result.status());
-		assertEquals(localFilePath, result.filePath());
+		assertEquals(null, result.filePath());
 		assertTrue(Files.exists(localFilePath));
 
 		Files.delete(localFilePath);
+	}
+
+	@Test
+	void testGetLocation_Success() throws Exception {
+		var location = "http://localhost/file.txt";
+		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(seeOther(location)));
+
+		var result = webClient.getLocation(mockUrl, null);
+
+		assertEquals(Status.OK, result.status());
+		assertEquals(URI.create(location), result.link());
+	}
+
+	@Test
+	void testGetLocation_Failure() throws Exception {
+		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok()));
+
+		var result = webClient.getLocation(mockUrl, null);
+
+		assertEquals(Status.ERROR, result.status());
+		assertNotNull(result.exception());
 	}
 
 }

@@ -9,11 +9,15 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.util.ByteArrayBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Based on org.apache.hc.client5.http.async.methods.SimpleAsyncEntityConsumer
  */
 class ResponseToTextHandler extends ResponseHandler<TextResult> {
+
+	private final Logger logger = LoggerFactory.getLogger(ResponseToTextHandler.class);
 
 	private Charset charset = StandardCharsets.UTF_8;
 
@@ -35,7 +39,9 @@ class ResponseToTextHandler extends ResponseHandler<TextResult> {
 
 	@Override
 	protected TextResult buildResult() {
-		return new TextResult(Status.OK, new String(buffer.toByteArray(), charset));
+		var bytes = buffer.toByteArray();
+		logger.info("Response content length: {}", bytes.length);
+		return new TextResult(new String(bytes, charset));
 	}
 
 	@Override

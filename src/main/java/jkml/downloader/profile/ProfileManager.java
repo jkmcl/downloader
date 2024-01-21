@@ -16,21 +16,13 @@ public class ProfileManager {
 
 	private final Logger logger = LoggerFactory.getLogger(ProfileManager.class);
 
-	static Profile sanitizeProfile(Profile profile) {
-		if (profile.getType() != null || profile.getPageUrl() == null) {
+	private static Profile inferType(Profile profile) {
+		if (profile.getType() != null) {
 			return profile;
 		}
 
-		var host = profile.getPageUrl().getHost();
-		if (host == null) {
-			return profile;
-		}
-
-		host = host.toLowerCase();
-		if ("github.com".equals(host) || host.endsWith(".github.com")) {
-			profile.setType(Type.GITHUB);
-		} else if (host.endsWith(".cdn.mozilla.net")) {
-			profile.setType(Type.MOZILLA);
+		if (profile.getFileUrl() != null) {
+			profile.setType(Type.DIRECT);
 		} else {
 			profile.setType(Type.STANDARD);
 		}
@@ -49,32 +41,20 @@ public class ProfileManager {
 			errMsgList.add("Profile must contain an outputDirectory");
 		}
 
-		if (profile.getType() == null || profile.getType() == Type.STANDARD) {
-			validateDefaultProfile(profile, errMsgList);
+		var type = profile.getType();
+		if (type == Type.DIRECT || type == Type.REDIRECT) {
+			if (profile.getFileUrl() == null) {
+				errMsgList.add(type.name() + " profile must contain a fileUrl");
+			}
 		} else {
-			validateMozillaOrGitHubProfile(profile, errMsgList, profile.getType().name());
+			if (profile.getPageUrl() == null) {
+				errMsgList.add(type.name() + " profile must contain a pageUrl");
+			}
+			if (profile.getLinkPattern() == null) {
+				errMsgList.add(type.name() + " profile must contain a linkPattern");
+			}
 		}
 
-		return errMsgList;
-	}
-
-	private static List<String> validateDefaultProfile(Profile profile, List<String> errMsgList) {
-		if ((profile.getFileUrl() == null && profile.getPageUrl() == null)
-				|| (profile.getFileUrl() != null && profile.getPageUrl() != null)) {
-			errMsgList.add("Profile must contain either a fileUrl or pageUrl");
-		}
-
-		if (profile.getFileUrl() == null && profile.getPageUrl() != null && profile.getLinkPattern() == null) {
-			errMsgList.add("Profile contains a pageUrl but no linkPattern");
-		}
-
-		return errMsgList;
-	}
-
-	private static List<String> validateMozillaOrGitHubProfile(Profile profile, List<String> errMsgList, String name) {
-		if (profile.getPageUrl() == null || profile.getLinkPattern() == null) {
-			errMsgList.add(name + " profile must contain pageUrl and linkPattern");
-		}
 		return errMsgList;
 	}
 
@@ -91,7 +71,7 @@ public class ProfileManager {
 				continue;
 			}
 
-			var errors = validateProfile(sanitizeProfile(profile));
+			var errors = validateProfile(inferType(profile));
 			if (errors.isEmpty()) {
 				profileList.add(profile);
 			} else {

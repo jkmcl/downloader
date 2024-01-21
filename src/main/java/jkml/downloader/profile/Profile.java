@@ -10,7 +10,7 @@ import jkml.downloader.http.RequestOptions;
 public class Profile {
 
 	public enum Type {
-		STANDARD, GITHUB, MOZILLA
+		DIRECT, REDIRECT, STANDARD, GITHUB
 	}
 
 	private String name;

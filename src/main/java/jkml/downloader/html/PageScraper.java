@@ -9,8 +9,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jkml.downloader.util.StringUtils;
-
 public class PageScraper {
 
 	private static final Pattern GITHUB_PAGE_FRAGMENT_URI_PATTERN = Pattern.compile("src=(\"?)(\\S+/expanded_assets/\\S+)(\\1)");
@@ -80,32 +78,6 @@ public class PageScraper {
 		}
 
 		return version;
-	}
-
-	public FileInfo extractMozillaFileInfo(String osLangProduct) {
-		var matcher = Pattern.compile(baseUri.getPath() + "(\\d+(\\.\\d+)*)/").matcher(html);
-
-		var versionList = new ArrayList<MozillaVersion>();
-
-		while (matcher.find()) {
-			var version = MozillaVersion.parse(matcher.group(1));
-			if (version != null) {
-				versionList.add(version);
-			}
-		}
-		if (versionList.isEmpty()) {
-			logger.info("Version not found in page");
-			return null;
-		}
-
-		// Determine latest version and its link
-		versionList.sort(MozillaVersion::compare);
-		var version = versionList.get(versionList.size() - 1).toString();
-		logger.info("Latest version found in page: {}", version);
-		var uri = baseUri.resolve(String.join(StringUtils.EMPTY, version, "/", osLangProduct, "%20Setup%20", version, ".exe"));
-		logger.info("Link derived from latest version: {}", uri);
-
-		return new FileInfo(uri, version);
 	}
 
 	public List<URI> extractGitHubPageFragmentUriList() {

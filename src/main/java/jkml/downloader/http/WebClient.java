@@ -19,6 +19,8 @@ import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.apache.hc.core5.http.nio.support.BasicRequestProducer;
+import org.apache.hc.core5.http.protocol.BasicHttpContext;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +29,10 @@ import jkml.downloader.util.PropertiesHelper;
 import jkml.downloader.util.TimeUtils;
 
 public class WebClient implements Closeable {
+
+	public static final UserAgent DEFAULT_USER_AGENT = UserAgent.CHROME;
+
+	private static final String EXCEPTION_MESSAGE = "Exception caught";
 
 	private final Logger logger = LoggerFactory.getLogger(WebClient.class);
 
@@ -44,7 +50,7 @@ public class WebClient implements Closeable {
 		userAgentStrings.put(UserAgent.CURL, curlUserAgent);
 
 		httpClient = new HttpClientBuilder()
-				.userAgent(userAgentStrings.get(RequestOptions.DEFAULT_USER_AGENT))
+				.userAgent(userAgentStrings.get(DEFAULT_USER_AGENT))
 				.defaultHeaders(List.of(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage)))
 				.build();
 		httpClient.start();
@@ -72,7 +78,7 @@ public class WebClient implements Closeable {
 		}
 	}
 
-	private HttpRequest createRequest(Method method, URI uri, RequestOptions options) {
+	HttpRequest createRequest(Method method, URI uri, RequestOptions options) {
 		logger.info("Creating {} request to {}", method, uri);
 
 		var request = new BasicHttpRequest(method, uri);
@@ -81,25 +87,26 @@ public class WebClient implements Closeable {
 			return request;
 		}
 
-		if (options.getUserAgent() != RequestOptions.DEFAULT_USER_AGENT) {
-			var ua = userAgentStrings.get(options.getUserAgent());
-			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, ua);
-			request.setHeader(HttpHeaders.USER_AGENT, ua);
+		var agent = options.getUserAgent();
+		if (agent != null && agent != DEFAULT_USER_AGENT) {
+			var value = userAgentStrings.get(agent);
+			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, value);
+			request.setHeader(HttpHeaders.USER_AGENT, value);
 		}
 
 		if (options.getReferer() == Referer.SELF) {
-			var referer = HttpUtils.getUri(request).toString();
-			logger.debug("Setting {}: {}", HttpHeaders.REFERER, referer);
-			request.setHeader(HttpHeaders.REFERER, referer);
+			var value = HttpUtils.getUri(request).toString();
+			logger.debug("Setting {}: {}", HttpHeaders.REFERER, value);
+			request.setHeader(HttpHeaders.REFERER, value);
 		}
 
 		return request;
 	}
 
-	private <T> T execute(HttpRequest request, ResponseHandler<T> responseHandler, Function<Exception, T> exceptionHandler) {
+	private <T> T execute(HttpRequest request, HttpContext conetxt, ResponseHandler<T> responseHandler, Function<Exception, T> exceptionHandler) {
 		logger.info("Sending request");
 		try {
-			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, null).get();
+			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, conetxt, null).get();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			return exceptionHandler.apply(e);
@@ -109,19 +116,17 @@ public class WebClient implements Closeable {
 	}
 
 	/**
-	 * Download content and return it as a String. The content is converted using
-	 * the encoding in the response header (if any), failing that, "ISO-8859-1" is
-	 * used.
+	 * Retrieve content and return it as a String. The content is converted using
+	 * the encoding in the response header (if any), failing that, UTF-8 is used.
 	 */
 	public TextResult readString(URI uri) {
 		return readString(uri, null);
 	}
 
 	public TextResult readString(URI uri, RequestOptions options) {
-		return execute(createRequest(Method.GET, uri, options), new ResponseToTextHandler(), e -> {
-			logger.error("Exception caught", e);
-			var rootCause = LangUtils.getRootCause(e);
-			return new TextResult(Status.ERROR, rootCause);
+		return execute(createRequest(Method.GET, uri, options), null, new ResponseToTextHandler(), e -> {
+			logger.error(EXCEPTION_MESSAGE, e);
+			return new TextResult(LangUtils.getRootCause(e));
 		});
 	}
 
@@ -139,10 +144,21 @@ public class WebClient implements Closeable {
 			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
 		}
 
-		return execute(request, new ResponseToFileHandler(uri, filePath), e -> {
-			logger.error("Exception caught", e);
-			var rootCause = LangUtils.getRootCause(e);
-			return new FileResult(Status.ERROR, rootCause);
+		return execute(request, null, new ResponseToFileHandler(uri, filePath), e -> {
+			logger.error(EXCEPTION_MESSAGE, e);
+			return new FileResult(LangUtils.getRootCause(e));
+		});
+	}
+
+	/**
+	 */
+	public LinkResult getLocation(URI uri, RequestOptions options) {
+		var context = new BasicHttpContext();
+		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
+
+		return execute(createRequest(Method.GET, uri, options), context, new ResponseToLinkHandler(), e -> {
+			logger.error(EXCEPTION_MESSAGE, e);
+			return new LinkResult(LangUtils.getRootCause(e));
 		});
 	}
 

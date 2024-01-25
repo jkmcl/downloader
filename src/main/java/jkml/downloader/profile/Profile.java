@@ -27,7 +27,7 @@ public class Profile {
 
 	private Pattern versionPattern;
 
-	private RequestOptions requestOptions = new RequestOptions();
+	private RequestOptions requestOptions;
 
 	private Path outputDirectory;
 

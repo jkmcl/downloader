@@ -50,7 +50,6 @@ public class WebClient implements Closeable {
 		userAgentStrings.put(UserAgent.CURL, curlUserAgent);
 
 		httpClient = new HttpClientBuilder()
-				.userAgent(userAgentStrings.get(DEFAULT_USER_AGENT))
 				.defaultHeaders(List.of(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage)))
 				.build();
 		httpClient.start();
@@ -78,23 +77,30 @@ public class WebClient implements Closeable {
 		}
 	}
 
-	HttpRequest createRequest(Method method, URI uri, RequestOptions options) {
-		logger.info("Creating {} request to {}", method, uri);
+	HttpRequest createRequest(URI uri, RequestOptions options) {
+		logger.info("Creating request to {}", uri);
 
-		var request = new BasicHttpRequest(method, uri);
+		var request = new BasicHttpRequest(Method.GET, uri);
 
-		if (options == null) {
-			return request;
+		UserAgent userAgent = null;
+		Referer referer = null;
+
+		if (options != null) {
+			userAgent = options.getUserAgent();
+			referer = options.getReferer();
 		}
 
-		var agent = options.getUserAgent();
-		if (agent != null && agent != DEFAULT_USER_AGENT) {
-			var value = userAgentStrings.get(agent);
-			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, value);
-			request.setHeader(HttpHeaders.USER_AGENT, value);
+		if (userAgent == null) {
+			userAgent = DEFAULT_USER_AGENT;
 		}
 
-		if (options.getReferer() == Referer.SELF) {
+		var userAgentValue = userAgentStrings.get(userAgent);
+		if (userAgent != DEFAULT_USER_AGENT) {
+			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, userAgentValue);
+		}
+		request.setHeader(HttpHeaders.USER_AGENT, userAgentValue);
+
+		if (referer == Referer.SELF) {
 			// Get the URI from the request as BasicHttpRequest re-assembles it
 			var value = HttpUtils.getUri(request).toString();
 			logger.debug("Setting {}: {}", HttpHeaders.REFERER, value);
@@ -120,7 +126,7 @@ public class WebClient implements Closeable {
 	 * Retrieve the response body as a String.
 	 */
 	public TextResult getContent(URI uri, RequestOptions options) {
-		return execute(createRequest(Method.GET, uri, options), null, new ResponseToTextHandler(), e -> {
+		return execute(createRequest(uri, options), null, new ResponseToTextHandler(), e -> {
 			logger.error(EXCEPTION_MESSAGE, e);
 			return new TextResult(LangUtils.getRootCause(e));
 		});
@@ -133,7 +139,7 @@ public class WebClient implements Closeable {
 	public FileResult saveToFile(URI uri, RequestOptions options, Path filePath) {
 		var lastMod = getLastModifiedTime(filePath);
 
-		var request = createRequest(Method.GET, uri, options);
+		var request = createRequest(uri, options);
 
 		// Add If-Modified-Since request header if local file exists
 		if (lastMod != null) {
@@ -155,7 +161,7 @@ public class WebClient implements Closeable {
 		// Disable auto-redirect to obtain the location header
 		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
 
-		return execute(createRequest(Method.GET, uri, options), context, new ResponseToLinkHandler(), e -> {
+		return execute(createRequest(uri, options), context, new ResponseToLinkHandler(), e -> {
 			logger.error(EXCEPTION_MESSAGE, e);
 			return new LinkResult(LangUtils.getRootCause(e));
 		});

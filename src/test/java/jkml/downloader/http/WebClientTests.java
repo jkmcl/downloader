@@ -21,7 +21,6 @@ import java.time.Instant;
 
 import org.apache.hc.client5.http.utils.DateUtils;
 import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.Method;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,20 +71,20 @@ class WebClientTests {
 
 	@Test
 	void testCreateRequest() {
-		var request = webClient.createRequest(Method.GET, mockUrl, null);
-		assertNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
-		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
-
-		request = webClient.createRequest(Method.GET, mockUrl, new RequestOptions(UserAgent.CHROME, null));
-		assertNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
-		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
-
-		request = webClient.createRequest(Method.GET, mockUrl, new RequestOptions(UserAgent.CURL, null));
+		var request = webClient.createRequest(mockUrl, null);
 		assertNotNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
 
-		request = webClient.createRequest(Method.GET, mockUrl, new RequestOptions(null, Referer.SELF));
-		assertNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
+		request = webClient.createRequest(mockUrl, new RequestOptions(UserAgent.CHROME, null));
+		assertNotNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
+		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
+
+		request = webClient.createRequest(mockUrl, new RequestOptions(UserAgent.CURL, null));
+		assertNotNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
+		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
+
+		request = webClient.createRequest(mockUrl, new RequestOptions(null, Referer.SELF));
+		assertNotNull(request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertEquals(mockUrl, URI.create(request.getFirstHeader(HttpHeaders.REFERER).getValue()));
 	}
 

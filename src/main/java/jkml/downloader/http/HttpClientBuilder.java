@@ -1,6 +1,6 @@
 package jkml.downloader.http;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -19,16 +19,9 @@ class HttpClientBuilder {
 
 	private static final Timeout TIMEOUT = Timeout.ofSeconds(30);
 
-	private String userAgent;
+	private List<Header> defaultHeaders;
 
-	private Collection<Header> defaultHeaders;
-
-	public HttpClientBuilder userAgent(String value) {
-		userAgent = value;
-		return this;
-	}
-
-	public HttpClientBuilder defaultHeaders(Collection<Header> value) {
+	public HttpClientBuilder defaultHeaders(List<Header> value) {
 		defaultHeaders = value;
 		return this;
 	}
@@ -71,7 +64,6 @@ class HttpClientBuilder {
 				.setIOReactorConfig(ioReactorConfig)
 				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
 				.setThreadFactory(new DefaultThreadFactory("http", true))
-				.setUserAgent(userAgent)
 				.build();
 	}
 

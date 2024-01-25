@@ -18,7 +18,8 @@ class ResponseToLinkHandler extends ResponseHandler<LinkResult> {
 
 	private URI location;
 
-	private boolean isRedirect(int code) {
+	@Override
+	protected boolean isCodeValid(int code) {
 		return switch (code) {
 		// @formatter:off
 			case
@@ -33,11 +34,7 @@ class ResponseToLinkHandler extends ResponseHandler<LinkResult> {
 	}
 
 	@Override
-	protected void start(HttpResponse response, ContentType contentType) throws HttpException, IOException {
-		if (!isRedirect(response.getCode())) {
-			throw new IOException("Unexpected HTTP response status code: " + response.getCode());
-		}
-
+	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
 		var header = response.getFirstHeader(HttpHeaders.LOCATION);
 		if (header == null) {
 			throw new IOException("Location header not found in response");

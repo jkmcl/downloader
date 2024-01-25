@@ -24,8 +24,7 @@ class ResponseToTextHandler extends ResponseHandler<TextResult> {
 	private ByteArrayBuffer buffer;
 
 	@Override
-	protected void start(HttpResponse response, ContentType contentType) throws HttpException, IOException {
-		checkCode(response.getCode());
+	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
 		}

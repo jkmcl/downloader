@@ -82,13 +82,16 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 		}
 	}
 
+	@Override
+	protected boolean isCodeValid(int code) {
+		return code == HttpStatus.SC_NOT_MODIFIED || code == HttpStatus.SC_OK;
+	}
+
 	private FileResult preprocess(HttpResponse response) throws IOException {
-		var code = response.getCode();
-		if (code == HttpStatus.SC_NOT_MODIFIED) {
+		if (response.getCode() == HttpStatus.SC_NOT_MODIFIED) {
 			logger.info("Remote file not modified");
 			return new FileResult();
 		}
-		checkCode(code);
 
 		lastMod = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED);
 		if (lastMod == null) {
@@ -115,7 +118,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 	}
 
 	@Override
-	protected void start(HttpResponse response, ContentType contentType) throws HttpException, IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
 		if ((result = preprocess(response)) != null) {
 			return;
 		}

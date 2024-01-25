@@ -19,18 +19,10 @@ class ResponseToLinkHandler extends ResponseHandler<LinkResult> {
 	private URI location;
 
 	@Override
-	protected boolean isCodeValid(int code) {
-		return switch (code) {
-		// @formatter:off
-			case
-				HttpStatus.SC_MOVED_PERMANENTLY,
-				HttpStatus.SC_MOVED_TEMPORARILY,
-				HttpStatus.SC_SEE_OTHER,
-				HttpStatus.SC_TEMPORARY_REDIRECT,
-				HttpStatus.SC_PERMANENT_REDIRECT -> true;
-			default -> false;
-		// @formatter:on
-		};
+	protected boolean isValid(int code) {
+		return (code == HttpStatus.SC_MOVED_PERMANENTLY || code == HttpStatus.SC_MOVED_TEMPORARILY
+				|| code == HttpStatus.SC_SEE_OTHER || code == HttpStatus.SC_TEMPORARY_REDIRECT
+				|| code == HttpStatus.SC_PERMANENT_REDIRECT);
 	}
 
 	@Override
@@ -39,7 +31,6 @@ class ResponseToLinkHandler extends ResponseHandler<LinkResult> {
 		if (header == null) {
 			throw new IOException("Location header not found in response");
 		}
-
 		location = URI.create(header.getValue());
 	}
 

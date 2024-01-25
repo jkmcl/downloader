@@ -82,16 +82,11 @@ public class WebClient implements Closeable {
 
 		var request = new BasicHttpRequest(Method.GET, uri);
 
-		UserAgent userAgent = null;
+		UserAgent userAgent = DEFAULT_USER_AGENT;
 		Referer referer = null;
-
 		if (options != null) {
-			userAgent = options.getUserAgent();
+			userAgent = options.getUserAgent() != null ? options.getUserAgent() : userAgent;
 			referer = options.getReferer();
-		}
-
-		if (userAgent == null) {
-			userAgent = DEFAULT_USER_AGENT;
 		}
 
 		var userAgentValue = userAgentStrings.get(userAgent);

@@ -83,7 +83,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 	}
 
 	@Override
-	protected boolean isCodeValid(int code) {
+	protected boolean isValid(int code) {
 		return code == HttpStatus.SC_NOT_MODIFIED || code == HttpStatus.SC_OK;
 	}
 

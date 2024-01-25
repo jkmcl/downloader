@@ -17,14 +17,13 @@ abstract class ResponseHandler<T> extends AbstractBinResponseConsumer<T> {
 
 	@Override
 	protected final void start(HttpResponse response, ContentType contentType) throws HttpException, IOException {
-		if (!isCodeValid(response.getCode())) {
+		if (!isValid(response.getCode())) {
 			throw new IOException("Unexpected status code: " + response.getCode());
 		}
 		doStart(response, contentType);
-
 	}
 
-	protected boolean isCodeValid(int code) {
+	protected boolean isValid(int code) {
 		return code == HttpStatus.SC_OK;
 	}
 

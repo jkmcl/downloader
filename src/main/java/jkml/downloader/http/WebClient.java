@@ -52,16 +52,16 @@ public class WebClient implements Closeable {
 		httpClient.close();
 	}
 
-	private Instant getLastModifiedTime(Path filePath) {
-		if (Files.notExists(filePath)) {
+	private Instant getLastModifiedTime(Path path) {
+		if (Files.notExists(path)) {
 			logger.debug("Local file does not exist");
 			return null;
 		}
 
-		logger.debug("Local file path: {}", filePath);
+		logger.debug("Local file path: {}", path);
 
 		try {
-			var lastMod = Files.getLastModifiedTime(filePath).toInstant();
+			var lastMod = Files.getLastModifiedTime(path).toInstant();
 			logger.atDebug().log("Local file last modified time: {}", TimeUtils.Formatter.format(lastMod));
 			return lastMod;
 		} catch (IOException e) {
@@ -131,16 +131,16 @@ public class WebClient implements Closeable {
 	 * Download the file if it does not exist locally or if it is newer than the
 	 * local copy.
 	 */
-	public FileResult saveToFile(URI uri, RequestOptions options, Path filePath) {
+	public FileResult saveToFile(URI uri, RequestOptions options, Path path) {
 		var request = createRequest(uri, options);
 
 		// Add If-Modified-Since request header if local file exists
-		var lastMod = getLastModifiedTime(filePath);
+		var lastMod = getLastModifiedTime(path);
 		if (lastMod != null) {
 			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
 		}
 
-		return execute(request, null, new ResponseToFileHandler(uri, filePath), FileResult::new);
+		return execute(request, null, new ResponseToFileHandler(uri, path), FileResult::new);
 	}
 
 	/**

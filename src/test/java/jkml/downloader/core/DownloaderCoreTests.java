@@ -100,8 +100,8 @@ class DownloaderCoreTests {
 		}
 	}
 
-	private static void assertDownload(WebClient mock, URI fileUri, Path filePath) {
-		verify(mock).saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath));
+	private static void assertDownload(WebClient mock, URI uri, Path path) {
+		verify(mock).saveToFile(eq(uri), anyRequestOptions(), eq(path));
 	}
 
 	@Test

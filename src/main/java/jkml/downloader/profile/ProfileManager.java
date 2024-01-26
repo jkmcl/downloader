@@ -58,9 +58,9 @@ public class ProfileManager {
 		return errMsgList;
 	}
 
-	public List<Profile> loadProfiles(Path jsonFile) throws IOException {
+	public List<Profile> loadProfiles(Path path) throws IOException {
 		Profile[] profileArray = null;
-		try (var reader = Files.newBufferedReader(jsonFile)) {
+		try (var reader = Files.newBufferedReader(path)) {
 			profileArray = GsonUtils.createGson().fromJson(reader, Profile[].class);
 		}
 

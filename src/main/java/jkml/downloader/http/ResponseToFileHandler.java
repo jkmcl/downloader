@@ -28,19 +28,19 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private final URI uri;
 
-	private final Path filePath;
+	private final Path path;
 
-	private Instant lastMod = null;
+	private boolean notModified;
 
-	private Path tmpPath = null;
+	private Instant lastMod;
 
-	private WritableByteChannel channel = null;
+	private Path tmpPath;
 
-	private FileResult result = null;
+	private WritableByteChannel channel;
 
-	public ResponseToFileHandler(URI uri, Path filePath) {
+	public ResponseToFileHandler(URI uri, Path path) {
 		this.uri = uri;
-		this.filePath = filePath;
+		this.path = path;
 	}
 
 	private static void checkFileName(URI uri, HttpResponse response) throws IOException {
@@ -87,10 +87,12 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 		return code == HttpStatus.SC_NOT_MODIFIED || code == HttpStatus.SC_OK;
 	}
 
-	private FileResult preprocess(HttpResponse response) throws IOException {
+	@Override
+	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
 		if (response.getCode() == HttpStatus.SC_NOT_MODIFIED) {
 			logger.info("Remote file not modified");
-			return new FileResult();
+			notModified = true;
+			return;
 		}
 
 		lastMod = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED);
@@ -98,31 +100,12 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			throw new IOException("Remote file last modified time not available");
 		}
 		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(lastMod));
+		notModified = false;
 
 		checkFileName(uri, response);
 
-		tmpPath = filePath.resolveSibling(filePath.getFileName() + ".partial");
-
 		logger.info("Saving remote content");
-		return null;
-	}
-
-	private FileResult postprocess() throws IOException {
-		logger.info("Finished saving remote content");
-
-		checkFileContent(tmpPath, filePath);
-		Files.move(tmpPath, filePath, StandardCopyOption.REPLACE_EXISTING);
-		Files.setLastModifiedTime(filePath, FileTime.from(lastMod));
-
-		return new FileResult(Files.getLastModifiedTime(filePath).toInstant());
-	}
-
-	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
-		if ((result = preprocess(response)) != null) {
-			return;
-		}
-
+		tmpPath = path.resolveSibling(path.getFileName() + ".partial");
 		channel = Files.newByteChannel(tmpPath,
 				StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE,
@@ -141,13 +124,16 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 		if (endOfStream) {
 			closeChannel();
-			result = postprocess();
+			checkFileContent(tmpPath, path);
+			Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
+			Files.setLastModifiedTime(path, FileTime.from(lastMod));
+			logger.info("Finished saving remote content");
 		}
 	}
 
 	@Override
 	protected FileResult buildResult() {
-		return result;
+		return (notModified) ? new FileResult() : new FileResult(lastMod);
 	}
 
 	@Override

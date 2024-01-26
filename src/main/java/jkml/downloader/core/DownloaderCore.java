@@ -45,9 +45,9 @@ public class DownloaderCore implements Closeable {
 		webClient.close();
 	}
 
-	public void download(Path jsonFile) throws IOException {
+	public void download(Path path) throws IOException {
 		var profileManager = new ProfileManager();
-		for (var profile : profileManager.loadProfiles(jsonFile)) {
+		for (var profile : profileManager.loadProfiles(path)) {
 			download(profile);
 			printInfo(StringUtils.EMPTY);
 		}
@@ -93,8 +93,8 @@ public class DownloaderCore implements Closeable {
 		downloadFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
 	}
 
-	private void downloadFile(URI uri, RequestOptions options, Path filePath) {
-		var result = webClient.saveToFile(uri, options, filePath);
+	private void downloadFile(URI uri, RequestOptions options, Path path) {
+		var result = webClient.saveToFile(uri, options, path);
 
 		switch (result.status()) {
 		case NOT_MODIFIED:
@@ -103,7 +103,7 @@ public class DownloaderCore implements Closeable {
 		case OK:
 			printInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
 			printInfo("URL:  {}", uri);
-			printInfo("Path: {}", filePath);
+			printInfo("Path: {}", path);
 			break;
 		case ERROR:
 			printErrorDuringOperation("file download", result.exception());

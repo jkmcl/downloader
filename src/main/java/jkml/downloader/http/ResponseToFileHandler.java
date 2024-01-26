@@ -43,7 +43,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 		this.path = path;
 	}
 
-	private static void checkFileName(URI uri, HttpResponse response) throws IOException {
+	static void checkFileName(URI uri, HttpResponse response) throws IOException {
 		var headerFileName = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 		if (headerFileName == null) {
 			return;

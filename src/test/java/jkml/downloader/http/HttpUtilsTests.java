@@ -21,7 +21,7 @@ import jkml.downloader.util.StringUtils;
 class HttpUtilsTests {
 
 	private static HttpResponse createResponse() {
-		return new BasicHttpResponse(HttpStatus.SC_OK, "OK");
+		return new BasicHttpResponse(HttpStatus.SC_OK);
 	}
 
 	private static HttpResponse createResponseWithHeader(String name, String value) {

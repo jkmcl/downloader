@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -16,7 +15,6 @@ import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.Method;
-import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.apache.hc.core5.http.nio.support.BasicRequestProducer;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
@@ -32,26 +30,20 @@ public class WebClient implements Closeable {
 
 	public static final UserAgent DEFAULT_USER_AGENT = UserAgent.CHROME;
 
-	private static final String EXCEPTION_MESSAGE = "Exception caught";
-
 	private final Logger logger = LoggerFactory.getLogger(WebClient.class);
 
 	private final Map<UserAgent, String> userAgentStrings = new EnumMap<>(UserAgent.class);
+
+	private final String acceptLanguage;
 
 	private final CloseableHttpAsyncClient httpClient;
 
 	public WebClient() {
 		var propertiesHelper = new PropertiesHelper("http.properties");
-		var chromeUserAgent = propertiesHelper.getRequiredProperty("user-agent.chrome");
-		var curlUserAgent = propertiesHelper.getRequiredProperty("user-agent.curl");
-		var acceptLanguage = propertiesHelper.getRequiredProperty("accept-language");
-
-		userAgentStrings.put(UserAgent.CHROME, chromeUserAgent);
-		userAgentStrings.put(UserAgent.CURL, curlUserAgent);
-
-		httpClient = new HttpClientBuilder()
-				.defaultHeaders(List.of(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage)))
-				.build();
+		userAgentStrings.put(UserAgent.CHROME, propertiesHelper.getRequired("user-agent.chrome"));
+		userAgentStrings.put(UserAgent.CURL, propertiesHelper.getRequired("user-agent.curl"));
+		acceptLanguage = propertiesHelper.getRequired("accept-language");
+		httpClient = new HttpClientBuilder().build();
 		httpClient.start();
 	}
 
@@ -77,27 +69,37 @@ public class WebClient implements Closeable {
 		}
 	}
 
+	String getUserAgentString(UserAgent userAgent) {
+		return userAgentStrings.get(userAgent);
+	}
+
 	HttpRequest createRequest(URI uri, RequestOptions options) {
 		logger.info("Creating request to {}", uri);
 
 		var request = new BasicHttpRequest(Method.GET, uri);
 
+		// Determine header values
 		UserAgent userAgent = DEFAULT_USER_AGENT;
 		Referer referer = null;
 		if (options != null) {
-			userAgent = options.getUserAgent() != null ? options.getUserAgent() : userAgent;
+			userAgent = (options.getUserAgent() != null) ? options.getUserAgent() : userAgent;
 			referer = options.getReferer();
 		}
 
-		var userAgentValue = userAgentStrings.get(userAgent);
+		// Set User-Agent header
+		var value = getUserAgentString(userAgent);
 		if (userAgent != DEFAULT_USER_AGENT) {
-			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, userAgentValue);
+			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, value);
 		}
-		request.setHeader(HttpHeaders.USER_AGENT, userAgentValue);
+		request.setHeader(HttpHeaders.USER_AGENT, value);
 
+		// Set Accept-Language header
+		request.setHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
+
+		// Set Referer header
 		if (referer == Referer.SELF) {
 			// Get the URI from the request as BasicHttpRequest re-assembles it
-			var value = HttpUtils.getUri(request).toString();
+			value = HttpUtils.getUri(request).toString();
 			logger.debug("Setting {}: {}", HttpHeaders.REFERER, value);
 			request.setHeader(HttpHeaders.REFERER, value);
 		}
@@ -105,15 +107,16 @@ public class WebClient implements Closeable {
 		return request;
 	}
 
-	private <T> T execute(HttpRequest request, HttpContext conetxt, ResponseHandler<T> responseHandler, Function<Exception, T> exceptionHandler) {
+	private <T> T execute(HttpRequest request, HttpContext conetxt, ResponseHandler<T> responseHandler, Function<Throwable, T> exceptionHandler) {
 		logger.info("Sending request");
 		try {
 			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, conetxt, null).get();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			return exceptionHandler.apply(e);
 		} catch (Exception e) {
-			return exceptionHandler.apply(e);
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.error("Exception caught", e);
+			return exceptionHandler.apply(LangUtils.getRootCause(e));
 		}
 	}
 
@@ -121,10 +124,7 @@ public class WebClient implements Closeable {
 	 * Retrieve the response body as a String.
 	 */
 	public TextResult getContent(URI uri, RequestOptions options) {
-		return execute(createRequest(uri, options), null, new ResponseToTextHandler(), e -> {
-			logger.error(EXCEPTION_MESSAGE, e);
-			return new TextResult(LangUtils.getRootCause(e));
-		});
+		return execute(createRequest(uri, options), null, new ResponseToTextHandler(), TextResult::new);
 	}
 
 	/**
@@ -132,19 +132,15 @@ public class WebClient implements Closeable {
 	 * local copy.
 	 */
 	public FileResult saveToFile(URI uri, RequestOptions options, Path filePath) {
-		var lastMod = getLastModifiedTime(filePath);
-
 		var request = createRequest(uri, options);
 
 		// Add If-Modified-Since request header if local file exists
+		var lastMod = getLastModifiedTime(filePath);
 		if (lastMod != null) {
 			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
 		}
 
-		return execute(request, null, new ResponseToFileHandler(uri, filePath), e -> {
-			logger.error(EXCEPTION_MESSAGE, e);
-			return new FileResult(LangUtils.getRootCause(e));
-		});
+		return execute(request, null, new ResponseToFileHandler(uri, filePath), FileResult::new);
 	}
 
 	/**
@@ -156,10 +152,7 @@ public class WebClient implements Closeable {
 		// Disable auto-redirect to obtain the location header
 		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
 
-		return execute(createRequest(uri, options), context, new ResponseToLinkHandler(), e -> {
-			logger.error(EXCEPTION_MESSAGE, e);
-			return new LinkResult(LangUtils.getRootCause(e));
-		});
+		return execute(createRequest(uri, options), context, new ResponseToLinkHandler(), LinkResult::new);
 	}
 
 }

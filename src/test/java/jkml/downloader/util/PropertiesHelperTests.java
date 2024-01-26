@@ -17,10 +17,10 @@ class PropertiesHelperTests {
 	}
 
 	@Test
-	void testGetRequiredProperty() throws Exception {
+	void testGetRequired() throws Exception {
 		var helper = new PropertiesHelper(FILE_NAME);
-		assertNotNull(helper.getRequiredProperty("a"));
-		assertThrows(IllegalArgumentException.class, () -> helper.getRequiredProperty("no such key"));
+		assertNotNull(helper.getRequired("a"));
+		assertThrows(IllegalArgumentException.class, () -> helper.getRequired("no such key"));
 	}
 
 }

@@ -1,7 +1,5 @@
 package jkml.downloader.http;
 
-import java.util.List;
-
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.config.TlsConfig;
@@ -9,7 +7,6 @@ import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.concurrent.DefaultThreadFactory;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http2.HttpVersionPolicy;
 import org.apache.hc.core5.reactor.IOReactorConfig;
 import org.apache.hc.core5.util.TimeValue;
@@ -18,13 +15,6 @@ import org.apache.hc.core5.util.Timeout;
 class HttpClientBuilder {
 
 	private static final Timeout TIMEOUT = Timeout.ofSeconds(30);
-
-	private List<Header> defaultHeaders;
-
-	public HttpClientBuilder defaultHeaders(List<Header> value) {
-		defaultHeaders = value;
-		return this;
-	}
 
 	public CloseableHttpAsyncClient build() {
 		var connectionConfig = ConnectionConfig.custom()
@@ -59,7 +49,6 @@ class HttpClientBuilder {
 				.disableConnectionState()
 				.disableCookieManagement()
 				.setConnectionManager(connectionManager)
-				.setDefaultHeaders(defaultHeaders)
 				.setDefaultRequestConfig(requestConfig)
 				.setIOReactorConfig(ioReactorConfig)
 				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)

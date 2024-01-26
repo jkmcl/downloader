@@ -20,9 +20,9 @@ class ResponseToLinkHandler extends ResponseHandler<LinkResult> {
 
 	@Override
 	protected boolean isValid(int code) {
-		return (code == HttpStatus.SC_MOVED_PERMANENTLY || code == HttpStatus.SC_MOVED_TEMPORARILY
+		return code == HttpStatus.SC_MOVED_PERMANENTLY || code == HttpStatus.SC_MOVED_TEMPORARILY
 				|| code == HttpStatus.SC_SEE_OTHER || code == HttpStatus.SC_TEMPORARY_REDIRECT
-				|| code == HttpStatus.SC_PERMANENT_REDIRECT);
+				|| code == HttpStatus.SC_PERMANENT_REDIRECT;
 	}
 
 	@Override

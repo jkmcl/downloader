@@ -1,6 +1,7 @@
 package jkml.downloader.http;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -30,9 +31,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private final Path path;
 
-	private boolean notModified;
-
-	private Instant lastMod;
+	private Instant modifiedTime;
 
 	private Path tmpPath;
 
@@ -78,7 +77,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			channel.close();
 			channel = null;
 		} catch (IOException e) {
-			logger.error("Failed to close channel", e);
+			throw new UncheckedIOException(e.getMessage(), e);
 		}
 	}
 
@@ -91,16 +90,14 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
 		if (response.getCode() == HttpStatus.SC_NOT_MODIFIED) {
 			logger.info("Remote file not modified");
-			notModified = true;
 			return;
 		}
 
-		lastMod = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED);
-		if (lastMod == null) {
+		modifiedTime = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED);
+		if (modifiedTime == null) {
 			throw new IOException("Remote file last modified time not available");
 		}
-		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(lastMod));
-		notModified = false;
+		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(modifiedTime));
 
 		checkFileName(uri, response);
 
@@ -126,14 +123,14 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			closeChannel();
 			checkFileContent(tmpPath, path);
 			Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
-			Files.setLastModifiedTime(path, FileTime.from(lastMod));
+			Files.setLastModifiedTime(path, FileTime.from(modifiedTime));
 			logger.info("Finished saving remote content");
 		}
 	}
 
 	@Override
 	protected FileResult buildResult() {
-		return (notModified) ? new FileResult() : new FileResult(lastMod);
+		return (modifiedTime == null) ? new FileResult() : new FileResult(modifiedTime);
 	}
 
 	@Override

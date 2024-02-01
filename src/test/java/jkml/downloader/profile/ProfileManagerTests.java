@@ -13,8 +13,6 @@ import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jkml.downloader.html.Occurrence;
-import jkml.downloader.http.RequestOptions;
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.TestUtils;
 
@@ -33,8 +31,6 @@ class ProfileManagerTests {
 		profile.setLinkPattern(Pattern.compile("(file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("[.0-9]+"));
 		profile.setOutputDirectory(TestUtils.outputDirectory());
-		profile.setLinkOccurrence(Occurrence.FIRST);
-		profile.setRequestOptions(new RequestOptions());
 		return profile;
 	}
 

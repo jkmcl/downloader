@@ -50,6 +50,11 @@ class PageScraperTests {
 		assertEquals("https://localhost/dir2/v1.0/file.txt", fileInfo.uri().toString());
 		assertNull(fileInfo.version());
 
+		// Link only (null occurrence)
+		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/file\\.txt)\""), null, null);
+		assertEquals("https://localhost/dir2/v1.0/file.txt", fileInfo.uri().toString());
+		assertNull(fileInfo.version());
+
 		// Link only (last occurrence)
 		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/other\\.txt)\""), Occurrence.LAST, null);
 		assertEquals("https://localhost/dir4/v3.0/other.txt", fileInfo.uri().toString());

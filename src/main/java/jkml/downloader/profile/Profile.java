@@ -23,7 +23,7 @@ public class Profile {
 
 	private Pattern linkPattern;
 
-	private Occurrence linkOccurrence = Occurrence.FIRST;
+	private Occurrence linkOccurrence;
 
 	private Pattern versionPattern;
 

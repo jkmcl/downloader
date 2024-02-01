@@ -1,6 +1,6 @@
 # Overview
 
-Downloader is a profile-driven tool for downloading new files or newer version of existing files.
+Downloader is a profile-driven tool for downloading new files or the newer version of existing files.
 
 
 # Usage
@@ -51,7 +51,7 @@ Files to be downloaded are defined in profiles in a JSON file. The following is 
 ]
 ```
 
-Downloader determines how to locate and download each file based on its profile. Different profile types share some common fields but may have different mandatory field requirements. Currently there are 4 profile types:
+Downloader determines how to locate and download each file based on its profile. Different profile types share some common fields but may have different mandatory field requirements. There are currently 4 profile types:
 * DIRECT
 * REDIRECT
 * STANDARD
@@ -80,15 +80,15 @@ The `fileUrl` field is mandatory and its value is the URL providing the redirect
 
 ## STANDARD
 
-This profile type tells Downloader to retrieve a web page, extracts the file URL (and optionally the file version) from the page and then downloads the file from the URL.
+This profile type tells Downloader to retrieve a web page, extract the file URL (and optionally the file version) from the page and then download the file from the URL.
 
 The `pageUrl` field is mandatory and its value is the page URL.
 
 The `linkPattern` field is mandatory its value is a regular expression used to extract the file URL from the page and optionally the file version from the file URL. The first capturing group of this regular expression provides the file URL. If defined, the second capturing group of this regular expression provides the file version.
 
-The `versionPattern` field is optional and its value is a regular expression used to extract the file version from the page. The first capturing group of the this regular expression provides the file version.
+The `versionPattern` field is optional and its value is a regular expression used to extract the file version from the page. The first capturing group of this regular expression provides the file version.
 
-If either of the regular expressions captures the file version and the file base name in the file URL does not already include it, the file version is appended to the file base name of the downloaded file. For example, a downloaded file originally named `file.zip` with version `1.0` found in the page is renamed to `file-1.0.zip`.
+If either of the regular expressions captures the file version and the file base name in the file URL does not already include it, the file version is appended to the file base name of the downloaded file. For example, a downloaded file originally named `file.zip` with version `1.0` found on the page is renamed to `file-1.0.zip`.
 
 If both regular expressions capture a version, the one captured by `versionPattern` is appended.
 
@@ -97,9 +97,9 @@ If both regular expressions capture a version, the one captured by `versionPatte
 
 This profile type is an extension to STANDARD and is inferred when the `pageUrl` field value is a URL in the `github.com` domain.
 
-URLs of files available for download on the release page of some GitHub repositories are in page fragments at other URLs found in the page. These fragments are typically fetched and added to the page by JavaScript code running on the web browser.
+URLs of files available for download on the release page of some GitHub repositories are in page fragments at other URLs found on the page. These fragments are typically fetched and added to the page by JavaScript code running on the web browser.
 
-Downloader extracts the URLs of these fragments and then retrieves these fragments and performs the same file URL/version extraction on them if the file URL is not found in the original page.
+Downloader extracts the URLs of these fragments and then retrieves these fragments and performs the same file URL/version extraction on them if the file URL is not found on the original page.
 
 
 # Common Features

@@ -140,7 +140,7 @@ public class WebClient implements Closeable {
 			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
 		}
 
-		return execute(request, null, new ResponseToFileHandler(uri, path), FileResult::new);
+		return execute(request, null, new ResponseToFileHandler(path), FileResult::new);
 	}
 
 	/**

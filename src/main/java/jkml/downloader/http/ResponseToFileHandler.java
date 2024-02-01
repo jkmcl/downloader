@@ -2,7 +2,6 @@ package jkml.downloader.http;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
@@ -20,14 +19,11 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.TimeUtils;
 
 class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private final Logger logger = LoggerFactory.getLogger(ResponseToFileHandler.class);
-
-	private final URI uri;
 
 	private final Path path;
 
@@ -37,18 +33,18 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private WritableByteChannel channel;
 
-	public ResponseToFileHandler(URI uri, Path path) {
-		this.uri = uri;
+	public ResponseToFileHandler(Path path) {
 		this.path = path;
 	}
 
-	static void checkFileName(URI uri, HttpResponse response) throws IOException {
+	static void checkFileName(HttpResponse response, String fileName) throws IOException {
 		var headerFileName = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 		if (headerFileName == null) {
 			return;
 		}
-		if (!headerFileName.equals(FileUtils.getFileName(uri))) {
-			throw new IOException("File name in response header is different from that in URL: " + headerFileName);
+
+		if (!headerFileName.equals(fileName)) {
+			throw new IOException("Mismatched file name in response header: " + headerFileName);
 		}
 	}
 
@@ -99,10 +95,11 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 		}
 		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(modifiedTime));
 
-		checkFileName(uri, response);
+		var fileName = path.getFileName().toString();
+		checkFileName(response, fileName);
 
 		logger.info("Saving remote content");
-		tmpPath = path.resolveSibling(path.getFileName() + ".partial");
+		tmpPath = path.resolveSibling(fileName + ".partial");
 		channel = Files.newByteChannel(tmpPath,
 				StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE,

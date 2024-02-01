@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -39,15 +38,16 @@ class ResponseToFileHandlerTests {
 
 	@Test
 	void testCheckFileName() throws IOException {
-		var uri = URI.create("http://localhost/file.zip");
+		var fileName = "file.zip";
+
 		var response = new BasicHttpResponse(HttpStatus.SC_OK);
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(uri, response));
+		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(response, fileName));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"file.zip\"");
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(uri, response));
+		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(response, fileName));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"different.zip\"");
-		assertThrows(IOException.class, () -> ResponseToFileHandler.checkFileName(uri, response));
+		assertThrows(IOException.class, () -> ResponseToFileHandler.checkFileName(response, fileName));
 	}
 
 	@Test

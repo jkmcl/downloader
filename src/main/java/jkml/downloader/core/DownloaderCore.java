@@ -13,11 +13,11 @@ import org.slf4j.helpers.MessageFormatter;
 
 import jkml.downloader.html.FileInfo;
 import jkml.downloader.html.PageScraper;
-import jkml.downloader.http.FileResult;
 import jkml.downloader.http.RequestOptions;
 import jkml.downloader.http.Status;
 import jkml.downloader.http.WebClient;
 import jkml.downloader.profile.Profile;
+import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.profile.ProfileManager;
 import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.StringUtils;
@@ -45,24 +45,33 @@ public class DownloaderCore implements Closeable {
 		webClient.close();
 	}
 
-	public void download(Path jsonFile) throws IOException {
+	public void download(Path path) throws IOException {
 		var profileManager = new ProfileManager();
-		for (var profile : profileManager.loadProfiles(jsonFile)) {
+		for (var profile : profileManager.loadProfiles(path)) {
 			download(profile);
 			printInfo(StringUtils.EMPTY);
 		}
 	}
 
 	void download(Profile profile) {
-		URI fileUri = null;
+		URI fileUri;
 		String fileName;
 
 		printInfo("Looking for new version of {}", profile.getName());
 
-		if (profile.getFileUrl() != null) {
+		var type = profile.getType();
+		if (type == Profile.Type.DIRECT || type == Profile.Type.REDIRECT) {
 			fileUri = profile.getFileUrl();
+			// Get actual file URL from location header in response
+			if (type == Profile.Type.REDIRECT) {
+				fileUri = getLink(fileUri, profile.getRequestOptions());
+				if (fileUri == null) {
+					return;
+				}
+				fileUri = profile.getFileUrl().resolve(fileUri);
+			}
 			fileName = FileUtils.getFileName(fileUri);
-		} else {
+		} else if (type == Profile.Type.STANDARD || type == Profile.Type.GITHUB) {
 			// Find file link from page
 			var fileInfo = findFileInfo(profile);
 			if (fileInfo == null) {
@@ -76,60 +85,72 @@ public class DownloaderCore implements Closeable {
 			if (!StringUtils.isNullOrBlank(version) && !fileName.contains(version)) {
 				fileName = FileUtils.updateFileName(fileName, version);
 			}
+		} else {
+			printError("Unsupported profile type: {}", type.name());
+			return;
 		}
 
-		var result = webClient.saveToFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
-		printResult(fileUri, result);
+		downloadFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
 	}
 
-	void printResult(URI fileUri, FileResult result) {
+	private void downloadFile(URI uri, RequestOptions options, Path path) {
+		var result = webClient.saveToFile(uri, options, path);
+
 		switch (result.status()) {
 		case NOT_MODIFIED:
 			printInfo("Local file up to date");
 			break;
 		case OK:
 			printInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
-			printInfo("URL:  {}", fileUri);
-			printInfo("Path: {}", result.filePath());
+			printInfo("URL:  {}", uri);
+			printInfo("Path: {}", path);
 			break;
 		case ERROR:
-			printError("Error occurred during file download: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
+			printErrorDuringOperation("file download", result.exception());
 			break;
 		}
 	}
 
-	private String downloadPage(URI uri, RequestOptions options) {
-		var result = webClient.readString(uri, options);
+	private String getPage(URI uri, RequestOptions options) {
+		var result = webClient.getContent(uri, options);
 		if (result.status() != Status.OK) {
-			printError("Error occurred during page download: {}: {}", result.exception().getClass().getName(), result.exception().getMessage());
+			printErrorDuringOperation("page retrieval", result.exception());
 			return null;
 		}
 		return result.text();
+	}
+
+	private URI getLink(URI uri, RequestOptions options) {
+		var result = webClient.getLocation(uri, options);
+		if (result.status() != Status.OK) {
+			printErrorDuringOperation("location retrieval", result.exception());
+			return null;
+		}
+		return result.link();
+	}
+
+	private void printErrorDuringOperation(String operation, Throwable exception) {
+		printError("Error occurred during {}: {}: {}", operation, exception.getClass().getName(), exception.getMessage());
+	}
+
+	private static boolean isGitHub(URI uri) {
+		var host = uri.getHost().toLowerCase();
+		return "github.com".equals(host) || host.endsWith(".github.com");
 	}
 
 	private FileInfo findFileInfo(Profile profile) {
 		var pageUri = profile.getPageUrl();
 
 		// Download page containing file info
-		var pageHtml = downloadPage(pageUri, profile.getRequestOptions());
+		var pageHtml = getPage(pageUri, profile.getRequestOptions());
 		if (pageHtml == null) {
 			return null;
 		}
 
 		var pageScraper = new PageScraper(pageUri, pageHtml);
-
-		if (profile.getType() == Profile.Type.MOZILLA) {
-			var fileInfo = pageScraper.extractMozillaFileInfo(profile.getLinkPattern().toString());
-			if (fileInfo == null) {
-				printError("File link cannot be derived from page");
-			}
-			return fileInfo;
-		}
-
 		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
-
 		if (fileInfo == null) {
-			if (profile.getType() == Profile.Type.GITHUB) {
+			if (isGitHub(pageUri) || profile.getType() == Type.GITHUB) {
 				return findFileInfoInGitHubPageFragments(profile, pageScraper);
 			}
 			printError("File link not found in page");
@@ -146,7 +167,7 @@ public class DownloaderCore implements Closeable {
 		}
 
 		for (var fragmentUri : fragmentUriList) {
-			var fragmentHtml = downloadPage(fragmentUri, profile.getRequestOptions());
+			var fragmentHtml = getPage(fragmentUri, profile.getRequestOptions());
 			if (fragmentHtml == null) {
 				return null;
 			}

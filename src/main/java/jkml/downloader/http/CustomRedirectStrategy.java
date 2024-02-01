@@ -20,8 +20,14 @@ class CustomRedirectStrategy extends DefaultRedirectStrategy {
 
 	public static final CustomRedirectStrategy INSTANCE = new CustomRedirectStrategy();
 
+	public static final String DISABLE_REDIRECT = "downloader.disable-redirect";
+
 	@Override
 	public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
+		if (Boolean.TRUE.equals(context.getAttribute(DISABLE_REDIRECT))) {
+			return false;
+		}
+
 		// Let super class handle standard redirects
 		if (super.isRedirected(request, response, context)) {
 			return true;

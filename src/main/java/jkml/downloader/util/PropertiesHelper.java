@@ -19,7 +19,7 @@ public class PropertiesHelper {
 		}
 	}
 
-	public String getRequiredProperty(String key) {
+	public String getRequired(String key) {
 		var value = properties.getProperty(key);
 		if (value == null) {
 			throw new IllegalArgumentException("Property not found: " + key);

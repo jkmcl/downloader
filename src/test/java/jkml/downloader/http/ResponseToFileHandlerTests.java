@@ -5,9 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.message.BasicHttpResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,19 @@ class ResponseToFileHandlerTests {
 	static void afterAll() throws IOException {
 		Files.deleteIfExists(source);
 		Files.deleteIfExists(target);
+	}
+
+	@Test
+	void testCheckFileName() throws IOException {
+		var uri = URI.create("http://localhost/file.zip");
+		var response = new BasicHttpResponse(HttpStatus.SC_OK);
+		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(uri, response));
+
+		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"file.zip\"");
+		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(uri, response));
+
+		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"different.zip\"");
+		assertThrows(IOException.class, () -> ResponseToFileHandler.checkFileName(uri, response));
 	}
 
 	@Test

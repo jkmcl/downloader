@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jkml.downloader.util.StringUtils;
-import jkml.downloader.util.TestUtils;
 
 class PageScraperTests {
 
@@ -51,6 +50,11 @@ class PageScraperTests {
 		assertEquals("https://localhost/dir2/v1.0/file.txt", fileInfo.uri().toString());
 		assertNull(fileInfo.version());
 
+		// Link only (null occurrence)
+		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/file\\.txt)\""), null, null);
+		assertEquals("https://localhost/dir2/v1.0/file.txt", fileInfo.uri().toString());
+		assertNull(fileInfo.version());
+
 		// Link only (last occurrence)
 		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"(.+/other\\.txt)\""), Occurrence.LAST, null);
 		assertEquals("https://localhost/dir4/v3.0/other.txt", fileInfo.uri().toString());
@@ -83,37 +87,6 @@ class PageScraperTests {
 		var scraper = new PageScraper(URI.create("https://localhost/"), "<a>Exist 1.0</a>");
 		assertEquals("1.0", scraper.extractVersion(Pattern.compile(">Exist ([.0-9]+)<")));
 		assertEquals(null, scraper.extractVersion(Pattern.compile(">NotExist ([.0-9]+)<")));
-	}
-
-	@Test
-	void testExtractMozillaFileInfo() {
-		var baseUri = URI.create("https://download-installer.cdn.mozilla.net/pub/firefox/releases/");
-		var html = StringUtils.EMPTY;
-		var osLangProduct = "win64/en-US/Firefox";
-		var scraper = new PageScraper(baseUri, html);
-		assertNull(scraper.extractMozillaFileInfo(osLangProduct));
-	}
-
-	@Test
-	void testExtractMozillaFileInfo_Firefox() {
-		var baseStr = "https://download-installer.cdn.mozilla.net/pub/firefox/releases/";
-		var baseUri = URI.create(baseStr);
-		var html = TestUtils.readResourceAsString("firefox.html.txt");
-		var osLangProduct = "win64/en-US/Firefox";
-		var scraper = new PageScraper(baseUri, html);
-		var fileInfo = scraper.extractMozillaFileInfo(osLangProduct);
-		assertEquals(baseStr + "121.0.1/win64/en-US/Firefox%20Setup%20121.0.1.exe", fileInfo.uri().toString());
-	}
-
-	@Test
-	void testExtractMozillaFileInfo_Thunderbird() {
-		var baseStr = "https://download-installer.cdn.mozilla.net/pub/thunderbird/releases/";
-		var baseUri = URI.create(baseStr);
-		var html = TestUtils.readResourceAsString("thunderbird.html.txt");
-		var osLangProduct = "win64/en-US/Thunderbird";
-		var scraper = new PageScraper(baseUri, html);
-		var fileInfo = scraper.extractMozillaFileInfo(osLangProduct);
-		assertEquals(baseStr + "115.6.1/win64/en-US/Thunderbird%20Setup%20115.6.1.exe", fileInfo.uri().toString());
 	}
 
 	@Test

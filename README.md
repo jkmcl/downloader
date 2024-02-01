@@ -1,77 +1,32 @@
 # Overview
 
-A tool for downloading the latest version of files defined in a configuration file.
+Downloader is a profile-driven tool for downloading new files or the newer version of existing files.
 
-# Modified Time
 
-* The modified time of the downloaded file is set to the time in the `Last-Modified` response header.
-* The time in the `If-Modified-Since` request header is set to the modified time of the previously downloaded file if it exists. The file is not downloaded again if the response code is 304 (not modified).
+# Usage
 
-# Location
-
-There are two ways to specify the location of the file:
-
-* URL of the file.
-* URL of a web page and a regular expression known as the **Link Pattern**. The page is downloaded first and then the **Link Pattern** is used to find the URL of the file in the page. The first capturing group of the **Link Pattern** is assumed to contain the URL.
-
-# Version Number
-
-An optional version number can be appended to the base name of the file if the latter does not already include it. 
-
-Example: Original file `file.zip` with version number `1.0` is renamed to `file-1.0.zip`
-
-The version number is obtained from one of the following:
-
-* Second capturing group of the **Link Pattern**.
-* The same page containing the URL of the file using a separate regular expression known as the **Version Pattern**. The first capturing group of the **Version Pattern** is assumed to contain the version number.
-
-Both are optional and the version number from the **Version Pattern** takes precedence when both are available.
-
-# Other Features
-
-## Non-Standard Refresh Header
-
-The non-standard `Refresh` response header used by some web sites for redirection is supported. Example:
+The Downloader artifact is an "executable" JAR file. At run-time, it expects a single command line argument that provides the path of a JSON file containing one or more download profiles:
 
 ```
-Refresh: 0; URL=https://site.com/file.zip
+java -jar "${DOWNLOADER_JAR_FILE_PATH}" "${DOWNLOAD_PROFILES_JSON_FILE_PATH}"
 ```
 
-## Files on GitHub
 
-(Applicable to page URLs at `github.com`)
+# Download Profiles
 
-URLs of files available for download on the release page of some GitHub repositories are in HTML fragments at other URLs found in the page. These fragments are fetched and added to the page by JavaScript code running on the web browser. 
-
-To mimic this behavior, these fragments are downloaded and and then the **Link Pattern** is used to find the URL of the file in them if it is not found in the page itself.
-
-## Files on Mozilla CDN
-
-(Applicable to page URLs at `*.cdn.mozilla.net`)
-
-Mozilla products such as Firefox and Thunderbird are available on their CDN. The URL is in this format:
-
-`Page URL + "/" + Version + "/" + OS + "/" + Language + "/" + Product + "%20Setup%20" + Version + ".exe"`
-
-Examples:
-
-`https://download-installer.cdn.mozilla.net/pub/thunderbird/releases/115.4.1/win64/en-US/Thunderbird%20Setup%20115.4.1.exe`
-
-`https://download-installer.cdn.mozilla.net/pub/firefox/releases/119.0/win64/en-US/Firefox%20Setup%20119.0.exe`
-
-The page is downloaded first and then all links in the page that resemble version numbers compared. The largest version number is then used to determine the URL of the file to be downloaded. The **Link Pattern** is assumed to be the OS/Language/product string literal in the file URL.
-
-# Profiles
-
-Information about files to be downloaded is specified in a JSON file.
-
-Sample:
+Files to be downloaded are defined in profiles in a JSON file. The following is a sample:
 
 ```
 [
 	{
 		"name": "Direct download",
 		"fileUrl": "https://site.com/file.zip",
+		"outputDirectory": "target/test-classes/testOutput"
+	},
+	{
+		"name": "Download from location in redirect response",
+		"fileUrl": "https://site.com/api?version=latest",
+		"type": "REDIRECT",
 		"outputDirectory": "target/test-classes/testOutput"
 	},
 	{
@@ -92,12 +47,76 @@ Sample:
 		"linkPattern": "href=\"(.+/file\\.zip)\"",
 		"versionPattern": "<b>File v([.0-9]+)</b>",
 		"outputDirectory": "target/test-classes/testOutput"
-	},
-	{
-		"name": "Firefox",
-		"pageUrl": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/",
-		"linkPattern": "win64/en-US/Firefox",
-		"outputDirectory": "target/test-classes/testOutput"
 	}
 ]
+```
+
+Downloader determines how to locate and download each file based on its profile. Different profile types share some common fields but may have different mandatory field requirements. There are currently 4 profile types:
+* DIRECT
+* REDIRECT
+* STANDARD
+* GITHUB
+
+The `name` and `outputDirectory` fields are common to all types and are mandatory. The value of the former serves as a label of the profile and that of the latter is the path of the directory where the downloaded file is saved.
+
+When the optional `type` field is absent, Downloader infers the type to be DIRECT if the `fileUrl` field is present or STANDARD if it is absent. Downloader further infers the type to be GITHUB if the `pageUrl` field value is a URL in the `github.com` domain.
+
+The REDIRECT type cannot be inferred and must be defined explicitly.
+
+
+## DIRECT
+
+This profile type tells Downloader to download the file directly.
+
+The `fileUrl` field is mandatory and its value is the file URL.
+
+
+## REDIRECT
+
+This profile type tells Downloader to retrieve a redirect response (HTTP status 301, etc.) and then downloads the file from the URL in the `Location` response header.
+
+The `fileUrl` field is mandatory and its value is the URL providing the redirect response.
+
+
+## STANDARD
+
+This profile type tells Downloader to retrieve a web page, extract the file URL (and optionally the file version) from the page and then download the file from the URL.
+
+The `pageUrl` field is mandatory and its value is the page URL.
+
+The `linkPattern` field is mandatory its value is a regular expression used to extract the file URL from the page and optionally the file version from the file URL. The first capturing group of this regular expression provides the file URL. If defined, the second capturing group of this regular expression provides the file version.
+
+The `versionPattern` field is optional and its value is a regular expression used to extract the file version from the page. The first capturing group of this regular expression provides the file version.
+
+If either of the regular expressions captures the file version and the file base name in the file URL does not already include it, the file version is appended to the file base name of the downloaded file. For example, a downloaded file originally named `file.zip` with version `1.0` found on the page is renamed to `file-1.0.zip`.
+
+If both regular expressions capture a version, the one captured by `versionPattern` is appended.
+
+
+## GITHUB
+
+This profile type is an extension to STANDARD and is inferred when the `pageUrl` field value is a URL in the `github.com` domain.
+
+URLs of files available for download on the release page of some GitHub repositories are in page fragments at other URLs found on the page. These fragments are typically fetched and added to the page by JavaScript code running on the web browser.
+
+Downloader extracts the URLs of these fragments and then retrieves these fragments and performs the same file URL/version extraction on them if the file URL is not found on the original page.
+
+
+# Common Features
+
+The following features are common to all profile types.
+
+
+## Modified Time
+
+* The `If-Modified-Since` request header is added and set to the modified time of the previously downloaded file if it exists. The file is not downloaded again if the response indicates that it has not been modified (HTTP status 304).
+* The modified time of the downloaded file is set to the time in the `Last-Modified` response header.
+
+
+## Non-Standard Refresh Response Header
+
+The non-standard `Refresh` response header used by some web sites for redirection is supported. Example:
+
+```
+Refresh: 0; URL=https://site.com/file.zip
 ```

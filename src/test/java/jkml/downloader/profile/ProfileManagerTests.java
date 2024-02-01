@@ -7,12 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jkml.downloader.html.Occurrence;
-import jkml.downloader.http.RequestOptions;
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.TestUtils;
 
@@ -31,86 +31,51 @@ class ProfileManagerTests {
 		profile.setLinkPattern(Pattern.compile("(file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("[.0-9]+"));
 		profile.setOutputDirectory(TestUtils.outputDirectory());
-		profile.setLinkOccurrence(Occurrence.FIRST);
-		profile.setRequestOptions(new RequestOptions());
 		return profile;
 	}
 
-	@Test
-	void testValidate1() {
-		logger.info("Testing profile validation - pass with fileUrl and without pageUrl");
-		var profile = createProfile();
-		profile.setPageUrl(null);
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertTrue(errMsgList.isEmpty());
+	@BeforeEach
+	void beforeEach(TestInfo testInfo) {
+		logger.info("# Executing {}", testInfo.getDisplayName());
 	}
 
 	@Test
-	void testValidate2() {
-		logger.info("Testing profile validation - pass with pageUrl and without fileUrl");
-		var profile = createProfile();
-		profile.setFileUrl(null);
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertTrue(errMsgList.isEmpty());
-	}
-
-	@Test
-	void testValidate3() {
-		logger.info("Testing profile validation - fail with fileUrl and with pageUrl");
-		var profile = createProfile();
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertEquals(1, errMsgList.size());
-	}
-
-	@Test
-	void testValidate4() {
-		logger.info("Testing profile validation - fail without fileUrl and without pageUrl");
-		var profile = createProfile();
-		profile.setFileUrl(null);
-		profile.setPageUrl(null);
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertEquals(1, errMsgList.size());
-	}
-
-	@Test
-	void testValidate5() {
-		logger.info("Testing profile validation - fail without outputDirectory");
-		var profile = createProfile();
-		profile.setPageUrl(null);
-		profile.setOutputDirectory(null);
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertEquals(1, errMsgList.size());
-	}
-
-	@Test
-	void testValidate6() {
-		logger.info("Testing profile validation - fail with pageUrl and without linkPattern");
-		var profile = createProfile();
-		profile.setFileUrl(null);
-		profile.setLinkPattern(null);
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertEquals(1, errMsgList.size());
-	}
-
-	@Test
-	void testValidate7() {
-		logger.info("Testing profile validation - fail with null or empty name");
+	void testValidate_noNameOrDir() {
 		var profile = createProfile();
 		profile.setName(null);
-		profile.setPageUrl(null);
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertEquals(1, errMsgList.size());
+		profile.setOutputDirectory(null);
+		assertEquals(2, ProfileManager.validateProfile(profile).size());
 	}
 
 	@Test
-	void testValidate8() {
-		logger.info("Testing GitHub profile validation - fail with missing link pattern");
+	void testValidate_direct() {
 		var profile = createProfile();
+		profile.setType(Type.DIRECT);
+		assertTrue(ProfileManager.validateProfile(profile).isEmpty());
+
 		profile.setFileUrl(null);
+		assertEquals(1, ProfileManager.validateProfile(profile).size());
+	}
+
+	@Test
+	void testValidate_redirect() {
+		var profile = createProfile();
+		profile.setType(Type.REDIRECT);
+		assertTrue(ProfileManager.validateProfile(profile).isEmpty());
+
+		profile.setFileUrl(null);
+		assertEquals(1, ProfileManager.validateProfile(profile).size());
+	}
+
+	@Test
+	void testValidate_indirect() {
+		var profile = createProfile();
+		profile.setType(Type.STANDARD);
+		assertTrue(ProfileManager.validateProfile(profile).isEmpty());
+
+		profile.setPageUrl(null);
 		profile.setLinkPattern(null);
-		profile.setType(Type.GITHUB);
-		var errMsgList = ProfileManager.validateProfile(profile);
-		assertEquals(1, errMsgList.size());
+		assertEquals(2, ProfileManager.validateProfile(profile).size());
 	}
 
 	@Test

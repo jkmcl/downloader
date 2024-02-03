@@ -28,7 +28,7 @@ public class TestUtils {
 	}
 
 	public static Path outputDirectory() {
-		return getResoureAsPath(".").resolve("testOutput");
+		return Path.of("target/test-outputs");
 	}
 
 }

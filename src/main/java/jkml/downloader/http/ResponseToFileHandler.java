@@ -48,20 +48,20 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 		}
 	}
 
-	static void checkFileContent(Path source, Path target) throws IOException {
-		if (Files.notExists(target)) {
+	static void checkFileContent(Path newFile, Path oldFile) throws IOException {
+		if (Files.notExists(oldFile)) {
 			return;
 		}
 
-		var sourceSize = Files.size(source);
-		var targetSize = Files.size(target);
+		var newSize = Files.size(newFile);
+		var oldSize = Files.size(oldFile);
 
-		if (sourceSize * 2 < targetSize) {
-			throw new IOException("New file is smaller than half of existing file: " + source);
+		if (newSize * 2 < oldSize) {
+			throw new IOException("New file smaller than half of existing file: " + newFile);
 		}
 
-		if (sourceSize == targetSize && Files.mismatch(source, target) == -1L) {
-			throw new IOException("Content of new file is identical to that of existing file: " + source);
+		if (newSize == oldSize && Files.mismatch(newFile, oldFile) == -1L) {
+			throw new IOException("New file content identical to old file content: " + newFile);
 		}
 	}
 

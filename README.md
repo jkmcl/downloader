@@ -73,7 +73,7 @@ The `fileUrl` field is mandatory and its value is the file URL.
 
 ## REDIRECT
 
-This profile type tells Downloader to retrieve a redirect response (HTTP status 301, etc.) and then downloads the file from the URL in the `Location` response header.
+This profile type tells Downloader to retrieve a redirect response (HTTP status 301, etc.) and then download the file from the URL in the `Location` response header.
 
 The `fileUrl` field is mandatory and its value is the URL providing the redirect response.
 

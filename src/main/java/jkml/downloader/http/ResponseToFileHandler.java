@@ -39,11 +39,8 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	static void checkFileName(HttpResponse response, String fileName) throws IOException {
 		var headerFileName = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
-		if (headerFileName == null) {
-			return;
-		}
 
-		if (!headerFileName.equals(fileName)) {
+		if (headerFileName != null && !headerFileName.equals(fileName)) {
 			throw new IOException("Mismatched file name in response header: " + headerFileName);
 		}
 	}
@@ -89,17 +86,16 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			return;
 		}
 
-		modifiedTime = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED);
-		if (modifiedTime == null) {
+		if ((modifiedTime = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
 			throw new IOException("Remote file last modified time not available");
 		}
 		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(modifiedTime));
 
 		var fileName = path.getFileName().toString();
 		checkFileName(response, fileName);
+		tmpPath = path.resolveSibling(fileName + ".partial");
 
 		logger.info("Saving remote content");
-		tmpPath = path.resolveSibling(fileName + ".partial");
 		channel = Files.newByteChannel(tmpPath,
 				StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE,
@@ -118,10 +114,11 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 		if (endOfStream) {
 			closeChannel();
+			logger.info("Finished saving remote content");
+
 			checkFileContent(tmpPath, path);
 			Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
 			Files.setLastModifiedTime(path, FileTime.from(modifiedTime));
-			logger.info("Finished saving remote content");
 		}
 	}
 

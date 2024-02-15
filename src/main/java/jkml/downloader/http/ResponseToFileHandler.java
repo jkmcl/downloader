@@ -27,7 +27,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private final Path path;
 
-	private Instant modifiedTime;
+	private Instant lastModified;
 
 	private Path tmpPath;
 
@@ -86,10 +86,10 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			return;
 		}
 
-		if ((modifiedTime = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
+		if ((lastModified = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
 			throw new IOException("Remote file last modified time not available");
 		}
-		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(modifiedTime));
+		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(lastModified));
 
 		var fileName = path.getFileName().toString();
 		checkFileName(response, fileName);
@@ -116,15 +116,15 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 			closeChannel();
 			logger.info("Finished saving remote content");
 
+			Files.setLastModifiedTime(tmpPath, FileTime.from(lastModified));
 			checkFileContent(tmpPath, path);
 			Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
-			Files.setLastModifiedTime(path, FileTime.from(modifiedTime));
 		}
 	}
 
 	@Override
 	protected FileResult buildResult() {
-		return (modifiedTime == null) ? new FileResult() : new FileResult(modifiedTime);
+		return (lastModified == null) ? new FileResult() : new FileResult(lastModified);
 	}
 
 	@Override

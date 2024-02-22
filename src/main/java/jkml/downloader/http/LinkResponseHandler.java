@@ -12,9 +12,9 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ResponseToLinkHandler extends ResponseHandler<LinkResult> {
+class LinkResponseHandler extends ResponseHandler<LinkResult> {
 
-	private final Logger logger = LoggerFactory.getLogger(ResponseToLinkHandler.class);
+	private final Logger logger = LoggerFactory.getLogger(LinkResponseHandler.class);
 
 	private URI location;
 

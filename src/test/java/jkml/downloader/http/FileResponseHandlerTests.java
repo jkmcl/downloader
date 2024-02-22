@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import jkml.downloader.util.TestUtils;
 
-class ResponseToFileHandlerTests {
+class FileResponseHandlerTests {
 
 	private static Path outDir = TestUtils.outputDirectory();
 
@@ -41,13 +41,13 @@ class ResponseToFileHandlerTests {
 		var fileName = "file.zip";
 
 		var response = new BasicHttpResponse(HttpStatus.SC_OK);
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(response, fileName));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(response, fileName));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"file.zip\"");
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileName(response, fileName));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(response, fileName));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"different.zip\"");
-		assertThrows(IOException.class, () -> ResponseToFileHandler.checkFileName(response, fileName));
+		assertThrows(IOException.class, () -> FileResponseHandler.checkFileName(response, fileName));
 	}
 
 	@Test
@@ -55,33 +55,33 @@ class ResponseToFileHandlerTests {
 		// Target file does not exist
 		Files.deleteIfExists(source);
 		Files.deleteIfExists(target);
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileContent(source, target));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileContent(source, target));
 
 		// Same size, different content
 		Files.writeString(source, "1234");
 		Files.writeString(target, "1235");
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileContent(source, target));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileContent(source, target));
 
 		// Same size, same content
 		Files.writeString(source, "1234");
 		Files.writeString(target, "1234");
-		var ioException = assertThrows(IOException.class, () -> ResponseToFileHandler.checkFileContent(source, target));
+		var ioException = assertThrows(IOException.class, () -> FileResponseHandler.checkFileContent(source, target));
 		assertTrue(ioException.getMessage().contains("identical"));
 
 		// Different size, source bigger than target
 		Files.writeString(source, "1234");
 		Files.writeString(target, "12");
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileContent(source, target));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileContent(source, target));
 
 		// Different size, source half the size of target
 		Files.writeString(source, "12");
 		Files.writeString(target, "1234");
-		assertDoesNotThrow(() -> ResponseToFileHandler.checkFileContent(source, target));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileContent(source, target));
 
 		// Different size, source smaller than half the size of target
 		Files.writeString(source, "12");
 		Files.writeString(target, "12345");
-		ioException = assertThrows(IOException.class, () -> ResponseToFileHandler.checkFileContent(source, target));
+		ioException = assertThrows(IOException.class, () -> FileResponseHandler.checkFileContent(source, target));
 		assertTrue(ioException.getMessage().contains("smaller"));
 	}
 

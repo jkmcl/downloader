@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Based on org.apache.hc.client5.http.async.methods.SimpleAsyncEntityConsumer
  */
-class ResponseToTextHandler extends ResponseHandler<TextResult> {
+class TextResponseHandler extends ResponseHandler<TextResult> {
 
-	private final Logger logger = LoggerFactory.getLogger(ResponseToTextHandler.class);
+	private final Logger logger = LoggerFactory.getLogger(TextResponseHandler.class);
 
 	private Charset charset = StandardCharsets.UTF_8;
 

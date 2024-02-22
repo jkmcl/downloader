@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import jkml.downloader.util.TimeUtils;
 
-class ResponseToFileHandler extends ResponseHandler<FileResult> {
+class FileResponseHandler extends ResponseHandler<FileResult> {
 
-	private final Logger logger = LoggerFactory.getLogger(ResponseToFileHandler.class);
+	private final Logger logger = LoggerFactory.getLogger(FileResponseHandler.class);
 
 	private final Path path;
 
@@ -33,7 +33,7 @@ class ResponseToFileHandler extends ResponseHandler<FileResult> {
 
 	private WritableByteChannel channel;
 
-	public ResponseToFileHandler(Path path) {
+	public FileResponseHandler(Path path) {
 		this.path = path;
 	}
 

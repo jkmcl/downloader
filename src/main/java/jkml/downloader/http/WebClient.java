@@ -12,12 +12,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.apache.hc.core5.http.nio.support.BasicRequestProducer;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,15 +78,17 @@ public class WebClient implements Closeable {
 
 		var request = new BasicHttpRequest(Method.GET, uri);
 
-		// Determine header values
-		UserAgent userAgent = DEFAULT_USER_AGENT;
+		UserAgent userAgent = null;
 		Referer referer = null;
 		if (options != null) {
-			userAgent = (options.getUserAgent() != null) ? options.getUserAgent() : userAgent;
+			userAgent = options.getUserAgent();
 			referer = options.getReferer();
 		}
 
 		// Set User-Agent header
+		if (userAgent == null) {
+			userAgent = DEFAULT_USER_AGENT;
+		}
 		var value = getUserAgentString(userAgent);
 		if (userAgent != DEFAULT_USER_AGENT) {
 			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, value);
@@ -124,7 +126,7 @@ public class WebClient implements Closeable {
 	 * Retrieve the response body as a String.
 	 */
 	public TextResult getContent(URI uri, RequestOptions options) {
-		return execute(createRequest(uri, options), null, new ResponseToTextHandler(), TextResult::new);
+		return execute(createRequest(uri, options), null, new TextResponseHandler(), TextResult::new);
 	}
 
 	/**
@@ -140,19 +142,19 @@ public class WebClient implements Closeable {
 			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
 		}
 
-		return execute(request, null, new ResponseToFileHandler(path), FileResult::new);
+		return execute(request, null, new FileResponseHandler(path), FileResult::new);
 	}
 
 	/**
 	 * Retrieve the location header value in the redirect (3xx) response.
 	 */
 	public LinkResult getLocation(URI uri, RequestOptions options) {
-		var context = new BasicHttpContext();
+		var context = new HttpClientContext();
 
 		// Disable auto-redirect to obtain the location header
 		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
 
-		return execute(createRequest(uri, options), context, new ResponseToLinkHandler(), LinkResult::new);
+		return execute(createRequest(uri, options), context, new LinkResponseHandler(), LinkResult::new);
 	}
 
 }

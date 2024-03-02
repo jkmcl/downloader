@@ -1,4 +1,4 @@
-package jkml.downloader.core;
+package jkml.downloader;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -31,11 +32,11 @@ import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TestUtils;
 
-class DownloaderCoreTests {
+class DownloaderTests {
 
 	private static final String PROFILES_JSON_FILE_NAME = "profiles.json";
 
-	private static final Logger logger = LoggerFactory.getLogger(DownloaderCoreTests.class);
+	private static final Logger logger = LoggerFactory.getLogger(DownloaderTests.class);
 
 	private static final Path outDir = TestUtils.outputDirectory();
 
@@ -85,14 +86,18 @@ class DownloaderCoreTests {
 		return nullable(RequestOptions.class);
 	}
 
+	private Downloader createDownloaderCore(WebClient webClient) {
+		return new Downloader(mock(PrintStream.class), webClient);
+	}
+
 	@Test
 	void testDownload() throws IOException {
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getLocation(any(URI.class), anyRequestOptions())).thenReturn(link(URI.create("http://localhost/")));
 			when(mockWebClient.getContent(any(URI.class), anyRequestOptions())).thenReturn(text(""));
 			when(mockWebClient.saveToFile(any(URI.class), anyRequestOptions(), any(Path.class))).thenReturn(file());
 
-			core.download(TestUtils.getResoureAsPath(PROFILES_JSON_FILE_NAME));
+			downloader.download(TestUtils.getResoureAsPath(PROFILES_JSON_FILE_NAME));
 
 			verify(mockWebClient).getLocation(any(URI.class), anyRequestOptions());
 			verify(mockWebClient, times(3)).getContent(any(URI.class), anyRequestOptions());
@@ -112,10 +117,10 @@ class DownloaderCoreTests {
 		var profile = createProfile(Type.DIRECT);
 		profile.setFileUrl(fileUri);
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			assertDownload(mockWebClient, fileUri, filePath);
 		}
@@ -129,10 +134,10 @@ class DownloaderCoreTests {
 		profile.setPageUrl(pageUri);
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(textNotFound());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
 		}
@@ -147,10 +152,10 @@ class DownloaderCoreTests {
 		profile.setPageUrl(pageUri);
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 
-			core.download(profile);
+			downloader.download(profile);
 
 			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
 		}
@@ -167,11 +172,11 @@ class DownloaderCoreTests {
 		profile.setPageUrl(pageUri);
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			assertDownload(mockWebClient, fileUri, filePath);
 		}
@@ -188,11 +193,11 @@ class DownloaderCoreTests {
 		profile.setPageUrl(pageUri);
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/([.0-9]+)/file\\.zip)\""));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			assertDownload(mockWebClient, fileUri, filePath);
 		}
@@ -210,11 +215,11 @@ class DownloaderCoreTests {
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			assertDownload(mockWebClient, fileUri, filePath);
 		}
@@ -230,10 +235,10 @@ class DownloaderCoreTests {
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 
-			core.download(profile);
+			downloader.download(profile);
 
 			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
 		}
@@ -250,11 +255,11 @@ class DownloaderCoreTests {
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 			when(mockWebClient.getContent(eq(pageFragmentUri), anyRequestOptions())).thenReturn(textNotFound());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
 			verify(mockWebClient).getContent(eq(pageFragmentUri), anyRequestOptions());
@@ -273,11 +278,11 @@ class DownloaderCoreTests {
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 			when(mockWebClient.getContent(eq(pageFragmentUri), anyRequestOptions())).thenReturn(text(pageFragmentHtml));
 
-			core.download(profile);
+			downloader.download(profile);
 
 			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
 			verify(mockWebClient).getContent(eq(pageFragmentUri), anyRequestOptions());
@@ -298,12 +303,12 @@ class DownloaderCoreTests {
 		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
 			when(mockWebClient.getContent(eq(pageFragmentUri), anyRequestOptions())).thenReturn(text(pageFragmentHtml));
 			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			assertDownload(mockWebClient, fileUri, filePath);
 		}
@@ -316,10 +321,10 @@ class DownloaderCoreTests {
 		var profile = createProfile(Type.REDIRECT);
 		profile.setFileUrl(apiUri);
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getLocation(eq(apiUri), anyRequestOptions())).thenReturn(nolink());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			verify(mockWebClient).getLocation(eq(apiUri), anyRequestOptions());
 		}
@@ -334,11 +339,11 @@ class DownloaderCoreTests {
 		var profile = createProfile(Type.REDIRECT);
 		profile.setFileUrl(apiUri);
 
-		try (var mockWebClient = mock(WebClient.class); var core = new DownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getLocation(eq(apiUri), anyRequestOptions())).thenReturn(link(fileUri));
 			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
-			core.download(profile);
+			downloader.download(profile);
 
 			assertDownload(mockWebClient, fileUri, filePath);
 		}

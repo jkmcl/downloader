@@ -1,8 +1,8 @@
-package jkml.downloader.core;
+package jkml.downloader;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Path;
 
@@ -23,26 +23,27 @@ import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TimeUtils;
 
-public class DownloaderCore implements Closeable {
+public class Downloader implements Closeable {
 
-	private final Logger logger = LoggerFactory.getLogger(DownloaderCore.class);
+	private final Logger logger = LoggerFactory.getLogger(Downloader.class);
+
+	private final PrintStream printStream;
 
 	private final WebClient webClient;
 
-	private final PrintWriter writer;
-
-	public DownloaderCore() {
-		this(new WebClient());
+	public Downloader(PrintStream printStream) {
+		this(printStream, new WebClient());
 	}
 
-	DownloaderCore(WebClient webClient) {
+	Downloader(PrintStream printStream, WebClient webClient) {
+		this.printStream = printStream;
 		this.webClient = webClient;
-		writer = (System.console() == null) ? null : System.console().writer();
 	}
 
 	@Override
 	public void close() throws IOException {
 		webClient.close();
+		printStream.close();
 	}
 
 	public void download(Path path) throws IOException {
@@ -194,9 +195,9 @@ public class DownloaderCore implements Closeable {
 
 	private void printLine(Level level, String message) {
 		logger.atLevel(level).log(message);
-		if (writer != null) {
-			writer.print(message);
-			writer.println();
+		if (printStream != null) {
+			printStream.print(message);
+			printStream.println();
 		}
 	}
 

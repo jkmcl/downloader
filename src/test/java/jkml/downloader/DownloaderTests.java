@@ -1,5 +1,6 @@
 package jkml.downloader;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -347,6 +348,21 @@ class DownloaderTests {
 
 			assertDownload(mockWebClient, fileUri, filePath);
 		}
+	}
+
+	@Test
+	void testMain_noArg() {
+		assertDoesNotThrow(() -> Downloader.main(new String[] {}));
+	}
+
+	@Test
+	void testMain_noFile() {
+		assertDoesNotThrow(() -> Downloader.main(new String[] { "no_such_file.txt" }));
+	}
+
+	@Test
+	void testMain() {
+		assertDoesNotThrow(() -> Downloader.main(new String[] { "src/test/resources/profiles-empty.json" }));
 	}
 
 }

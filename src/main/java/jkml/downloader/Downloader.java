@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.slf4j.Logger;
@@ -198,6 +199,24 @@ public class Downloader implements Closeable {
 		if (printStream != null) {
 			printStream.print(message);
 			printStream.println();
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		if (args.length != 1) {
+			System.out.println("Usage: " + Downloader.class.getName() + " <file>");
+			return;
+		}
+
+		var path = Path.of(args[0]);
+
+		if (Files.notExists(path)) {
+			System.out.println("File not found: " + path);
+			return;
+		}
+
+		try (var downloader = new Downloader(System.out)) {
+			downloader.download(path);
 		}
 	}
 

@@ -1,7 +1,6 @@
 package jkml.downloader.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
@@ -10,6 +9,8 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +18,6 @@ import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.TestUtils;
 
 class ProfileManagerTests {
-
-	private static final String PROFILES_FILE_NAME = "profiles.json";
 
 	private static final Logger logger = LoggerFactory.getLogger(ProfileManagerTests.class);
 
@@ -78,31 +77,11 @@ class ProfileManagerTests {
 		assertEquals(2, ProfileManager.validateProfile(profile).size());
 	}
 
-	@Test
-	void testLoadProfiles() throws Exception {
-		var profileManager = new ProfileManager();
-
-		var profileList = profileManager.loadProfiles(TestUtils.getResoureAsPath(PROFILES_FILE_NAME));
-
-		assertFalse(profileList.isEmpty());
-	}
-
-	@Test
-	void testLoadProfiles_null() throws Exception {
-		var profileManager = new ProfileManager();
-
-		var profileList = profileManager.loadProfiles(TestUtils.getResoureAsPath("profiles-null.json"));
-
-		assertEquals(2, profileList.size());
-	}
-
-	@Test
-	void testLoadProfiles_error() throws Exception {
-		var profileManager = new ProfileManager();
-
-		var profileList = profileManager.loadProfiles(TestUtils.getResoureAsPath("profiles-error.json"));
-
-		assertEquals(1, profileList.size());
+	@ParameterizedTest
+	@CsvSource({ "profiles.json, 5", "profiles-null.json, 2", "profiles-error.json, 1", "http.properties, 0", })
+	void testLoadProfiles(String name, int expectedSize) throws Exception {
+		var profileList = new ProfileManager().loadProfiles(TestUtils.getResoureAsPath(name));
+		assertEquals(expectedSize, profileList.size());
 	}
 
 }

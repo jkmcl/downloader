@@ -2,6 +2,7 @@ package jkml.downloader.http;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
@@ -19,11 +20,14 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.TimeUtils;
 
 class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private final Logger logger = LoggerFactory.getLogger(FileResponseHandler.class);
+
+	private final URI uri;
 
 	private final Path path;
 
@@ -33,11 +37,12 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private WritableByteChannel channel;
 
-	public FileResponseHandler(Path path) {
+	public FileResponseHandler(URI uri, Path path) {
+		this.uri = uri;
 		this.path = path;
 	}
 
-	static void checkFileName(HttpResponse response, String fileName) throws IOException {
+	static void checkFileName(String fileName, HttpResponse response) throws IOException {
 		var headerFileName = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		if (headerFileName != null && !headerFileName.equals(fileName)) {
@@ -91,8 +96,8 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		}
 		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.Formatter.format(lastModified));
 
-		var fileName = path.getFileName().toString();
-		checkFileName(response, fileName);
+		var fileName = FileUtils.getFileName(uri);
+		checkFileName(fileName, response);
 		tmpPath = path.resolveSibling(fileName + ".partial");
 
 		logger.info("Saving remote content");

@@ -41,13 +41,13 @@ class FileResponseHandlerTests {
 		var fileName = "file.zip";
 
 		var response = new BasicHttpResponse(HttpStatus.SC_OK);
-		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(response, fileName));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(fileName, response));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"file.zip\"");
-		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(response, fileName));
+		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(fileName, response));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"different.zip\"");
-		assertThrows(IOException.class, () -> FileResponseHandler.checkFileName(response, fileName));
+		assertThrows(IOException.class, () -> FileResponseHandler.checkFileName(fileName, response));
 	}
 
 	@Test

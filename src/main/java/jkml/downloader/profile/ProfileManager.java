@@ -61,12 +61,12 @@ public class ProfileManager {
 	}
 
 	public List<Profile> loadProfiles(Path path) throws IOException {
+		logger.info("Loading profiles from file: {}", path);
 		Profile[] profileArray = null;
 		try (var reader = Files.newBufferedReader(path)) {
 			profileArray = GsonUtils.createGson().fromJson(reader, Profile[].class);
 		} catch (JsonParseException e) {
-			logger.error("Invalid JSON", e);
-			return List.of();
+			throw new IOException("Invalid JSON", e);
 		}
 
 		// Validate profiles

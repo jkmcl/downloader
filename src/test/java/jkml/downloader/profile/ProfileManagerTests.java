@@ -1,8 +1,10 @@
 package jkml.downloader.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.regex.Pattern;
 
@@ -78,10 +80,15 @@ class ProfileManagerTests {
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "profiles.json, 5", "profiles-null.json, 2", "profiles-error.json, 1", "http.properties, 0", })
+	@CsvSource({ "profiles.json, 5", "profiles-null.json, 2", "profiles-error.json, 1" })
 	void testLoadProfiles(String name, int expectedSize) throws Exception {
 		var profileList = new ProfileManager().loadProfiles(TestUtils.getResoureAsPath(name));
 		assertEquals(expectedSize, profileList.size());
+	}
+
+	@Test
+	void testLoadProfiles_invalid() throws Exception {
+		assertThrows(IOException.class, () -> new ProfileManager().loadProfiles(TestUtils.getResoureAsPath("http.properties")));
 	}
 
 }

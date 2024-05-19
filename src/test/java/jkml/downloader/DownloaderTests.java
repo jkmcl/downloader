@@ -133,7 +133,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.STANDARD);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(textNotFound());
@@ -151,7 +151,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.STANDARD);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
@@ -171,7 +171,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.STANDARD);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file-[.0-9]+\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
@@ -192,7 +192,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.STANDARD);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/([.0-9]+)/file\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/([.0-9]+)/file\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
@@ -213,7 +213,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.STANDARD);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
@@ -233,7 +233,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.GITHUB);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
@@ -253,7 +253,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.GITHUB);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
@@ -276,7 +276,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.GITHUB);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
@@ -301,7 +301,7 @@ class DownloaderTests {
 
 		var profile = createProfile(Type.GITHUB);
 		profile.setPageUrl(pageUri);
-		profile.setLinkPattern(Pattern.compile(" href=\"(.+/file\\.zip)\""));
+		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {

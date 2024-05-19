@@ -32,19 +32,19 @@ Files to be downloaded are defined in profiles in a JSON file. The following is 
 	{
 		"name": "File with or without version number in file name",
 		"pageUrl": "https://site.com/page.html",
-		"linkPattern": "href=\"(.+/file\\.zip)\"",
+		"linkPattern": "href=\"([^\"]+/file\\.zip)",
 		"outputDirectory": "target/test-classes/testOutput"
 	},
 	{
 		"name": "File with version number in parent component of path",
 		"pageUrl": "https://site.com/page.html",
-		"linkPattern": "href=\"(.+/v([.0-9]+)/file\\.zip)\"",
+		"linkPattern": "href=\"([^\"]+/v([.0-9]+)/file\\.zip)",
 		"outputDirectory": "target/test-classes/testOutput"
 	},
 	{
 		"name": "File with version number in page",
 		"pageUrl": "https://site.com/page.html",
-		"linkPattern": "href=\"(.+/file\\.zip)\"",
+		"linkPattern": "href=\"([^\"]+/file\\.zip)",
 		"versionPattern": "<b>File v([.0-9]+)</b>",
 		"outputDirectory": "target/test-classes/testOutput"
 	}

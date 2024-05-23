@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,15 +81,16 @@ class ProfileManagerTests {
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "profiles.json, 5", "profiles-null.json, 2", "profiles-error.json, 1" })
+	@CsvSource({ "profiles.json, 5", "profiles-error.json, 1" })
 	void testLoadProfiles(String name, int expectedSize) throws Exception {
 		var profileList = new ProfileManager().loadProfiles(TestUtils.getResoureAsPath(name));
 		assertEquals(expectedSize, profileList.size());
 	}
 
-	@Test
-	void testLoadProfiles_invalid() throws Exception {
-		assertThrows(IOException.class, () -> new ProfileManager().loadProfiles(TestUtils.getResoureAsPath("http.properties")));
+	@ParameterizedTest
+	@ValueSource(strings = { "http.properties", "profiles-null.json" })
+	void testLoadProfiles_invalid(String name) throws Exception {
+		assertThrows(IOException.class, () -> new ProfileManager().loadProfiles(TestUtils.getResoureAsPath(name)));
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -21,6 +22,7 @@ public class GsonUtils {
 				.disableJdkUnsafe()
 				.registerTypeAdapter(Pattern.class, GsonUtils.PatternAdapter)
 				.registerTypeHierarchyAdapter(Path.class, GsonUtils.PathAdapter)
+				.setStrictness(Strictness.STRICT)
 				.create();
 	}
 

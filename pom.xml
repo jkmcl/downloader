@@ -8,13 +8,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.6</version>
+		<version>3.3.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>jkml</groupId>
 	<artifactId>downloader</artifactId>
-	<version>3.1.1</version>
+	<version>3.2.0-SNAPSHOT</version>
 
 	<properties>
 		<java.version>17</java.version>
@@ -126,6 +126,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<includeTools>false</includeTools>
 					<layers>
 						<enabled>false</enabled>
 					</layers>

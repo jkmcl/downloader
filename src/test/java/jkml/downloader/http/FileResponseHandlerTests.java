@@ -37,7 +37,7 @@ class FileResponseHandlerTests {
 	}
 
 	@Test
-	void testCheckFileName() throws IOException {
+	void testCheckFileName() {
 		var fileName = "file.zip";
 
 		var response = new BasicHttpResponse(HttpStatus.SC_OK);

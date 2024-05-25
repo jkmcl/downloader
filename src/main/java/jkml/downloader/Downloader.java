@@ -49,9 +49,15 @@ public class Downloader implements Closeable {
 
 	public void download(Path path) throws IOException {
 		var profileManager = new ProfileManager();
-		for (var profile : profileManager.loadProfiles(path)) {
-			download(profile);
-			printInfo(StringUtils.EMPTY);
+		if (profileManager.loadProfiles(path)) {
+			for (var profile : profileManager.getProfiles()) {
+				download(profile);
+				printInfo(StringUtils.EMPTY);
+			}
+		} else {
+			for (var error : profileManager.getErrors()) {
+				printError("Invalid {}", error);
+			}
 		}
 	}
 

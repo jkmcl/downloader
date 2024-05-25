@@ -2,7 +2,6 @@ package jkml.downloader.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 
@@ -13,7 +12,7 @@ import com.google.gson.JsonPrimitive;
 class GsonUtilsTests {
 
 	@Test
-	void testPatternAdapter() throws IOException {
+	void testPatternAdapter() {
 		var source = "expected";
 		var adapter = GsonUtils.createGson().getAdapter(Pattern.class);
 		var object = adapter.fromJsonTree(new JsonPrimitive(source));
@@ -21,7 +20,7 @@ class GsonUtilsTests {
 	}
 
 	@Test
-	void testPathAdapter() throws IOException {
+	void testPathAdapter() {
 		var source = "expected";
 		var adapter = GsonUtils.createGson().getAdapter(Path.class);
 		var object = adapter.fromJsonTree(new JsonPrimitive(source));

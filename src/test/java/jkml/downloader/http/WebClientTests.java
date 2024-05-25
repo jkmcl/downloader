@@ -95,7 +95,7 @@ class WebClientTests {
 	}
 
 	@Test
-	void testGetContent_Success() throws Exception {
+	void testGetContent_Success() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
 
 		var result = webClient.getContent(mockUrl, null);
@@ -104,7 +104,7 @@ class WebClientTests {
 	}
 
 	@Test
-	void testGetContent_Failure() throws Exception {
+	void testGetContent_Failure() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
 		var result = webClient.getContent(mockUrl, null);
@@ -146,7 +146,7 @@ class WebClientTests {
 	}
 
 	@Test
-	void testGetLocation_Success() throws Exception {
+	void testGetLocation_Success() {
 		var location = "http://localhost/file.txt";
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(seeOther(location)));
 
@@ -157,7 +157,7 @@ class WebClientTests {
 	}
 
 	@Test
-	void testGetLocation_Failure() throws Exception {
+	void testGetLocation_Failure() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok()));
 
 		var result = webClient.getLocation(mockUrl, null);

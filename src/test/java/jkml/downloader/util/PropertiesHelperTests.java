@@ -17,7 +17,7 @@ class PropertiesHelperTests {
 	}
 
 	@Test
-	void testGetRequired() throws Exception {
+	void testGetRequired() {
 		var helper = new PropertiesHelper(FILE_NAME);
 		assertNotNull(helper.getRequired("a"));
 		assertThrows(IllegalArgumentException.class, () -> helper.getRequired("no such key"));

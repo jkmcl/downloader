@@ -9,14 +9,16 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonParseException;
-
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.StringUtils;
 
 public class ProfileManager {
 
 	private final Logger logger = LoggerFactory.getLogger(ProfileManager.class);
+
+	private List<Profile> profiles = List.of();
+
+	private List<String> errors = List.of();
 
 	private static Profile inferType(Profile profile) {
 		if (profile.getType() != null) {
@@ -32,60 +34,73 @@ public class ProfileManager {
 		return profile;
 	}
 
-	static List<String> validateProfile(Profile profile) {
-		var errMsgList = new ArrayList<String>();
+	static List<String> validate(Profile profile) {
+		var errors = new ArrayList<String>();
 
 		if (StringUtils.isNullOrBlank(profile.getName())) {
-			errMsgList.add("Profile must contain a name");
+			errors.add("Profile must contain a name");
 		}
 
 		if (profile.getOutputDirectory() == null) {
-			errMsgList.add("Profile must contain an outputDirectory");
+			errors.add("Profile must contain an outputDirectory");
 		}
 
 		var type = profile.getType();
 		if (type == Type.DIRECT || type == Type.REDIRECT) {
 			if (profile.getFileUrl() == null) {
-				errMsgList.add(type.name() + " profile must contain a fileUrl");
+				errors.add(type.name() + " profile must contain a fileUrl");
 			}
 		} else {
 			if (profile.getPageUrl() == null) {
-				errMsgList.add(type.name() + " profile must contain a pageUrl");
+				errors.add(type.name() + " profile must contain a pageUrl");
 			}
 			if (profile.getLinkPattern() == null) {
-				errMsgList.add(type.name() + " profile must contain a linkPattern");
+				errors.add(type.name() + " profile must contain a linkPattern");
 			}
 		}
 
-		return errMsgList;
+		return errors;
 	}
 
-	public List<Profile> loadProfiles(Path path) throws IOException {
+	private static List<String> inferTypeAndValidate(Profile[] profiles) {
+		var errors = new ArrayList<String>();
+		for (int i = 0, n = profiles.length; i < n; ++i) {
+			for (var err : validate(inferType(profiles[i]))) {
+				errors.add(String.format("profile[%d]: %s", i, err));
+			}
+		}
+		return errors;
+	}
+
+	public boolean loadProfiles(Path path) throws IOException {
 		logger.info("Loading profiles from file: {}", path);
-		Profile[] profileArray = null;
+
+		Profile[] tmpProfiles;
 		try (var reader = Files.newBufferedReader(path)) {
-			profileArray = GsonUtils.createGson().fromJson(reader, Profile[].class);
-		} catch (JsonParseException e) {
-			throw new IOException("Invalid JSON", e);
+			tmpProfiles = GsonUtils.createGson().fromJson(reader, Profile[].class);
+		} catch (Exception e) {
+			throw new IOException("Failed to load profiles", e);
 		}
 
-		// Validate profiles
-		var profileList = new ArrayList<Profile>(profileArray.length);
-		for (var profile : profileArray) {
-			if (profile == null) {
-				continue;
-			}
+		var tmpErrors = inferTypeAndValidate(tmpProfiles);
 
-			var errors = validateProfile(inferType(profile));
-			if (errors.isEmpty()) {
-				profileList.add(profile);
-			} else {
-				logger.error("Invalid profile: {}", profile.getName());
-				errors.forEach(logger::error);
-			}
+		if (tmpErrors.isEmpty()) {
+			profiles = List.of(tmpProfiles);
+			errors = List.of();
+			return true;
+		} else {
+			profiles = List.of();
+			errors = List.copyOf(tmpErrors);
+			return false;
 		}
+	}
 
-		return profileList;
+	public List<Profile> getProfiles() {
+		return profiles;
+	}
+
+	public List<String> getErrors() {
+		return errors;
 	}
 
 }

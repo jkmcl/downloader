@@ -1,6 +1,5 @@
 package jkml.downloader.profile;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -66,23 +65,29 @@ public class ProfileManager {
 		var errors = new ArrayList<String>();
 		for (int i = 0, n = profiles.length; i < n; ++i) {
 			for (var err : validate(inferType(profiles[i]))) {
-				errors.add(String.format("profile[%d]: %s", i, err));
+				errors.add(String.format("Invalid profile[%d]: %s", i, err));
 			}
 		}
 		return errors;
 	}
 
-	public boolean loadProfiles(Path path) throws IOException {
+	public boolean loadProfiles(Path path) {
 		logger.info("Loading profiles from file: {}", path);
 
 		Profile[] tmpProfiles;
 		try (var reader = Files.newBufferedReader(path)) {
 			tmpProfiles = GsonUtils.createGson().fromJson(reader, Profile[].class);
 		} catch (Exception e) {
-			throw new IOException("Failed to load profiles", e);
+			logger.error("Failed to load profiles", e);
+			tmpProfiles = new Profile[0];
 		}
 
-		var tmpErrors = inferTypeAndValidate(tmpProfiles);
+		List<String> tmpErrors = new ArrayList<>();
+		if (tmpProfiles.length == 0) {
+			tmpErrors.add("Failed to load profiles");
+		} else {
+			tmpErrors.addAll(inferTypeAndValidate(tmpProfiles));
+		}
 
 		if (tmpErrors.isEmpty()) {
 			profiles = List.of(tmpProfiles);

@@ -2,10 +2,8 @@ package jkml.downloader.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.regex.Pattern;
 
@@ -83,7 +81,7 @@ class ProfileManagerTests {
 
 	@ParameterizedTest
 	@CsvSource({ "profiles.json, 5" })
-	void testLoadProfiles(String name, int expectedSize) throws Exception {
+	void testLoadProfiles(String name, int expectedSize) {
 		var manager = new ProfileManager();
 		assertTrue(manager.loadProfiles(TestUtils.getResoureAsPath(name)));
 		assertTrue(manager.getErrors().isEmpty());
@@ -92,7 +90,7 @@ class ProfileManagerTests {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "profiles-error.json" })
-	void testLoadProfiles_error(String name) throws Exception {
+	void testLoadProfiles_invalid(String name) {
 		var manager = new ProfileManager();
 		assertFalse(manager.loadProfiles(TestUtils.getResoureAsPath(name)));
 		assertEquals(2, manager.getErrors().size());
@@ -101,9 +99,11 @@ class ProfileManagerTests {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "http.properties", "profiles-null.json" })
-	void testLoadProfiles_exception(String name) {
+	void testLoadProfiles_failedToLoad(String name) {
 		var manager = new ProfileManager();
-		assertThrows(IOException.class, () -> manager.loadProfiles(TestUtils.getResoureAsPath(name)));
+		assertFalse(manager.loadProfiles(TestUtils.getResoureAsPath(name)));
+		assertEquals(1, manager.getErrors().size());
+		assertTrue(manager.getProfiles().isEmpty());
 	}
 
 }

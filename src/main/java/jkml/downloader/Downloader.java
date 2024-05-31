@@ -47,7 +47,7 @@ public class Downloader implements Closeable {
 		printStream.close();
 	}
 
-	public void download(Path path) throws IOException {
+	public void download(Path path) {
 		var profileManager = new ProfileManager();
 		if (profileManager.loadProfiles(path)) {
 			for (var profile : profileManager.getProfiles()) {
@@ -56,7 +56,7 @@ public class Downloader implements Closeable {
 			}
 		} else {
 			for (var error : profileManager.getErrors()) {
-				printError("Invalid {}", error);
+				printError(error);
 			}
 		}
 	}

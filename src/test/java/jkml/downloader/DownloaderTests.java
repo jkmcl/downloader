@@ -92,6 +92,13 @@ class DownloaderTests {
 	}
 
 	@Test
+	void testDownload_fileNotFound() throws IOException {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+			assertDoesNotThrow(() -> downloader.download(Path.of("NO_SUCH_FILE.json")));
+		}
+	}
+
+	@Test
 	void testDownload() throws IOException {
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getLocation(any(URI.class), anyRequestOptions())).thenReturn(link(URI.create("http://localhost/")));
@@ -353,11 +360,6 @@ class DownloaderTests {
 	@Test
 	void testMain_noArg() {
 		assertDoesNotThrow(() -> Downloader.main(new String[] {}));
-	}
-
-	@Test
-	void testMain_noFile() {
-		assertDoesNotThrow(() -> Downloader.main(new String[] { "no_such_file.txt" }));
 	}
 
 	@Test

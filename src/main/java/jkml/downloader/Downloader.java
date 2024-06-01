@@ -48,6 +48,11 @@ public class Downloader implements Closeable {
 	}
 
 	public void download(Path path) {
+		if (Files.notExists(path)) {
+			printError("File not found: {}", path);
+			return;
+		}
+
 		var profileManager = new ProfileManager();
 		if (profileManager.loadProfiles(path)) {
 			for (var profile : profileManager.getProfiles()) {
@@ -214,15 +219,8 @@ public class Downloader implements Closeable {
 			return;
 		}
 
-		var path = Path.of(args[0]);
-
-		if (Files.notExists(path)) {
-			System.out.println("File not found: " + path);
-			return;
-		}
-
 		try (var downloader = new Downloader(System.out)) {
-			downloader.download(path);
+			downloader.download(Path.of(args[0]));
 		}
 	}
 

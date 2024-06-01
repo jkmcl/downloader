@@ -78,7 +78,7 @@ public class ProfileManager {
 		try (var reader = Files.newBufferedReader(path)) {
 			tmpProfiles = GsonUtils.createGson().fromJson(reader, Profile[].class);
 		} catch (Exception e) {
-			logger.error("Failed to load profiles", e);
+			logger.error("Exception caught", e);
 			tmpProfiles = new Profile[0];
 		}
 

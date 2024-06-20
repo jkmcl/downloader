@@ -359,12 +359,12 @@ class DownloaderTests {
 
 	@Test
 	void testMain_noArg() {
-		assertDoesNotThrow(() -> Downloader.main(new String[] {}));
+		assertDoesNotThrow(() -> Downloader.main());
 	}
 
 	@Test
 	void testMain() {
-		assertDoesNotThrow(() -> Downloader.main(new String[] { "src/test/resources/profiles-empty.json" }));
+		assertDoesNotThrow(() -> Downloader.main("src/test/resources/profiles-empty.json"));
 	}
 
 }

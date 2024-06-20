@@ -213,7 +213,7 @@ public class Downloader implements Closeable {
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String... args) throws IOException {
 		if (args.length != 1) {
 			System.out.println("Usage: " + Downloader.class.getName() + " <file>");
 			return;

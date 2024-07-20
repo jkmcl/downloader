@@ -1,5 +1,7 @@
 package jkml.downloader.util;
 
+import java.util.ArrayList;
+
 public class LangUtils {
 
 	private LangUtils() {
@@ -17,11 +19,12 @@ public class LangUtils {
 	}
 
 	public static Throwable getRootCause(Throwable throwable) {
-		Throwable cause;
-		while ((cause = throwable.getCause()) != null && cause != throwable) {
-			throwable = cause;
+		var causes = new ArrayList<Throwable>();
+		while (throwable != null && !causes.contains(throwable)) {
+			causes.add(throwable);
+			throwable = throwable.getCause();
 		}
-		return throwable;
+		return causes.isEmpty() ? null : causes.get(causes.size() - 1);
 	}
 
 }

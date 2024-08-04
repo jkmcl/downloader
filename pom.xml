@@ -23,7 +23,7 @@
 		<gson.version>2.11.0</gson.version>
 		<httpcore5.version>5.2.5</httpcore5.version>
 		<httpclient5.version>5.3.1</httpclient5.version>
-		<wiremock.version>3.9.0</wiremock.version>
+		<wiremock.version>3.9.1</wiremock.version>
 		<jacoco.version>0.8.12</jacoco.version>
 	</properties>
 

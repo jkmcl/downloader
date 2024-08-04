@@ -26,7 +26,7 @@ public class GsonUtils {
 				.create();
 	}
 
-	static final TypeAdapter<Pattern> PatternAdapter = new TypeAdapter<Pattern>() {
+	private static final TypeAdapter<Pattern> PatternAdapter = new TypeAdapter<Pattern>() {
 
 		@Override
 		public Pattern read(JsonReader in) throws IOException {
@@ -40,7 +40,7 @@ public class GsonUtils {
 
 	}.nullSafe();
 
-	static final TypeAdapter<Path> PathAdapter = new TypeAdapter<Path>() {
+	private static final TypeAdapter<Path> PathAdapter = new TypeAdapter<Path>() {
 
 		@Override
 		public Path read(JsonReader in) throws IOException {

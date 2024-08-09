@@ -18,7 +18,7 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<slf4j.version>2.0.13</slf4j.version>
+		<slf4j.version>2.0.15</slf4j.version>
 		<tinylog.version>2.7.0</tinylog.version>
 		<gson.version>2.11.0</gson.version>
 		<httpcore5.version>5.2.5</httpcore5.version>

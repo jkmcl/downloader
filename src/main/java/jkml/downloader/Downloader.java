@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.slf4j.helpers.MessageFormatter;
-import org.slf4j.helpers.Reporter;
 
 import jkml.downloader.html.FileInfo;
 import jkml.downloader.html.PageScraper;
@@ -26,10 +25,6 @@ import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TimeUtils;
 
 public class Downloader implements Closeable {
-
-	static {
-		System.setProperty(Reporter.SLF4J_INTERNAL_VERBOSITY_KEY, "WARN");
-	}
 
 	private final Logger logger = LoggerFactory.getLogger(Downloader.class);
 

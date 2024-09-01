@@ -35,7 +35,7 @@ class PageScraperTests {
 		var baseUri = URI.create("https://localhost/dir1");
 		var html = "<a href=\"dir2/v1.0/file.txt\">File v2.0</a>\n<a href=\"dir4/v3.0/other.txt\">Other v4.0</a>";
 		var scraper = new PageScraper(baseUri, html);
-		FileInfo fileInfo;
+		FileInfo fileInfo = null;
 
 		// Link not found (no match)
 		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"([^\"]+/not_exist\\.txt)"), Occurrence.FIRST, null);

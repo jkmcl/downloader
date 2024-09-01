@@ -19,7 +19,7 @@ enum ContentEncoding {
 
 	private final InputStreamFactory inputStreamFactory;
 
-	private ContentEncoding(InputStreamFactory inputStreamFactory) {
+	ContentEncoding(InputStreamFactory inputStreamFactory) {
 		this.inputStreamFactory = inputStreamFactory;
 	}
 
@@ -33,7 +33,7 @@ enum ContentEncoding {
 	}
 
 	public static String[] strings() {
-		String[] result = new String[values().length];
+		var result = new String[values().length];
 		var i = 0;
 		for (var v : values()) {
 			result[i++] = v.toString();

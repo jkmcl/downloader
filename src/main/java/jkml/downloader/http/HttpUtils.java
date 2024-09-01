@@ -25,16 +25,7 @@ class HttpUtils {
 
 	public static String getHeader(HttpMessage message, String name) {
 		var header = message.getFirstHeader(name);
-		if (header == null) {
-			return null;
-		}
-
-		var value = header.getValue();
-		if (value == null) {
-			return null;
-		}
-
-		return value;
+		return (header == null) ? null : header.getValue();
 	}
 
 	public static String getFirstParameter(HttpMessage message, String headerName, String parameterName) {

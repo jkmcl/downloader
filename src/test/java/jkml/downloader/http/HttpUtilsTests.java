@@ -52,15 +52,6 @@ class HttpUtilsTests {
 	}
 
 	@Test
-	void testGetTimeHeader_noHeader() {
-		HttpMessage message = createResponse();
-
-		var value = HttpUtils.getTimeHeader(message, HttpHeaders.LAST_MODIFIED);
-
-		assertNull(value);
-	}
-
-	@Test
 	void testGetTimeHeader_noValue() {
 		HttpMessage message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, null);
 
@@ -85,6 +76,34 @@ class HttpUtilsTests {
 		var value = HttpUtils.getTimeHeader(message, HttpHeaders.LAST_MODIFIED);
 
 		assertNull(value);
+	}
+
+	@Test
+	void testGetHeader_noHeader() {
+		HttpMessage message = createResponse();
+
+		var value = HttpUtils.getHeader(message, HttpHeaders.CONTENT_ENCODING);
+
+		assertNull(value);
+	}
+
+	@Test
+	void testGetHeader_noValue() {
+		HttpMessage message = createResponseWithHeader(HttpHeaders.CONTENT_ENCODING, null);
+
+		var value = HttpUtils.getHeader(message, HttpHeaders.CONTENT_ENCODING);
+
+		assertNull(value);
+	}
+
+	@Test
+	void testGetHeader() {
+		var expected = "gzip";
+		HttpMessage message = createResponseWithHeader(HttpHeaders.CONTENT_ENCODING, expected);
+
+		var value = HttpUtils.getHeader(message, HttpHeaders.CONTENT_ENCODING);
+
+		assertEquals(expected, value);
 	}
 
 	@Test

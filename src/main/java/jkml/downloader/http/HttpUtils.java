@@ -19,6 +19,11 @@ class HttpUtils {
 	}
 
 	public static Instant getTimeHeader(HttpMessage message, String name) {
+		var value = getHeader(message, name);
+		return (value == null) ? null : DateUtils.parseStandardDate(value);
+	}
+
+	public static String getHeader(HttpMessage message, String name) {
 		var header = message.getFirstHeader(name);
 		if (header == null) {
 			return null;
@@ -29,7 +34,7 @@ class HttpUtils {
 			return null;
 		}
 
-		return DateUtils.parseStandardDate(value);
+		return value;
 	}
 
 	public static String getFirstParameter(HttpMessage message, String headerName, String parameterName) {

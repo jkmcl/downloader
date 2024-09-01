@@ -36,6 +36,8 @@ public class WebClient implements Closeable {
 
 	private final String acceptLanguage;
 
+	private final String acceptEncoding;
+
 	private final CloseableHttpAsyncClient httpClient;
 
 	public WebClient() {
@@ -43,6 +45,7 @@ public class WebClient implements Closeable {
 		userAgentStrings.put(UserAgent.CHROME, propertiesHelper.getRequired("user-agent.chrome"));
 		userAgentStrings.put(UserAgent.CURL, propertiesHelper.getRequired("user-agent.curl"));
 		acceptLanguage = propertiesHelper.getRequired("accept-language");
+		acceptEncoding = String.join(", ", ContentEncoding.strings());
 		httpClient = new HttpClientBuilder().build();
 		httpClient.start();
 	}
@@ -126,7 +129,9 @@ public class WebClient implements Closeable {
 	 * Retrieve the response body as a String.
 	 */
 	public TextResult getContent(URI uri, RequestOptions options) {
-		return execute(createRequest(uri, options), null, new TextResponseHandler(), TextResult::new);
+		var request = createRequest(uri, options);
+		request.setHeader(HttpHeaders.ACCEPT_ENCODING, acceptEncoding);
+		return execute(request, null, new TextResponseHandler(), TextResult::new);
 	}
 
 	/**

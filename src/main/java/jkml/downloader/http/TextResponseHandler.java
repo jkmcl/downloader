@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.util.ByteArrayBuffer;
 import org.slf4j.Logger;
@@ -21,12 +22,19 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 
 	private Charset charset = StandardCharsets.UTF_8;
 
+	private ContentEncoding encoding = null;
+
 	private ByteArrayBuffer buffer;
 
 	@Override
 	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
+		}
+		var contentEncoding = HttpUtils.getHeader(response, HttpHeaders.CONTENT_ENCODING);
+		if (contentEncoding != null) {
+			logger.info("Response content encoding: {}", contentEncoding);
+			encoding = ContentEncoding.fromString(contentEncoding);
 		}
 		buffer = new ByteArrayBuffer(8192);
 	}
@@ -39,7 +47,12 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 	@Override
 	protected TextResult buildResult() {
 		var bytes = buffer.toByteArray();
-		logger.info("Response content length: {}", bytes.length);
+		if (encoding == null) {
+			logger.info("Response content length: {}", bytes.length);
+		} else {
+			bytes = encoding.decode(bytes);
+			logger.info("Decoded response content length: {}", bytes.length);
+		}
 		return new TextResult(new String(bytes, charset));
 	}
 

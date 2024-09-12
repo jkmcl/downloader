@@ -28,8 +28,8 @@ enum ContentEncoding {
 		return name().toLowerCase();
 	}
 
-	public static ContentEncoding fromString(String s) {
-		return valueOf(s.toUpperCase());
+	public static ContentEncoding fromString(String str) {
+		return valueOf(str.toUpperCase());
 	}
 
 	public static String[] strings() {

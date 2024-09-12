@@ -22,7 +22,7 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 
 	private Charset charset = StandardCharsets.UTF_8;
 
-	private ContentEncoding encoding = null;
+	private ContentEncoding contentEncoding = null;
 
 	private ByteArrayBuffer buffer;
 
@@ -31,10 +31,10 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
 		}
-		var contentEncoding = HttpUtils.getHeader(response, HttpHeaders.CONTENT_ENCODING);
-		if (contentEncoding != null) {
-			logger.info("Response content encoding: {}", contentEncoding);
-			encoding = ContentEncoding.fromString(contentEncoding);
+		var value = HttpUtils.getHeader(response, HttpHeaders.CONTENT_ENCODING);
+		if (value != null) {
+			logger.info("Response content encoding: {}", value);
+			contentEncoding = ContentEncoding.fromString(value);
 		}
 		buffer = new ByteArrayBuffer(8192);
 	}
@@ -47,10 +47,10 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 	@Override
 	protected TextResult buildResult() {
 		var bytes = buffer.toByteArray();
-		if (encoding == null) {
+		if (contentEncoding == null) {
 			logger.info("Response content length: {}", bytes.length);
 		} else {
-			bytes = encoding.decode(bytes);
+			bytes = contentEncoding.decode(bytes);
 			logger.info("Decoded response content length: {}", bytes.length);
 		}
 		return new TextResult(new String(bytes, charset));

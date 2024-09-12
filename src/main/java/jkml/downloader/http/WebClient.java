@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.Method;
@@ -98,7 +99,8 @@ public class WebClient implements Closeable {
 		}
 		request.setHeader(HttpHeaders.USER_AGENT, value);
 
-		// Set Accept-Language header
+		// Set Accept and Accept-Language headers
+		request.setHeader(HttpHeaders.ACCEPT, ContentType.WILDCARD);
 		request.setHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
 
 		// Set Referer header

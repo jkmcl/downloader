@@ -12,14 +12,14 @@ class StringUtilsTests {
 	@ParameterizedTest
 	@NullSource
 	@ValueSource(strings = { "", " ", "  " })
-	void testIsNullOrBlank_True(String s) {
-		assertTrue(StringUtils.isNullOrBlank(s));
+	void testIsNullOrBlank_True(String str) {
+		assertTrue(StringUtils.isNullOrBlank(str));
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "a", " a ", "a a" })
-	void testIsNullOrBlank_False(String s) {
-		assertFalse(StringUtils.isNullOrBlank(s));
+	void testIsNullOrBlank_False(String str) {
+		assertFalse(StringUtils.isNullOrBlank(str));
 	}
 
 }

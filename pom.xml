@@ -21,7 +21,7 @@
 		<slf4j.version>2.0.16</slf4j.version>
 		<tinylog.version>2.7.0</tinylog.version>
 		<gson.version>2.11.0</gson.version>
-		<httpcore5.version>5.2.5</httpcore5.version>
+		<httpcore5.version>5.3</httpcore5.version>
 		<httpclient5.version>5.3.1</httpclient5.version>
 		<wiremock.version>3.9.1</wiremock.version>
 		<jacoco.version>0.8.12</jacoco.version>

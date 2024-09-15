@@ -10,7 +10,7 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.apache.hc.core5.http.message.BasicHttpResponse;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
+import org.apache.hc.core5.http.protocol.HttpCoreContext;
 import org.junit.jupiter.api.Test;
 
 class CustomRedirectStrategyTests {
@@ -27,7 +27,7 @@ class CustomRedirectStrategyTests {
 
 	@Test
 	void testIsRedirected_default() throws HttpException {
-		var context = new BasicHttpContext();
+		var context = new HttpCoreContext();
 		var request = new BasicHttpRequest(Method.GET, SOURCE_URL);
 		var response = new BasicHttpResponse(HttpStatus.SC_MOVED_PERMANENTLY);
 		response.setHeader(HttpHeaders.LOCATION, TARGET_URL);
@@ -37,7 +37,7 @@ class CustomRedirectStrategyTests {
 
 	@Test
 	void testIsRedirected_custom() throws HttpException {
-		var context = new BasicHttpContext();
+		var context = new HttpCoreContext();
 		var request = new BasicHttpRequest(Method.GET, SOURCE_URL);
 
 		var response1 = new BasicHttpResponse(HttpStatus.SC_OK);

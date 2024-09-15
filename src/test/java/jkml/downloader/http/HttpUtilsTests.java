@@ -3,6 +3,7 @@ package jkml.downloader.http;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -11,6 +12,8 @@ import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpMessage;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.apache.hc.core5.http.message.BasicHttpResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -133,6 +136,13 @@ class HttpUtilsTests {
 		var value = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		assertNull(value);
+	}
+
+	@Test
+	void testGetUri() {
+		var expected = URI.create("https://localhost/");
+		var request = new BasicHttpRequest(Method.GET, expected);
+		assertEquals(expected, HttpUtils.getUri(request));
 	}
 
 }

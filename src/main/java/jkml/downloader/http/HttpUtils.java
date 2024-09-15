@@ -34,7 +34,7 @@ class HttpUtils {
 			return null;
 		}
 
-		for (var headerElement : MessageSupport.parse(header)) {
+		for (var headerElement : MessageSupport.parseElements(header)) {
 			var nameValuePair = headerElement.getParameterByName(parameterName);
 			if (nameValuePair != null) {
 				return nameValuePair.getValue();

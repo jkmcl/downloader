@@ -33,8 +33,12 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 		}
 		var value = HttpUtils.getHeader(response, HttpHeaders.CONTENT_ENCODING);
 		if (value != null) {
-			logger.info("Response content encoding: {}", value);
-			contentEncoding = ContentEncoding.fromString(value);
+			try {
+				contentEncoding = ContentEncoding.fromString(value.strip());
+				logger.info("Response content encoding: {}", value);
+			} catch (IllegalArgumentException e) {
+				throw new IOException("Unsupported response content encoding: " + value);
+			}
 		}
 		buffer = new ByteArrayBuffer(8192);
 	}

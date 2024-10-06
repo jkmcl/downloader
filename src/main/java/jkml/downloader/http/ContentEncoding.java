@@ -2,20 +2,15 @@ package jkml.downloader.http;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.hc.client5.http.entity.DeflateInputStream;
+import org.apache.hc.client5.http.entity.InputStreamFactory;
 
 enum ContentEncoding {
 
 	GZIP(GZIPInputStream::new), DEFLATE(DeflateInputStream::new);
-
-	@FunctionalInterface
-	private interface InputStreamFactory {
-		InputStream newInputStream(InputStream in) throws IOException;
-	}
 
 	private final InputStreamFactory inputStreamFactory;
 
@@ -33,16 +28,16 @@ enum ContentEncoding {
 	}
 
 	public static String[] strings() {
-		var result = new String[values().length];
-		var i = 0;
-		for (var v : values()) {
-			result[i++] = v.toString();
+		var values = values();
+		var strings = new String[values.length];
+		for (var i = 0; i < values.length; ++i) {
+			strings[i] = values[i].toString();
 		}
-		return result;
+		return strings;
 	}
 
 	public byte[] decode(byte[] bytes) {
-		try (var is = inputStreamFactory.newInputStream(new ByteArrayInputStream(bytes))) {
+		try (var is = inputStreamFactory.create(new ByteArrayInputStream(bytes))) {
 			return is.readAllBytes();
 		} catch (IOException e) {
 			throw new UncheckedIOException(e.getMessage(), e);

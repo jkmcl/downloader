@@ -52,8 +52,12 @@ public class WebClient implements Closeable {
 	}
 
 	@Override
-	public void close() throws IOException {
-		httpClient.close();
+	public void close() {
+		try {
+			httpClient.close();
+		} catch (IOException e) {
+			logger.atError().setCause(e).log(e.getMessage());
+		}
 	}
 
 	private Instant getLastModifiedTime(Path path) {
@@ -122,7 +126,7 @@ public class WebClient implements Closeable {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();
 			}
-			logger.error("Exception caught", e);
+			logger.atError().setCause(e).log("Exception caught");
 			return exceptionHandler.apply(LangUtils.getRootCause(e));
 		}
 	}

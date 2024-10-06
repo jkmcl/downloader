@@ -1,7 +1,6 @@
 package jkml.downloader;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -42,7 +41,7 @@ public class Downloader implements Closeable {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		webClient.close();
 		printStream.close();
 	}
@@ -213,7 +212,7 @@ public class Downloader implements Closeable {
 		}
 	}
 
-	public static void main(String... args) throws IOException {
+	public static void main(String... args) {
 		if (args.length != 1) {
 			System.out.println("Usage: " + Downloader.class.getName() + " <file>");
 			return;

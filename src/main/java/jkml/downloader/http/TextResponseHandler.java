@@ -35,7 +35,6 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 		if (value != null) {
 			try {
 				contentEncoding = ContentEncoding.fromString(value.strip());
-				logger.info("Response content encoding: {}", value);
 			} catch (IllegalArgumentException e) {
 				throw new IOException("Unsupported response content encoding: " + value);
 			}
@@ -51,11 +50,9 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 	@Override
 	protected TextResult buildResult() {
 		var bytes = buffer.toByteArray();
-		if (contentEncoding == null) {
-			logger.info("Response content length: {}", bytes.length);
-		} else {
+		logger.info("Response content length: {}", bytes.length);
+		if (contentEncoding != null) {
 			bytes = contentEncoding.decode(bytes);
-			logger.info("Decoded response content length: {}", bytes.length);
 		}
 		return new TextResult(new String(bytes, charset));
 	}

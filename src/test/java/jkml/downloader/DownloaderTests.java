@@ -20,6 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.function.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -359,7 +360,7 @@ class DownloaderTests {
 
 	@Test
 	void testMain_noArg() {
-		assertDoesNotThrow(() -> Downloader.main());
+		assertDoesNotThrow((Executable) Downloader::main);
 	}
 
 	@Test

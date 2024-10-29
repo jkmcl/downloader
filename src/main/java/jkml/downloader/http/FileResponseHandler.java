@@ -55,15 +55,8 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 			return;
 		}
 
-		var newSize = Files.size(newFile);
-		var oldSize = Files.size(oldFile);
-
-		if (newSize * 2 < oldSize) {
+		if (Files.size(newFile) * 2 < Files.size(oldFile)) {
 			throw new IOException("New file smaller than half of existing file: " + newFile);
-		}
-
-		if (newSize == oldSize && Files.mismatch(newFile, oldFile) == -1L) {
-			throw new IOException("New file content identical to old file content: " + newFile);
 		}
 	}
 

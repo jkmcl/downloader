@@ -62,12 +62,6 @@ class FileResponseHandlerTests {
 		Files.writeString(target, "1235");
 		assertDoesNotThrow(() -> FileResponseHandler.checkFileContent(source, target));
 
-		// Same size, same content
-		Files.writeString(source, "1234");
-		Files.writeString(target, "1234");
-		var ioException = assertThrows(IOException.class, () -> FileResponseHandler.checkFileContent(source, target));
-		assertTrue(ioException.getMessage().contains("identical"));
-
 		// Different size, source bigger than target
 		Files.writeString(source, "1234");
 		Files.writeString(target, "12");
@@ -81,7 +75,7 @@ class FileResponseHandlerTests {
 		// Different size, source smaller than half the size of target
 		Files.writeString(source, "12");
 		Files.writeString(target, "12345");
-		ioException = assertThrows(IOException.class, () -> FileResponseHandler.checkFileContent(source, target));
+		var ioException = assertThrows(IOException.class, () -> FileResponseHandler.checkFileContent(source, target));
 		assertTrue(ioException.getMessage().contains("smaller"));
 	}
 

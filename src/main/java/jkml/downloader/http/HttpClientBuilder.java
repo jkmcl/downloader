@@ -7,7 +7,6 @@ import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.core5.concurrent.DefaultThreadFactory;
-import org.apache.hc.core5.http2.HttpVersionPolicy;
 import org.apache.hc.core5.reactor.IOReactorConfig;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
@@ -26,7 +25,6 @@ class HttpClientBuilder {
 
 		var tlsConfig = TlsConfig.custom()
 				.setHandshakeTimeout(TIMEOUT)
-				.setVersionPolicy(HttpVersionPolicy.NEGOTIATE)
 				.build();
 
 		var connectionManager = PoolingAsyncClientConnectionManagerBuilder.create()

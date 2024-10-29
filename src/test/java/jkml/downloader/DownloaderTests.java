@@ -9,7 +9,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Path;
@@ -93,14 +92,14 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_fileNotFound() throws IOException {
+	void testDownload_fileNotFound() {
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			assertDoesNotThrow(() -> downloader.download(Path.of("NO_SUCH_FILE.json")));
 		}
 	}
 
 	@Test
-	void testDownload() throws IOException {
+	void testDownload() {
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
 			when(mockWebClient.getLocation(any(URI.class), anyRequestOptions())).thenReturn(link(URI.create("http://localhost/")));
 			when(mockWebClient.getContent(any(URI.class), anyRequestOptions())).thenReturn(text(""));
@@ -119,7 +118,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_direct() throws IOException {
+	void testDownload_direct() {
 		var fileUri = URI.create("https://localhost/downloads/file-1.0.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
 
@@ -136,7 +135,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_noPage() throws IOException {
+	void testDownload_noPage() {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
 
 		var profile = createProfile(Type.STANDARD);
@@ -153,7 +152,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_noFileLinkInPage() throws IOException {
+	void testDownload_noFileLinkInPage() {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "No file link";
 
@@ -171,7 +170,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_versionInFileName() throws IOException {
+	void testDownload_versionInFileName() {
 		var fileUri = URI.create("https://localhost/downloads/file-1.0.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
 		var pageUri = URI.create("https://localhost/downloads/page.html");
@@ -192,7 +191,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_versionInFileLink() throws IOException {
+	void testDownload_versionInFileLink() {
 		var fileUri = URI.create("https://localhost/downloads/1.0/file.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
 		var pageUri = URI.create("https://localhost/downloads/page.html");
@@ -213,7 +212,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_versionInPage() throws IOException {
+	void testDownload_versionInPage() {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<a href=\"./latest/file.zip\">Version 1.0</a>";
 		var fileUri = URI.create("https://localhost/downloads/latest/file.zip");
@@ -235,7 +234,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_GitHub_noPageFragmentLink() throws IOException {
+	void testDownload_GitHub_noPageFragmentLink() {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "No file or page fragment link";
 
@@ -254,7 +253,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_GitHub_noPageFragment() throws IOException {
+	void testDownload_GitHub_noPageFragment() {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
 		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
@@ -276,7 +275,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_GitHub_noFileLinkInPageFragment() throws IOException {
+	void testDownload_GitHub_noFileLinkInPageFragment() {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
 		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
@@ -299,7 +298,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_GitHub() throws IOException {
+	void testDownload_GitHub() {
 		var pageUri = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
 		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
@@ -324,7 +323,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_redirect_noLink() throws IOException {
+	void testDownload_redirect_noLink() {
 		var apiUri = URI.create("https://localhost/downloads/api");
 
 		var profile = createProfile(Type.REDIRECT);
@@ -340,7 +339,7 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_redirect() throws IOException {
+	void testDownload_redirect() {
 		var apiUri = URI.create("https://localhost/downloads/api");
 		var fileUri = URI.create("https://localhost/downloads/file-1.0.zip");
 		var filePath = outDir.resolve("file-1.0.zip");

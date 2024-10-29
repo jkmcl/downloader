@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,7 +63,7 @@ class WebClientTests {
 	}
 
 	@AfterEach
-	void afterEach() throws IOException {
+	void afterEach() {
 		webClient.close();
 		logger.info(StringUtils.EMPTY);
 	}

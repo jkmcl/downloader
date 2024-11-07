@@ -37,7 +37,7 @@ class CustomRedirectStrategy extends DefaultRedirectStrategy {
 			return false;
 		}
 
-		var location = HttpUtils.getFirstParameter(response, "Refresh", "URL");
+		var location = HttpUtils.getParameter(response, "Refresh", "URL");
 		if (location == null) {
 			return false;
 		}

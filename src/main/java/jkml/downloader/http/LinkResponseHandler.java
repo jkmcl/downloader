@@ -5,7 +5,6 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
@@ -26,7 +25,7 @@ class LinkResponseHandler extends ResponseHandler<LinkResult> {
 	}
 
 	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		var header = response.getFirstHeader(HttpHeaders.LOCATION);
 		if (header == null) {
 			throw new IOException("Location header not found in response");

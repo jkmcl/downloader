@@ -13,7 +13,6 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
@@ -43,7 +42,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 	}
 
 	static void checkFileName(String fileName, HttpResponse response) throws IOException {
-		var headerFileName = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
+		var headerFileName = HttpUtils.getParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		if (headerFileName != null && !headerFileName.equals(fileName)) {
 			throw new IOException("Mismatched file name in response header: " + headerFileName);
@@ -78,7 +77,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 	}
 
 	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		if (response.getCode() == HttpStatus.SC_NOT_MODIFIED) {
 			logger.info("Remote file not modified");
 			return;

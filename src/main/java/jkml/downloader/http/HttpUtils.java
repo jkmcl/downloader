@@ -28,16 +28,16 @@ class HttpUtils {
 		return (header == null) ? null : header.getValue();
 	}
 
-	public static String getFirstParameter(HttpMessage message, String headerName, String parameterName) {
+	public static String getParameter(HttpMessage message, String headerName, String parameterName) {
 		var header = message.getFirstHeader(headerName);
 		if (header == null) {
 			return null;
 		}
 
-		for (var headerElement : MessageSupport.parseElements(header)) {
-			var nameValuePair = headerElement.getParameterByName(parameterName);
-			if (nameValuePair != null) {
-				return nameValuePair.getValue();
+		for (var element : MessageSupport.parseElements(header)) {
+			var parameter = element.getParameterByName(parameterName);
+			if (parameter != null) {
+				return parameter.getValue();
 			}
 		}
 

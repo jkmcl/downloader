@@ -6,7 +6,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.util.ByteArrayBuffer;
@@ -27,7 +26,7 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 	private ByteArrayBuffer buffer;
 
 	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws HttpException, IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
 		}

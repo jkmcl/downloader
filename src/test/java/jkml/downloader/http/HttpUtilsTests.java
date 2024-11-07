@@ -110,30 +110,30 @@ class HttpUtilsTests {
 	}
 
 	@Test
-	void testGetFirstParameter() {
+	void testGetParameter() {
 		var expected = "archive.zip";
 		var response = createResponseWithHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + expected + "\"");
 
-		var actual = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
+		var actual = HttpUtils.getParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		assertEquals(expected, actual);
 	}
 
 	@Test
-	void testGetFirstParameter_noHeader() {
+	void testGetParameter_noHeader() {
 		var response = createResponse();
 
-		var value = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
+		var value = HttpUtils.getParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		assertNull(value);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "", " ", "attachment", "attachment;", "attachment; filename" })
-	void testGetFirstParameter_invalid(String arg) {
+	void testGetParameter_invalid(String arg) {
 		var response = createResponseWithHeader(HttpHeaders.CONTENT_DISPOSITION, arg);
 
-		var value = HttpUtils.getFirstParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
+		var value = HttpUtils.getParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		assertNull(value);
 	}

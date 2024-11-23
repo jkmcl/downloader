@@ -111,37 +111,47 @@ class WebClientTests {
 		assertNotNull(result.exception());
 	}
 
-	@Test
-	void testSaveToFile_OK() throws Exception {
+	private void testSaveToFile_OK(boolean directoryExists) throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(
 				ok("Hello world!").withHeader(HttpHeaders.LAST_MODIFIED, DateUtils.formatStandardDate(Instant.now()))));
 
-		Files.createDirectories(outDir);
 		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
+		Files.deleteIfExists(localFilePath);
+		if (directoryExists) {
+			Files.createDirectories(outDir);
+		} else {
+			TestUtils.deleteDirectories(outDir);
+		}
 
 		var result = webClient.saveToFile(mockUrl, null, localFilePath);
 
 		assertEquals(Status.OK, result.status());
 		assertTrue(Files.exists(localFilePath));
+	}
 
-		Files.delete(localFilePath);
+	@Test
+	void testSaveToFile_OK_dirNotExists() throws Exception {
+		testSaveToFile_OK(false);
+	}
+
+	@Test
+	void testSaveToFile_OK_dirExists() throws Exception {
+		testSaveToFile_OK(true);
 	}
 
 	@Test
 	void testSaveToFile_NotModified() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(aResponse().withStatus(304)));
 
-		Files.createDirectories(outDir);
 		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
+		Files.createDirectories(outDir);
 		Files.writeString(localFilePath, StringUtils.EMPTY);
 		Files.setLastModifiedTime(localFilePath, FileTime.from(Instant.now()));
 
-		var result = webClient.saveToFile(mockUrl, null, outDir.resolve(FileUtils.getFileName(mockUrl)));
+		var result = webClient.saveToFile(mockUrl, null, localFilePath);
 
 		assertEquals(Status.NOT_MODIFIED, result.status());
 		assertTrue(Files.exists(localFilePath));
-
-		Files.delete(localFilePath);
 	}
 
 	@Test

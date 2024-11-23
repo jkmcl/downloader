@@ -60,23 +60,6 @@ public class WebClient implements Closeable {
 		}
 	}
 
-	private Instant getLastModifiedTime(Path path) {
-		if (Files.notExists(path)) {
-			logger.debug("Local file does not exist");
-			return null;
-		}
-
-		logger.debug("Local file path: {}", path);
-
-		try {
-			var lastMod = Files.getLastModifiedTime(path).toInstant();
-			logger.atDebug().log("Local file last modified time: {}", TimeUtils.Formatter.format(lastMod));
-			return lastMod;
-		} catch (IOException e) {
-			throw new UncheckedIOException(e.getMessage(), e);
-		}
-	}
-
 	String getUserAgentString(UserAgent userAgent) {
 		return userAgentStrings.get(userAgent);
 	}
@@ -140,6 +123,22 @@ public class WebClient implements Closeable {
 		return execute(request, null, new TextResponseHandler(), TextResult::new);
 	}
 
+	private void createDirectories(Path dir) {
+		try {
+			Files.createDirectories(dir);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e.getMessage(), e);
+		}
+	}
+
+	private Instant getLastModifiedTime(Path path) {
+		try {
+			return Files.getLastModifiedTime(path).toInstant();
+		} catch (IOException e) {
+			throw new UncheckedIOException(e.getMessage(), e);
+		}
+	}
+
 	/**
 	 * Download the file if it does not exist locally or if it is newer than the
 	 * local copy.
@@ -147,9 +146,18 @@ public class WebClient implements Closeable {
 	public FileResult saveToFile(URI uri, RequestOptions options, Path path) {
 		var request = createRequest(uri, options);
 
-		// Add If-Modified-Since request header if local file exists
-		var lastMod = getLastModifiedTime(path);
-		if (lastMod != null) {
+		// Add If-Modified-Since request header if local file exists, otherwise create
+		// its parent directory
+		if (Files.notExists(path)) {
+			logger.debug("Local file does not exist: {}", path);
+			var dir = path.getParent();
+			if (Files.notExists(dir)) {
+				createDirectories(dir);
+			}
+		} else {
+			logger.debug("Local file exists: {}", path);
+			var lastMod = getLastModifiedTime(path);
+			logger.atDebug().log("Local file last modified time: {}", TimeUtils.Formatter.format(lastMod));
 			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
 		}
 

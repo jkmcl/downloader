@@ -4,13 +4,15 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.SeekableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
+import java.util.EnumSet;
+import java.util.Set;
 
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -26,6 +28,11 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private final Logger logger = LoggerFactory.getLogger(FileResponseHandler.class);
 
+	private final Set<StandardOpenOption> openOptions = EnumSet.of(
+			StandardOpenOption.WRITE,
+			StandardOpenOption.CREATE,
+			StandardOpenOption.TRUNCATE_EXISTING);
+
 	private final URI uri;
 
 	private final Path path;
@@ -36,7 +43,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private Path tmpPath;
 
-	private SeekableByteChannel channel;
+	private WritableByteChannel channel;
 
 	public FileResponseHandler(URI uri, Path path) {
 		this.uri = uri;
@@ -97,10 +104,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		tmpPath = path.resolveSibling(fileName + ".partial");
 
 		logger.info("Saving remote content");
-		channel = Files.newByteChannel(tmpPath,
-				StandardOpenOption.WRITE,
-				StandardOpenOption.CREATE,
-				StandardOpenOption.TRUNCATE_EXISTING);
+		channel = Files.newByteChannel(tmpPath, openOptions);
 	}
 
 	@Override

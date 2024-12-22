@@ -35,9 +35,11 @@ public class WebClient implements Closeable {
 
 	private final Map<UserAgent, String> userAgentStrings = new EnumMap<>(UserAgent.class);
 
-	private final String acceptLanguage;
+	private final String accept = ContentType.WILDCARD.toString();
 
-	private final String acceptEncoding;
+	private final String acceptEncoding = String.join(", ", ContentEncoding.strings());
+
+	private final String acceptLanguage;
 
 	private final CloseableHttpAsyncClient httpClient;
 
@@ -46,7 +48,6 @@ public class WebClient implements Closeable {
 		userAgentStrings.put(UserAgent.CHROME, propertiesHelper.getRequired("user-agent.chrome"));
 		userAgentStrings.put(UserAgent.CURL, propertiesHelper.getRequired("user-agent.curl"));
 		acceptLanguage = propertiesHelper.getRequired("accept-language");
-		acceptEncoding = String.join(", ", ContentEncoding.strings());
 		httpClient = new HttpClientBuilder().build();
 		httpClient.start();
 	}
@@ -86,8 +87,9 @@ public class WebClient implements Closeable {
 		}
 		request.setHeader(HttpHeaders.USER_AGENT, value);
 
-		// Set Accept and Accept-Language headers
-		request.setHeader(HttpHeaders.ACCEPT, ContentType.WILDCARD);
+		// Set Accept, Accept-Encoding and Accept-Language headers
+		request.setHeader(HttpHeaders.ACCEPT, accept);
+		request.setHeader(HttpHeaders.ACCEPT_ENCODING, acceptEncoding);
 		request.setHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
 
 		// Set Referer header
@@ -118,9 +120,7 @@ public class WebClient implements Closeable {
 	 * Retrieve the response body as a String.
 	 */
 	public TextResult getContent(URI uri, RequestOptions options) {
-		var request = createRequest(uri, options);
-		request.setHeader(HttpHeaders.ACCEPT_ENCODING, acceptEncoding);
-		return execute(request, null, new TextResponseHandler(), TextResult::new);
+		return execute(createRequest(uri, options), null, new TextResponseHandler(), TextResult::new);
 	}
 
 	private void createDirectories(Path dir) {

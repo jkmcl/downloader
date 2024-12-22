@@ -2,7 +2,9 @@ package jkml.downloader.http;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.hc.client5.http.entity.DeflateInputStream;
@@ -14,7 +16,7 @@ enum ContentEncoding {
 
 	private final InputStreamFactory inputStreamFactory;
 
-	ContentEncoding(InputStreamFactory inputStreamFactory) {
+	private ContentEncoding(InputStreamFactory inputStreamFactory) {
 		this.inputStreamFactory = inputStreamFactory;
 	}
 
@@ -24,7 +26,14 @@ enum ContentEncoding {
 	}
 
 	public static ContentEncoding fromString(String str) {
-		return valueOf(str.toUpperCase());
+		if (str == null) {
+			return null;
+		}
+		var upperCase = str.toUpperCase();
+		if (upperCase.isBlank() || "IDENTITY".equals(upperCase)) {
+			return null;
+		}
+		return valueOf(upperCase);
 	}
 
 	public static String[] strings() {
@@ -36,11 +45,15 @@ enum ContentEncoding {
 		return strings;
 	}
 
-	public byte[] decode(byte[] bytes) {
+	public byte[] decode(byte[] bytes) throws IOException {
 		try (var is = inputStreamFactory.create(new ByteArrayInputStream(bytes))) {
 			return is.readAllBytes();
-		} catch (IOException e) {
-			throw new UncheckedIOException(e.getMessage(), e);
+		}
+	}
+
+	public void decode(Path source, Path target) throws IOException {
+		try (var is = inputStreamFactory.create(Files.newInputStream(source))) {
+			Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 

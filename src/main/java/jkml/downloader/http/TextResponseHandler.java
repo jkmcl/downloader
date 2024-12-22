@@ -6,7 +6,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.util.ByteArrayBuffer;
 import org.slf4j.Logger;
@@ -19,41 +18,42 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 
 	private final Logger logger = LoggerFactory.getLogger(TextResponseHandler.class);
 
-	private Charset charset = StandardCharsets.UTF_8;
+	private ContentEncoding contentEncoding;
 
-	private ContentEncoding contentEncoding = null;
+	private Charset charset = StandardCharsets.UTF_8;
 
 	private ByteArrayBuffer buffer;
 
+	private String text;
+
 	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
+	protected void start(HttpResponse response, ContentEncoding contentEncoding, ContentType contentType) throws IOException {
+		this.contentEncoding = contentEncoding;
+
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
 		}
-		var value = HttpUtils.getHeader(response, HttpHeaders.CONTENT_ENCODING);
-		if (value != null) {
-			try {
-				contentEncoding = ContentEncoding.fromString(value.strip());
-			} catch (IllegalArgumentException e) {
-				throw new IOException("Unsupported response content encoding: " + value);
-			}
-		}
+
 		buffer = new ByteArrayBuffer(8192);
 	}
 
 	@Override
 	protected void data(ByteBuffer src, boolean endOfStream) throws IOException {
 		buffer.append(src);
+
+		if (endOfStream) {
+			var bytes = buffer.toByteArray();
+			if (contentEncoding != null) {
+				bytes = contentEncoding.decode(bytes);
+			}
+			logger.info("Response content length: {}", bytes.length);
+			text = new String(bytes, charset);
+		}
 	}
 
 	@Override
 	protected TextResult buildResult() {
-		var bytes = buffer.toByteArray();
-		logger.info("Response content length: {}", bytes.length);
-		if (contentEncoding != null) {
-			bytes = contentEncoding.decode(bytes);
-		}
-		return new TextResult(new String(bytes, charset));
+		return new TextResult(text);
 	}
 
 	@Override

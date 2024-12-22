@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -30,11 +30,13 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private final Path path;
 
+	private ContentEncoding contentEncoding;
+
 	private Instant lastModified;
 
 	private Path tmpPath;
 
-	private WritableByteChannel channel;
+	private SeekableByteChannel channel;
 
 	public FileResponseHandler(URI uri, Path path) {
 		this.uri = uri;
@@ -77,11 +79,13 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 	}
 
 	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
+	protected void start(HttpResponse response, ContentEncoding contentEncoding, ContentType contentType) throws IOException {
 		if (response.getCode() == HttpStatus.SC_NOT_MODIFIED) {
 			logger.info("Remote file not modified");
 			return;
 		}
+
+		this.contentEncoding = contentEncoding;
 
 		if ((lastModified = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
 			throw new IOException("Remote file last modified time not available");
@@ -101,10 +105,6 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	@Override
 	protected void data(ByteBuffer src, boolean endOfStream) throws IOException {
-		if (channel == null) {
-			return;
-		}
-
 		do {
 			channel.write(src);
 		} while (src.hasRemaining());
@@ -113,8 +113,22 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 			closeChannel();
 			logger.info("Finished saving remote content");
 
-			Files.setLastModifiedTime(tmpPath, FileTime.from(lastModified));
+			// Decode file content
+			if (contentEncoding != null) {
+				logger.debug("Decoding remote content");
+				var decodedPath = Path.of(tmpPath + ".decoded");
+				contentEncoding.decode(tmpPath, decodedPath);
+				Files.move(decodedPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
+				logger.debug("Finished decoding remote content");
+			}
+
+			// Check file content
 			checkFileContent(tmpPath, path);
+
+			// Update file last modified time
+			Files.setLastModifiedTime(tmpPath, FileTime.from(lastModified));
+
+			// Rename file
 			Files.move(tmpPath, path, StandardCopyOption.REPLACE_EXISTING);
 		}
 	}

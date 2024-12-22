@@ -43,10 +43,10 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 
 		if (endOfStream) {
 			var bytes = buffer.toByteArray();
+			logger.info("Response content length: {}", bytes.length);
 			if (contentEncoding != null) {
 				bytes = contentEncoding.decode(bytes);
 			}
-			logger.info("Response content length: {}", bytes.length);
 			text = new String(bytes, charset);
 		}
 	}

@@ -10,6 +10,8 @@ import java.util.zip.GZIPInputStream;
 import org.apache.hc.client5.http.entity.DeflateInputStream;
 import org.apache.hc.client5.http.entity.InputStreamFactory;
 
+import jkml.downloader.util.StringUtils;
+
 enum ContentEncoding {
 
 	GZIP(GZIPInputStream::new), DEFLATE(DeflateInputStream::new);
@@ -26,11 +28,11 @@ enum ContentEncoding {
 	}
 
 	public static ContentEncoding fromString(String str) {
-		if (str == null) {
+		if (StringUtils.isNullOrBlank(str)) {
 			return null;
 		}
-		var upperCase = str.toUpperCase();
-		if (upperCase.isBlank() || "IDENTITY".equals(upperCase)) {
+		var upperCase = str.strip().toUpperCase();
+		if ("IDENTITY".equals(upperCase)) {
 			return null;
 		}
 		return valueOf(upperCase);

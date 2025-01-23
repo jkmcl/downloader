@@ -18,7 +18,7 @@ enum ContentEncoding {
 
 	private final InputStreamFactory inputStreamFactory;
 
-	private ContentEncoding(InputStreamFactory inputStreamFactory) {
+	ContentEncoding(InputStreamFactory inputStreamFactory) {
 		this.inputStreamFactory = inputStreamFactory;
 	}
 

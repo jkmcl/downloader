@@ -103,10 +103,10 @@ public class WebClient implements Closeable {
 		return request;
 	}
 
-	private <T> T execute(HttpRequest request, HttpContext conetxt, ResponseHandler<T> responseHandler, Function<Throwable, T> exceptionHandler) {
+	private <T> T execute(HttpRequest request, HttpContext context, ResponseHandler<T> responseHandler, Function<Throwable, T> exceptionHandler) {
 		logger.info("Sending request");
 		try {
-			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, conetxt, null).get();
+			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, context, null).get();
 		} catch (Exception e) {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();

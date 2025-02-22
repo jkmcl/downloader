@@ -57,7 +57,7 @@ public class WebClient implements Closeable {
 		try {
 			httpClient.close();
 		} catch (IOException e) {
-			logger.atError().setCause(e).log(e.getMessage());
+			logger.error("Failed to close HTTP client", e);
 		}
 	}
 
@@ -111,7 +111,7 @@ public class WebClient implements Closeable {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();
 			}
-			logger.atError().setCause(e).log("Exception caught");
+			logger.error("Exception caught", e);
 			return exceptionHandler.apply(LangUtils.getRootCause(e));
 		}
 	}

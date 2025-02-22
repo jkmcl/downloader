@@ -1,5 +1,6 @@
 package jkml.downloader.profile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,8 +15,6 @@ import jkml.downloader.util.StringUtils;
 public class ProfileManager {
 
 	private final Logger logger = LoggerFactory.getLogger(ProfileManager.class);
-
-	private List<Profile> profiles = List.of();
 
 	private List<String> errors = List.of();
 
@@ -61,47 +60,35 @@ public class ProfileManager {
 		return errors;
 	}
 
-	private static List<String> inferTypeAndValidate(Profile[] profiles) {
-		var errors = new ArrayList<String>();
-		for (int i = 0, n = profiles.length; i < n; ++i) {
-			for (var err : validate(inferType(profiles[i]))) {
-				errors.add(String.format("Invalid profile[%d]: %s", i, err));
-			}
+	private static Profile[] readProfiles(Path path) throws IOException {
+		try (var reader = Files.newBufferedReader(path)) {
+			return GsonUtils.createGson().fromJson(reader, Profile[].class);
 		}
-		return errors;
 	}
 
-	public boolean loadProfiles(Path path) {
+	public List<Profile> loadProfiles(Path path) {
 		logger.info("Loading profiles from file: {}", path);
 
-		Profile[] tmpProfiles;
-		try (var reader = Files.newBufferedReader(path)) {
-			tmpProfiles = GsonUtils.createGson().fromJson(reader, Profile[].class);
+		errors = new ArrayList<>();
+		try {
+			var profiles = readProfiles(path);
+			for (var i = 0; i < profiles.length; ++i) {
+				var vldnErrors = validate(inferType(profiles[i]));
+				for (var ve : vldnErrors) {
+					errors.add(String.format("Invalid profile[%d]: %s", i, ve));
+				}
+				vldnErrors.clear();
+			}
+			if (errors.isEmpty()) {
+				return List.of(profiles);
+			}
+			errors = List.copyOf(errors);
 		} catch (Exception e) {
 			logger.error("Exception caught", e);
-			tmpProfiles = new Profile[0];
+			errors = List.of("Failed to load profiles");
 		}
 
-		List<String> tmpErrors = new ArrayList<>();
-		if (tmpProfiles.length == 0) {
-			tmpErrors.add("Failed to load profiles");
-		} else {
-			tmpErrors.addAll(inferTypeAndValidate(tmpProfiles));
-		}
-
-		if (tmpErrors.isEmpty()) {
-			profiles = List.of(tmpProfiles);
-			errors = List.of();
-			return true;
-		} else {
-			profiles = List.of();
-			errors = List.copyOf(tmpErrors);
-			return false;
-		}
-	}
-
-	public List<Profile> getProfiles() {
-		return profiles;
+		return List.of();
 	}
 
 	public List<String> getErrors() {

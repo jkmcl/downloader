@@ -1,10 +1,9 @@
 package jkml.downloader.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +22,11 @@ class ProfileManagerTests {
 
 	private static final Logger logger = LoggerFactory.getLogger(ProfileManagerTests.class);
 
+	@BeforeEach
+	void beforeEach(TestInfo testInfo) {
+		logger.info("# Executing {}", testInfo.getDisplayName());
+	}
+
 	private static Profile createProfile() {
 		var profile = new Profile();
 		profile.setName("name");
@@ -35,9 +39,13 @@ class ProfileManagerTests {
 		return profile;
 	}
 
-	@BeforeEach
-	void beforeEach(TestInfo testInfo) {
-		logger.info("# Executing {}", testInfo.getDisplayName());
+	private static void testValidate(Profile profile, int errorCount) {
+		var errors = ProfileManager.validate(profile);
+		if (!errors.isEmpty()) {
+			logger.info("Errors:");
+			errors.forEach(e -> logger.info("  {}", e));
+		}
+		assertEquals(errorCount, errors.size());
 	}
 
 	@Test
@@ -45,65 +53,68 @@ class ProfileManagerTests {
 		var profile = createProfile();
 		profile.setName(null);
 		profile.setOutputDirectory(null);
-		assertEquals(2, ProfileManager.validate(profile).size());
+		testValidate(profile, 2);
 	}
 
 	@Test
 	void testValidate_direct() {
 		var profile = createProfile();
 		profile.setType(Type.DIRECT);
-		assertTrue(ProfileManager.validate(profile).isEmpty());
+		testValidate(profile, 0);
 
 		profile.setFileUrl(null);
-		assertEquals(1, ProfileManager.validate(profile).size());
+		testValidate(profile, 1);
 	}
 
 	@Test
 	void testValidate_redirect() {
 		var profile = createProfile();
 		profile.setType(Type.REDIRECT);
-		assertTrue(ProfileManager.validate(profile).isEmpty());
+		testValidate(profile, 0);
 
 		profile.setFileUrl(null);
-		assertEquals(1, ProfileManager.validate(profile).size());
+		testValidate(profile, 1);
 	}
 
 	@Test
 	void testValidate_indirect() {
 		var profile = createProfile();
 		profile.setType(Type.STANDARD);
-		assertTrue(ProfileManager.validate(profile).isEmpty());
+		testValidate(profile, 0);
 
 		profile.setPageUrl(null);
 		profile.setLinkPattern(null);
-		assertEquals(2, ProfileManager.validate(profile).size());
+		testValidate(profile, 2);
+	}
+
+	private static void testLoadProfiles(Path path, int profileCount, int errorCount) {
+		var manager = new ProfileManager();
+		var profiles = manager.loadProfiles(path);
+		var errors = manager.getErrors();
+		if (!errors.isEmpty()) {
+			logger.info("Errors:");
+			errors.forEach(e -> logger.info("  {}", e));
+		}
+		assertEquals(profileCount, profiles.size());
+		assertEquals(errorCount, errors.size());
 	}
 
 	@ParameterizedTest
 	@CsvSource({ "profiles.json, 5" })
 	void testLoadProfiles(String name, int expectedSize) {
-		var manager = new ProfileManager();
-		assertTrue(manager.loadProfiles(TestUtils.getResoureAsPath(name)));
-		assertTrue(manager.getErrors().isEmpty());
-		assertEquals(expectedSize, manager.getProfiles().size());
+		testLoadProfiles(TestUtils.getResoureAsPath(name), expectedSize, 0);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "profiles-error.json" })
 	void testLoadProfiles_invalid(String name) {
-		var manager = new ProfileManager();
-		assertFalse(manager.loadProfiles(TestUtils.getResoureAsPath(name)));
-		assertEquals(2, manager.getErrors().size());
-		assertTrue(manager.getProfiles().isEmpty());
+		testLoadProfiles(TestUtils.getResoureAsPath(name), 0, 2);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "http.properties", "profiles-null.json" })
 	void testLoadProfiles_failedToLoad(String name) {
-		var manager = new ProfileManager();
-		assertFalse(manager.loadProfiles(TestUtils.getResoureAsPath(name)));
-		assertEquals(1, manager.getErrors().size());
-		assertTrue(manager.getProfiles().isEmpty());
+		testLoadProfiles(TestUtils.getResoureAsPath(name), 0, 1);
 	}
 
 }

@@ -53,15 +53,18 @@ public class Downloader implements Closeable {
 		}
 
 		var profileManager = new ProfileManager();
-		if (profileManager.loadProfiles(path)) {
-			for (var profile : profileManager.getProfiles()) {
-				download(profile);
-				printInfo(StringUtils.EMPTY);
-			}
-		} else {
+
+		var profiles = profileManager.loadProfiles(path);
+		if (!profileManager.getErrors().isEmpty()) {
 			for (var error : profileManager.getErrors()) {
 				printError(error);
 			}
+			return;
+		}
+
+		for (var profile : profiles) {
+			download(profile);
+			printInfo(StringUtils.EMPTY);
 		}
 	}
 

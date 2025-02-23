@@ -73,28 +73,24 @@ public class ProfileManager {
 	public List<Profile> loadProfiles(Path path) {
 		logger.info("Loading profiles from file: {}", path);
 
-		errors = new ArrayList<>();
 		try {
 			var profiles = readProfiles(path);
-			var index = 0;
-			for (var profile : profiles) {
-				var vldnErrors = validate(inferType(profile));
-				for (var ve : vldnErrors) {
-					errors.add(String.format("Invalid profile[%d]: %s", index, ve));
+			errors = new ArrayList<>();
+			for (var i = 0; i < profiles.size(); ++i) {
+				for (var error : validate(inferType(profiles.get(i)))) {
+					errors.add(String.format("Invalid profile[%d]: %s", i, error));
 				}
-				vldnErrors.clear();
-				++index;
 			}
-			if (errors.isEmpty()) {
-				return profiles;
+			if (!errors.isEmpty()) {
+				profiles.clear();
 			}
+			return profiles;
 		} catch (Exception e) {
 			logger.error("Exception caught", e);
 			errors.clear();
 			errors.add("Failed to load profiles");
+			return new ArrayList<>();
 		}
-
-		return new ArrayList<>();
 	}
 
 	public List<String> getErrors() {

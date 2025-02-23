@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ public class ProfileManager {
 
 	private final Logger logger = LoggerFactory.getLogger(ProfileManager.class);
 
-	private List<String> errors = List.of();
+	private List<String> errors = new ArrayList<>();
 
 	private static Profile inferType(Profile profile) {
 		if (profile.getType() != null) {
@@ -60,9 +61,12 @@ public class ProfileManager {
 		return errors;
 	}
 
-	private static Profile[] readProfiles(Path path) throws IOException {
+	private static List<Profile> readProfiles(Path path) throws IOException {
 		try (var reader = Files.newBufferedReader(path)) {
-			return GsonUtils.createGson().fromJson(reader, Profile[].class);
+			var array = GsonUtils.createGson().fromJson(reader, Profile[].class);
+			var list = new ArrayList<Profile>(array.length);
+			Collections.addAll(list, array);
+			return list;
 		}
 	}
 
@@ -72,23 +76,25 @@ public class ProfileManager {
 		errors = new ArrayList<>();
 		try {
 			var profiles = readProfiles(path);
-			for (var i = 0; i < profiles.length; ++i) {
-				var vldnErrors = validate(inferType(profiles[i]));
+			var index = 0;
+			for (var profile : profiles) {
+				var vldnErrors = validate(inferType(profile));
 				for (var ve : vldnErrors) {
-					errors.add(String.format("Invalid profile[%d]: %s", i, ve));
+					errors.add(String.format("Invalid profile[%d]: %s", index, ve));
 				}
 				vldnErrors.clear();
+				++index;
 			}
 			if (errors.isEmpty()) {
-				return List.of(profiles);
+				return profiles;
 			}
-			errors = List.copyOf(errors);
 		} catch (Exception e) {
 			logger.error("Exception caught", e);
-			errors = List.of("Failed to load profiles");
+			errors.clear();
+			errors.add("Failed to load profiles");
 		}
 
-		return List.of();
+		return new ArrayList<>();
 	}
 
 	public List<String> getErrors() {

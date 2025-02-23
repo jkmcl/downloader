@@ -105,10 +105,10 @@ public class Downloader implements Closeable {
 			return;
 		}
 
-		downloadFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
+		getFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
 	}
 
-	private void downloadFile(URI uri, RequestOptions options, Path path) {
+	private void getFile(URI uri, RequestOptions options, Path path) {
 		var result = webClient.saveToFile(uri, options, path);
 
 		switch (result.status()) {
@@ -126,7 +126,7 @@ public class Downloader implements Closeable {
 		}
 	}
 
-	private String getPage(URI uri, RequestOptions options) {
+	private String getText(URI uri, RequestOptions options) {
 		var result = webClient.getContent(uri, options);
 		if (result.status() != Status.OK) {
 			printErrorDuringOperation("page retrieval", result.exception());
@@ -157,7 +157,7 @@ public class Downloader implements Closeable {
 		var pageUri = profile.getPageUrl();
 
 		// Download page containing file info
-		var pageHtml = getPage(pageUri, profile.getRequestOptions());
+		var pageHtml = getText(pageUri, profile.getRequestOptions());
 		if (pageHtml == null) {
 			return null;
 		}
@@ -182,7 +182,7 @@ public class Downloader implements Closeable {
 		}
 
 		for (var fragmentUri : fragmentUriList) {
-			var fragmentHtml = getPage(fragmentUri, profile.getRequestOptions());
+			var fragmentHtml = getText(fragmentUri, profile.getRequestOptions());
 			if (fragmentHtml == null) {
 				return null;
 			}

@@ -43,7 +43,7 @@ public class PageScraper {
 		logger.info("Link found: {}", link);
 
 		// Resolve link
-		var fileUri = resolve(link);
+		var fileUri = baseUri.resolve(link);
 
 		// Find version
 		String version = null;
@@ -54,15 +54,6 @@ public class PageScraper {
 			logger.info("Version found in link: {}", version);
 		}
 		return new FileInfo(fileUri, version);
-	}
-
-	URI resolve(String str) {
-		var uri = URI.create(str);
-		if (!uri.isAbsolute()) {
-			uri = baseUri.resolve(uri);
-			logger.info("Link resolved: {}", uri);
-		}
-		return uri;
 	}
 
 	String extractVersion(Pattern pattern) {
@@ -87,7 +78,7 @@ public class PageScraper {
 		while (matcher.find()) {
 			var link = matcher.group(2);
 			logger.info("Page fragment link found: {}", link);
-			result.add(resolve(link));
+			result.add(baseUri.resolve(link));
 		}
 
 		if (result.isEmpty()) {

@@ -72,17 +72,6 @@ class PageScraperTests {
 	}
 
 	@Test
-	void testResolve() {
-		var baseStr = "https://localhost";
-		var baseUri = URI.create(baseStr);
-		var scraper = new PageScraper(baseUri, null);
-		var pathStr = "/expected";
-		var expected = baseUri.resolve(pathStr);
-		assertEquals(expected, scraper.resolve(baseStr + pathStr));
-		assertEquals(expected, scraper.resolve(pathStr));
-	}
-
-	@Test
 	void testExtractVersion() {
 		var scraper = new PageScraper(URI.create("https://localhost/"), "<a>Exist 1.0</a>");
 		assertEquals("1.0", scraper.extractVersion(Pattern.compile(">Exist ([.0-9]+)<")));

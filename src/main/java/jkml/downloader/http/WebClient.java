@@ -66,8 +66,6 @@ public class WebClient implements Closeable {
 	}
 
 	HttpRequest createRequest(URI uri, RequestOptions options) {
-		logger.info("Creating request to {}", uri);
-
 		var request = new BasicHttpRequest(Method.GET, uri);
 
 		UserAgent userAgent = null;
@@ -81,11 +79,7 @@ public class WebClient implements Closeable {
 		if (userAgent == null) {
 			userAgent = DEFAULT_USER_AGENT;
 		}
-		var value = getUserAgentString(userAgent);
-		if (userAgent != DEFAULT_USER_AGENT) {
-			logger.debug("Setting custom {}: {}", HttpHeaders.USER_AGENT, value);
-		}
-		request.setHeader(HttpHeaders.USER_AGENT, value);
+		request.setHeader(HttpHeaders.USER_AGENT, getUserAgentString(userAgent));
 
 		// Set Accept, Accept-Encoding and Accept-Language headers
 		request.setHeader(HttpHeaders.ACCEPT, accept);
@@ -95,16 +89,14 @@ public class WebClient implements Closeable {
 		// Set Referer header
 		if (referer == Referer.SELF) {
 			// Get the URI from the request as BasicHttpRequest re-assembles it
-			value = HttpUtils.getUri(request).toString();
-			logger.debug("Setting {}: {}", HttpHeaders.REFERER, value);
-			request.setHeader(HttpHeaders.REFERER, value);
+			request.setHeader(HttpHeaders.REFERER, HttpUtils.getUri(request).toString());
 		}
 
 		return request;
 	}
 
 	private <T> T execute(HttpRequest request, HttpContext context, ResponseHandler<T> responseHandler, Function<Throwable, T> exceptionHandler) {
-		logger.info("Sending request");
+		logger.info("Sending request to {}", HttpUtils.getUri(request));
 		try {
 			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, context, null).get();
 		} catch (Exception e) {

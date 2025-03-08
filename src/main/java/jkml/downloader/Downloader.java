@@ -175,7 +175,7 @@ public class Downloader implements Closeable {
 	}
 
 	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageScraper pageScraper) {
-		var fragmentUriList = pageScraper.extractGitHubPageFragmentUriList();
+		var fragmentUriList = pageScraper.extractGitHubPageFragmentLinks();
 		if (fragmentUriList.isEmpty()) {
 			printError("File link and page fragment link not found in page");
 			return null;

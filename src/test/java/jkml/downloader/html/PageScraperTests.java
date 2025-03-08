@@ -79,21 +79,21 @@ class PageScraperTests {
 	}
 
 	@Test
-	void testExtractGitHubPageFragmentUriList() {
+	void testExtractGitHubPageFragmentLinks() {
 		var baseUri = URI.create("https://github.com/google/guetzli/releases");
 		var html = "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0.1\" >"
 				+ "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0\" >";
 
 		// Found
 		var scraper = new PageScraper(baseUri, html);
-		var actual = scraper.extractGitHubPageFragmentUriList();
+		var actual = scraper.extractGitHubPageFragmentLinks();
 		assertEquals(2, actual.size());
 		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0.1", actual.get(0).toString());
 		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0", actual.get(1).toString());
 
 		// Not found
 		scraper = new PageScraper(baseUri, StringUtils.EMPTY);
-		assertTrue(scraper.extractGitHubPageFragmentUriList().isEmpty());
+		assertTrue(scraper.extractGitHubPageFragmentLinks().isEmpty());
 	}
 
 }

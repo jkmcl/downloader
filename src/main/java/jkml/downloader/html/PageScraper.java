@@ -71,7 +71,7 @@ public class PageScraper {
 		return version;
 	}
 
-	public List<URI> extractGitHubPageFragmentUriList() {
+	public List<URI> extractGitHubPageFragmentLinks() {
 		var result = new ArrayList<URI>();
 
 		var matcher = GITHUB_PAGE_FRAGMENT_URI_PATTERN.matcher(html);

@@ -69,31 +69,31 @@ public class Downloader implements Closeable {
 	}
 
 	void download(Profile profile) {
-		URI fileUri;
+		URI fileLink;
 		String fileName;
 
 		printInfo("Looking for new version of {}", profile.getName());
 
 		var type = profile.getType();
 		if (type == Profile.Type.DIRECT || type == Profile.Type.REDIRECT) {
-			fileUri = profile.getFileUrl();
+			fileLink = profile.getFileUrl();
 			// Get actual file URL from location header in response
 			if (type == Profile.Type.REDIRECT) {
-				fileUri = getLink(fileUri, profile.getRequestOptions());
-				if (fileUri == null) {
+				fileLink = getLink(fileLink, profile.getRequestOptions());
+				if (fileLink == null) {
 					return;
 				}
-				fileUri = profile.getFileUrl().resolve(fileUri);
+				fileLink = profile.getFileUrl().resolve(fileLink);
 			}
-			fileName = FileUtils.getFileName(fileUri);
+			fileName = FileUtils.getFileName(fileLink);
 		} else if (type == Profile.Type.STANDARD || type == Profile.Type.GITHUB) {
 			// Find file link from page
 			var fileInfo = findFileInfo(profile);
 			if (fileInfo == null) {
 				return;
 			}
-			fileUri = fileInfo.uri();
-			fileName = FileUtils.getFileName(fileUri);
+			fileLink = fileInfo.uri();
+			fileName = FileUtils.getFileName(fileLink);
 
 			// Add version if it is not already part of the file name
 			var version = fileInfo.version();
@@ -105,7 +105,7 @@ public class Downloader implements Closeable {
 			return;
 		}
 
-		getFile(fileUri, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
+		getFile(fileLink, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
 	}
 
 	private void getFile(URI uri, RequestOptions options, Path path) {
@@ -154,18 +154,18 @@ public class Downloader implements Closeable {
 	}
 
 	private FileInfo findFileInfo(Profile profile) {
-		var pageUri = profile.getPageUrl();
+		var pageLink = profile.getPageUrl();
 
 		// Download page containing file info
-		var pageHtml = getText(pageUri, profile.getRequestOptions());
+		var pageHtml = getText(pageLink, profile.getRequestOptions());
 		if (pageHtml == null) {
 			return null;
 		}
 
-		var pageScraper = new PageScraper(pageUri, pageHtml);
+		var pageScraper = new PageScraper(pageLink, pageHtml);
 		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
 		if (fileInfo == null) {
-			if (isGitHub(pageUri) || profile.getType() == Type.GITHUB) {
+			if (isGitHub(pageLink) || profile.getType() == Type.GITHUB) {
 				return findFileInfoInGitHubPageFragments(profile, pageScraper);
 			}
 			printError("File link not found in page");
@@ -175,14 +175,14 @@ public class Downloader implements Closeable {
 	}
 
 	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageScraper pageScraper) {
-		var fragmentUriList = pageScraper.extractGitHubPageFragmentLinks();
-		if (fragmentUriList.isEmpty()) {
+		var fragmentLinks = pageScraper.extractGitHubPageFragmentLinks();
+		if (fragmentLinks.isEmpty()) {
 			printError("File link and page fragment link not found in page");
 			return null;
 		}
 
-		for (var fragmentUri : fragmentUriList) {
-			var fragmentHtml = getText(fragmentUri, profile.getRequestOptions());
+		for (var link : fragmentLinks) {
+			var fragmentHtml = getText(link, profile.getRequestOptions());
 			if (fragmentHtml == null) {
 				return null;
 			}

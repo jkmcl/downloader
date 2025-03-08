@@ -119,241 +119,241 @@ class DownloaderTests {
 
 	@Test
 	void testDownload_direct() {
-		var fileUri = URI.create("https://localhost/downloads/file-1.0.zip");
+		var fileLink = URI.create("https://localhost/downloads/file-1.0.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
 
 		var profile = createProfile(Type.DIRECT);
-		profile.setFileUrl(fileUri);
+		profile.setFileUrl(fileLink);
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
+			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
 			downloader.download(profile);
 
-			assertDownload(mockWebClient, fileUri, filePath);
+			assertDownload(mockWebClient, fileLink, filePath);
 		}
 	}
 
 	@Test
 	void testDownload_noPage() {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 
 		var profile = createProfile(Type.STANDARD);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(textNotFound());
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(textNotFound());
 
 			downloader.download(profile);
 
-			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
+			verify(mockWebClient).getContent(eq(pageLink), anyRequestOptions());
 		}
 	}
 
 	@Test
 	void testDownload_noFileLinkInPage() {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "No file link";
 
 		var profile = createProfile(Type.STANDARD);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
 
 			downloader.download(profile);
 
-			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
+			verify(mockWebClient).getContent(eq(pageLink), anyRequestOptions());
 		}
 	}
 
 	@Test
 	void testDownload_versionInFileName() {
-		var fileUri = URI.create("https://localhost/downloads/file-1.0.zip");
+		var fileLink = URI.create("https://localhost/downloads/file-1.0.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<a href=\"./file-1.0.zip\">Latest</a>";
 
 		var profile = createProfile(Type.STANDARD);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
-			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
 			downloader.download(profile);
 
-			assertDownload(mockWebClient, fileUri, filePath);
+			assertDownload(mockWebClient, fileLink, filePath);
 		}
 	}
 
 	@Test
 	void testDownload_versionInFileLink() {
-		var fileUri = URI.create("https://localhost/downloads/1.0/file.zip");
+		var fileLink = URI.create("https://localhost/downloads/1.0/file.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<a href=\"./1.0/file.zip\">Latest</a>";
 
 		var profile = createProfile(Type.STANDARD);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/([.0-9]+)/file\\.zip)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
-			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
 			downloader.download(profile);
 
-			assertDownload(mockWebClient, fileUri, filePath);
+			assertDownload(mockWebClient, fileLink, filePath);
 		}
 	}
 
 	@Test
 	void testDownload_versionInPage() {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<a href=\"./latest/file.zip\">Version 1.0</a>";
-		var fileUri = URI.create("https://localhost/downloads/latest/file.zip");
+		var fileLink = URI.create("https://localhost/downloads/latest/file.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
 
 		var profile = createProfile(Type.STANDARD);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
-			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
 			downloader.download(profile);
 
-			assertDownload(mockWebClient, fileUri, filePath);
+			assertDownload(mockWebClient, fileLink, filePath);
 		}
 	}
 
 	@Test
 	void testDownload_GitHub_noPageFragmentLink() {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "No file or page fragment link";
 
 		var profile = createProfile(Type.GITHUB);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
 
 			downloader.download(profile);
 
-			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
+			verify(mockWebClient).getContent(eq(pageLink), anyRequestOptions());
 		}
 	}
 
 	@Test
 	void testDownload_GitHub_noPageFragment() {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
-		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
+		var pageFragmentLink = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
 
 		var profile = createProfile(Type.GITHUB);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
-			when(mockWebClient.getContent(eq(pageFragmentUri), anyRequestOptions())).thenReturn(textNotFound());
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.getContent(eq(pageFragmentLink), anyRequestOptions())).thenReturn(textNotFound());
 
 			downloader.download(profile);
 
-			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
-			verify(mockWebClient).getContent(eq(pageFragmentUri), anyRequestOptions());
+			verify(mockWebClient).getContent(eq(pageLink), anyRequestOptions());
+			verify(mockWebClient).getContent(eq(pageFragmentLink), anyRequestOptions());
 		}
 	}
 
 	@Test
 	void testDownload_GitHub_noFileLinkInPageFragment() {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
-		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
+		var pageFragmentLink = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
 		var pageFragmentHtml = "No link in page fragment";
 
 		var profile = createProfile(Type.GITHUB);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
-			when(mockWebClient.getContent(eq(pageFragmentUri), anyRequestOptions())).thenReturn(text(pageFragmentHtml));
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.getContent(eq(pageFragmentLink), anyRequestOptions())).thenReturn(text(pageFragmentHtml));
 
 			downloader.download(profile);
 
-			verify(mockWebClient).getContent(eq(pageUri), anyRequestOptions());
-			verify(mockWebClient).getContent(eq(pageFragmentUri), anyRequestOptions());
+			verify(mockWebClient).getContent(eq(pageLink), anyRequestOptions());
+			verify(mockWebClient).getContent(eq(pageFragmentLink), anyRequestOptions());
 		}
 	}
 
 	@Test
 	void testDownload_GitHub() {
-		var pageUri = URI.create("https://localhost/downloads/page.html");
+		var pageLink = URI.create("https://localhost/downloads/page.html");
 		var pageHtml = "<include-fragment loading=\"lazy\" src=\"https://localhost/account/project/releases/expanded_assets/v1.0\" >";
-		var pageFragmentUri = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
+		var pageFragmentLink = URI.create("https://localhost/account/project/releases/expanded_assets/v1.0");
 		var pageFragmentHtml = "<a href=\"./latest/file.zip\">Version 1.0</a>";
-		var fileUri = URI.create("https://localhost/downloads/latest/file.zip");
+		var fileLink = URI.create("https://localhost/downloads/latest/file.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
 
 		var profile = createProfile(Type.GITHUB);
-		profile.setPageUrl(pageUri);
+		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getContent(eq(pageUri), anyRequestOptions())).thenReturn(text(pageHtml));
-			when(mockWebClient.getContent(eq(pageFragmentUri), anyRequestOptions())).thenReturn(text(pageFragmentHtml));
-			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
+			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(text(pageHtml));
+			when(mockWebClient.getContent(eq(pageFragmentLink), anyRequestOptions())).thenReturn(text(pageFragmentHtml));
+			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
 			downloader.download(profile);
 
-			assertDownload(mockWebClient, fileUri, filePath);
+			assertDownload(mockWebClient, fileLink, filePath);
 		}
 	}
 
 	@Test
 	void testDownload_redirect_noLink() {
-		var apiUri = URI.create("https://localhost/downloads/api");
+		var redirectLink = URI.create("https://localhost/downloads/api");
 
 		var profile = createProfile(Type.REDIRECT);
-		profile.setFileUrl(apiUri);
+		profile.setFileUrl(redirectLink);
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getLocation(eq(apiUri), anyRequestOptions())).thenReturn(nolink());
+			when(mockWebClient.getLocation(eq(redirectLink), anyRequestOptions())).thenReturn(nolink());
 
 			downloader.download(profile);
 
-			verify(mockWebClient).getLocation(eq(apiUri), anyRequestOptions());
+			verify(mockWebClient).getLocation(eq(redirectLink), anyRequestOptions());
 		}
 	}
 
 	@Test
 	void testDownload_redirect() {
-		var apiUri = URI.create("https://localhost/downloads/api");
-		var fileUri = URI.create("https://localhost/downloads/file-1.0.zip");
+		var redirectLink = URI.create("https://localhost/downloads/api");
+		var fileLink = URI.create("https://localhost/downloads/file-1.0.zip");
 		var filePath = outDir.resolve("file-1.0.zip");
 
 		var profile = createProfile(Type.REDIRECT);
-		profile.setFileUrl(apiUri);
+		profile.setFileUrl(redirectLink);
 
 		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
-			when(mockWebClient.getLocation(eq(apiUri), anyRequestOptions())).thenReturn(link(fileUri));
-			when(mockWebClient.saveToFile(eq(fileUri), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
+			when(mockWebClient.getLocation(eq(redirectLink), anyRequestOptions())).thenReturn(link(fileLink));
+			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
 			downloader.download(profile);
 
-			assertDownload(mockWebClient, fileUri, filePath);
+			assertDownload(mockWebClient, fileLink, filePath);
 		}
 	}
 

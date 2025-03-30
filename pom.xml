@@ -14,7 +14,7 @@
 
 	<groupId>jkml</groupId>
 	<artifactId>downloader</artifactId>
-	<version>3.2.13</version>
+	<version>3.2.14-SNAPSHOT</version>
 
 	<properties>
 		<java.version>17</java.version>

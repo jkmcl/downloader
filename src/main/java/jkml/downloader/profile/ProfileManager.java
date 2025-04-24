@@ -78,7 +78,7 @@ public class ProfileManager {
 			errors = new ArrayList<>();
 			for (var i = 0; i < profiles.size(); ++i) {
 				for (var error : validate(inferType(profiles.get(i)))) {
-					errors.add(String.format("Invalid profile[%d]: %s", i, error));
+					errors.add("Invalid profile[%d]: %s".formatted(i, error));
 				}
 			}
 			if (!errors.isEmpty()) {

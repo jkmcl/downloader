@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -108,7 +109,7 @@ class WebClientTests {
 
 		var result = webClient.getContent(mockUrl, null);
 		assertEquals(Status.ERROR, result.status());
-		assertNotNull(result.exception());
+		assertNotNull(result.errorMessage());
 	}
 
 	private void testSaveToFile_OK(boolean directoryExists) throws Exception {
@@ -155,6 +156,18 @@ class WebClientTests {
 	}
 
 	@Test
+	void testSaveToFile_Failure() throws IOException {
+		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
+
+		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
+		Files.deleteIfExists(localFilePath);
+		var result = webClient.saveToFile(mockUrl, null, localFilePath);
+
+		assertEquals(Status.ERROR, result.status());
+		assertNotNull(result.errorMessage());
+	}
+
+	@Test
 	void testGetLocation_Success() {
 		var location = "http://localhost/file.txt";
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(seeOther(location)));
@@ -172,7 +185,7 @@ class WebClientTests {
 		var result = webClient.getLocation(mockUrl, null);
 
 		assertEquals(Status.ERROR, result.status());
-		assertNotNull(result.exception());
+		assertNotNull(result.errorMessage());
 	}
 
 }

@@ -1,7 +1,9 @@
 package jkml.downloader.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
@@ -11,16 +13,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonParseException;
 
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.TestUtils;
 
-class ProfileManagerTests {
+class ProfileUtilsTests {
 
-	private static final Logger logger = LoggerFactory.getLogger(ProfileManagerTests.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProfileUtilsTests.class);
 
 	@BeforeEach
 	void beforeEach(TestInfo testInfo) {
@@ -40,7 +43,7 @@ class ProfileManagerTests {
 	}
 
 	private static void testValidate(Profile profile, int errorCount) {
-		var errors = ProfileManager.validate(profile);
+		var errors = ProfileUtils.validate(profile);
 		if (!errors.isEmpty()) {
 			logger.info("Errors:");
 			errors.forEach(e -> logger.info("  {}", e));
@@ -87,34 +90,33 @@ class ProfileManagerTests {
 		testValidate(profile, 2);
 	}
 
-	private static void testLoadProfiles(Path path, int profileCount, int errorCount) {
-		var manager = new ProfileManager();
-		var profiles = manager.loadProfiles(path);
-		var errors = manager.getErrors();
+	@Test
+	void testReadProfiles() throws IOException {
+		var path = TestUtils.getResoureAsPath("profiles.json");
+		assertEquals(5, ProfileUtils.readProfiles(path).size());
+	}
+
+	@Test
+	void testReadProfiles_exception() {
+		var path = TestUtils.getResoureAsPath("profiles-null.json");
+		assertThrows(JsonParseException.class, () -> ProfileUtils.readProfiles(path));
+	}
+
+	private static void testInferAndValidate(Path path, int errorCount) throws IOException {
+		var profiles = ProfileUtils.readProfiles(path);
+		var errors = ProfileUtils.inferAndValidate(profiles);
 		if (!errors.isEmpty()) {
 			logger.info("Errors:");
 			errors.forEach(e -> logger.info("  {}", e));
 		}
-		assertEquals(profileCount, profiles.size());
 		assertEquals(errorCount, errors.size());
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "profiles.json, 5" })
-	void testLoadProfiles(String name, int expectedSize) {
-		testLoadProfiles(TestUtils.getResoureAsPath(name), expectedSize, 0);
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "profiles-error.json" })
-	void testLoadProfiles_invalid(String name) {
-		testLoadProfiles(TestUtils.getResoureAsPath(name), 0, 2);
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "http.properties", "profiles-null.json" })
-	void testLoadProfiles_failedToLoad(String name) {
-		testLoadProfiles(TestUtils.getResoureAsPath(name), 0, 1);
+	@CsvSource({ "profiles.json, 0", "profiles-error.json, 2" })
+	void testInferAndValidate(String name, int errorCount) throws IOException {
+		var path = TestUtils.getResoureAsPath(name);
+		testInferAndValidate(path, errorCount);
 	}
 
 }

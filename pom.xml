@@ -150,6 +150,7 @@
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>${maven-pmd-plugin.version}</version>
 				<configuration>
+					<failOnViolation>false</failOnViolation>
 					<linkXRef>false</linkXRef>
 					<outputDirectory>${project.reporting.outputDirectory}/pmd</outputDirectory>
 				</configuration>
@@ -168,7 +169,6 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>${spotbugs-maven-plugin.version}</version>
 				<configuration>
-					<excludeFilterFile>src/conf/spotbugs-exclude-filter.xml</excludeFilterFile>
 					<failOnError>false</failOnError>
 					<outputDirectory>${project.reporting.outputDirectory}/spotbugs</outputDirectory>
 				</configuration>

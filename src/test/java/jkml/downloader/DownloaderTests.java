@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import jkml.downloader.http.FileResult;
 import jkml.downloader.http.LinkResult;
 import jkml.downloader.http.RequestOptions;
+import jkml.downloader.http.ResultUtils;
 import jkml.downloader.http.TextResult;
 import jkml.downloader.http.WebClient;
 import jkml.downloader.profile.Profile;
@@ -64,7 +65,7 @@ class DownloaderTests {
 	}
 
 	private static TextResult textNotFound() {
-		return new TextResult(new Exception("Not found"));
+		return ResultUtils.textResult(new Exception("Not found"));
 	}
 
 	private static FileResult file() {
@@ -80,7 +81,7 @@ class DownloaderTests {
 	}
 
 	private static LinkResult nolink() {
-		return new LinkResult(new Exception("No location"));
+		return ResultUtils.linkResult(new Exception("No location"));
 	}
 
 	private static RequestOptions anyRequestOptions() {

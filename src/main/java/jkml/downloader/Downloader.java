@@ -1,10 +1,12 @@
 package jkml.downloader;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +20,7 @@ import jkml.downloader.http.Status;
 import jkml.downloader.http.WebClient;
 import jkml.downloader.profile.Profile;
 import jkml.downloader.profile.Profile.Type;
-import jkml.downloader.profile.ProfileManager;
+import jkml.downloader.profile.ProfileUtils;
 import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TimeUtils;
@@ -52,11 +54,17 @@ public class Downloader implements Closeable {
 			return;
 		}
 
-		var profileManager = new ProfileManager();
-
-		var profiles = profileManager.loadProfiles(path);
-		if (!profileManager.getErrors().isEmpty()) {
-			for (var error : profileManager.getErrors()) {
+		logger.info("Loading profiles from file: {}", path);
+		List<Profile> profiles;
+		try {
+			profiles = ProfileUtils.readProfiles(path);
+		} catch (IOException e) {
+			printErrorDuringOperation("profile loading", e.getMessage());
+			return;
+		}
+		var errors = ProfileUtils.inferAndValidate(profiles);
+		if (!errors.isEmpty()) {
+			for (var error : errors) {
 				printError(error);
 			}
 			return;
@@ -121,7 +129,7 @@ public class Downloader implements Closeable {
 			printInfo("Path: {}", path);
 			break;
 		case ERROR:
-			printErrorDuringOperation("file download", result.exception());
+			printErrorDuringOperation("file download", result.errorMessage());
 			break;
 		}
 	}
@@ -129,7 +137,7 @@ public class Downloader implements Closeable {
 	private String getText(URI uri, RequestOptions options) {
 		var result = webClient.getContent(uri, options);
 		if (result.status() != Status.OK) {
-			printErrorDuringOperation("page retrieval", result.exception());
+			printErrorDuringOperation("page retrieval", result.errorMessage());
 			return null;
 		}
 		return result.text();
@@ -138,14 +146,14 @@ public class Downloader implements Closeable {
 	private URI getLink(URI uri, RequestOptions options) {
 		var result = webClient.getLocation(uri, options);
 		if (result.status() != Status.OK) {
-			printErrorDuringOperation("location retrieval", result.exception());
+			printErrorDuringOperation("location retrieval", result.errorMessage());
 			return null;
 		}
 		return result.link();
 	}
 
-	private void printErrorDuringOperation(String operation, Throwable exception) {
-		printError("Error occurred during {}: {}: {}", operation, exception.getClass().getName(), exception.getMessage());
+	private void printErrorDuringOperation(String operation, String errorMessage) {
+		printError("Error occurred during {}: {}", operation, errorMessage);
 	}
 
 	private static boolean isGitHub(URI uri) {

@@ -7,17 +7,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.StringUtils;
 
-public class ProfileManager {
+public class ProfileUtils {
 
-	private final Logger logger = LoggerFactory.getLogger(ProfileManager.class);
-
-	private List<String> errors = new ArrayList<>();
+	private ProfileUtils() {
+	}
 
 	private static Profile inferType(Profile profile) {
 		if (profile.getType() != null) {
@@ -61,40 +57,24 @@ public class ProfileManager {
 		return errors;
 	}
 
-	private static List<Profile> readProfiles(Path path) throws IOException {
-		try (var reader = Files.newBufferedReader(path)) {
-			var array = GsonUtils.createGson().fromJson(reader, Profile[].class);
-			var list = new ArrayList<Profile>(array.length);
-			Collections.addAll(list, array);
-			return list;
-		}
-	}
-
-	public List<Profile> loadProfiles(Path path) {
-		logger.info("Loading profiles from file: {}", path);
-
-		try {
-			var profiles = readProfiles(path);
-			errors = new ArrayList<>();
-			for (var i = 0; i < profiles.size(); ++i) {
-				for (var error : validate(inferType(profiles.get(i)))) {
-					errors.add("Invalid profile[%d]: %s".formatted(i, error));
-				}
+	public static List<String> inferAndValidate(List<Profile> profiles) {
+		var errors = new ArrayList<String>();
+		for (var i = 0; i < profiles.size(); ++i) {
+			for (var error : validate(inferType(profiles.get(i)))) {
+				errors.add("Invalid profile[%d]: %s".formatted(i, error));
 			}
-			if (!errors.isEmpty()) {
-				profiles.clear();
-			}
-			return profiles;
-		} catch (Exception e) {
-			logger.error("Exception caught", e);
-			errors.clear();
-			errors.add("Failed to load profiles");
-			return new ArrayList<>();
 		}
-	}
-
-	public List<String> getErrors() {
 		return errors;
+	}
+
+	public static List<Profile> readProfiles(Path path) throws IOException {
+		Profile[] array;
+		try (var reader = Files.newBufferedReader(path)) {
+			array = GsonUtils.createGson().fromJson(reader, Profile[].class);
+		}
+		var list = new ArrayList<Profile>(array.length);
+		Collections.addAll(list, array);
+		return list;
 	}
 
 }

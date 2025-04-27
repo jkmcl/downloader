@@ -112,18 +112,18 @@ public class WebClient implements Closeable {
 	 * Retrieve the response body as a String.
 	 */
 	public TextResult getContent(URI uri, RequestOptions options) {
-		return execute(createRequest(uri, options), null, new TextResponseHandler(), TextResult::new);
+		return execute(createRequest(uri, options), null, new TextResponseHandler(), ResultUtils::textResult);
 	}
 
-	private void createDirectories(Path dir) {
+	private static Path createDirectories(Path dir) {
 		try {
-			Files.createDirectories(dir);
+			return Files.createDirectories(dir);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e.getMessage(), e);
 		}
 	}
 
-	private Instant getLastModifiedTime(Path path) {
+	private static Instant getLastModifiedTime(Path path) {
 		try {
 			return Files.getLastModifiedTime(path).toInstant();
 		} catch (IOException e) {
@@ -153,7 +153,7 @@ public class WebClient implements Closeable {
 			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
 		}
 
-		return execute(request, null, new FileResponseHandler(uri, path), FileResult::new);
+		return execute(request, null, new FileResponseHandler(uri, path), ResultUtils::fileResult);
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class WebClient implements Closeable {
 		// Disable auto-redirect to obtain the location header
 		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
 
-		return execute(createRequest(uri, options), context, new LinkResponseHandler(), LinkResult::new);
+		return execute(createRequest(uri, options), context, new LinkResponseHandler(), ResultUtils::linkResult);
 	}
 
 }

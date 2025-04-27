@@ -20,7 +20,7 @@ import jkml.downloader.http.Status;
 import jkml.downloader.http.WebClient;
 import jkml.downloader.profile.Profile;
 import jkml.downloader.profile.Profile.Type;
-import jkml.downloader.profile.ProfileUtils;
+import jkml.downloader.profile.ProfileManager;
 import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.StringUtils;
 import jkml.downloader.util.TimeUtils;
@@ -54,15 +54,17 @@ public class Downloader implements Closeable {
 			return;
 		}
 
-		logger.info("Loading profiles from file: {}", path);
+		var profileManager = new ProfileManager();
+
 		List<Profile> profiles;
 		try {
-			profiles = ProfileUtils.readProfiles(path);
+			profiles = profileManager.load(path);
 		} catch (IOException e) {
 			printErrorDuringOperation("profile loading", e.getMessage());
 			return;
 		}
-		var errors = ProfileUtils.inferAndValidate(profiles);
+
+		var errors = profileManager.validate(profiles);
 		if (!errors.isEmpty()) {
 			for (var error : errors) {
 				printError(error);

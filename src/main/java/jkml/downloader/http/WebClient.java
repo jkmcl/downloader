@@ -44,7 +44,7 @@ public class WebClient implements Closeable {
 	private final CloseableHttpAsyncClient httpClient;
 
 	public WebClient() {
-		var propertiesHelper = new PropertiesHelper("http.properties");
+		var propertiesHelper = PropertiesHelper.create("http.properties");
 		userAgentStrings.put(UserAgent.CHROME, propertiesHelper.getRequired("user-agent.chrome"));
 		userAgentStrings.put(UserAgent.CURL, propertiesHelper.getRequired("user-agent.curl"));
 		acceptLanguage = propertiesHelper.getRequired("accept-language");
@@ -143,7 +143,7 @@ public class WebClient implements Closeable {
 		if (Files.notExists(path)) {
 			logger.debug("Local file does not exist: {}", path);
 			var dir = path.getParent();
-			if (Files.notExists(dir)) {
+			if (dir != null && Files.notExists(dir)) {
 				createDirectories(dir);
 			}
 		} else {

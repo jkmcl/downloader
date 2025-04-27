@@ -8,12 +8,17 @@ public class PropertiesHelper {
 
 	private final Properties properties = new Properties();
 
-	public PropertiesHelper(String name) {
+	private PropertiesHelper() {
+	}
+
+	public static PropertiesHelper create(String name) {
 		try (var stream = LangUtils.getClassLoader().getResourceAsStream(name)) {
 			if (stream == null) {
 				throw new IllegalArgumentException("Resource not found: " + name);
 			}
-			properties.load(stream);
+			var instance = new PropertiesHelper();
+			instance.properties.load(stream);
+			return instance;
 		} catch (IOException e) {
 			throw new UncheckedIOException(e.getMessage(), e);
 		}

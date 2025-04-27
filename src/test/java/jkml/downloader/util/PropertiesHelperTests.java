@@ -12,13 +12,13 @@ class PropertiesHelperTests {
 
 	@Test
 	void testPropertiesHelper() {
-		assertDoesNotThrow(() -> new PropertiesHelper(FILE_NAME));
-		assertThrows(IllegalArgumentException.class, () -> new PropertiesHelper("no such file"));
+		assertDoesNotThrow(() -> PropertiesHelper.create(FILE_NAME));
+		assertThrows(IllegalArgumentException.class, () -> PropertiesHelper.create("no such file"));
 	}
 
 	@Test
 	void testGetRequired() {
-		var helper = new PropertiesHelper(FILE_NAME);
+		var helper = PropertiesHelper.create(FILE_NAME);
 		assertNotNull(helper.getRequired("a"));
 		assertThrows(IllegalArgumentException.class, () -> helper.getRequired("no such key"));
 	}

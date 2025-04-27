@@ -20,8 +20,8 @@ public class GsonUtils {
 		return new GsonBuilder()
 				.disableHtmlEscaping()
 				.disableJdkUnsafe()
-				.registerTypeAdapter(Pattern.class, GsonUtils.PatternAdapter)
-				.registerTypeHierarchyAdapter(Path.class, GsonUtils.PathAdapter)
+				.registerTypeAdapter(Pattern.class, PatternAdapter)
+				.registerTypeHierarchyAdapter(Path.class, PathAdapter)
 				.setStrictness(Strictness.STRICT)
 				.create();
 	}

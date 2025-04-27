@@ -38,7 +38,7 @@ class HttpClientBuilder {
 
 		var ioReactorConfig = IOReactorConfig.custom()
 				.setIoThreadCount(Math.min(Runtime.getRuntime().availableProcessors(), 8))
-				.setSoTimeout(HttpClientBuilder.TIMEOUT)
+				.setSoTimeout(TIMEOUT)
 				.build();
 
 		return HttpAsyncClientBuilder.create()

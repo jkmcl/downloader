@@ -26,6 +26,7 @@
 		<wiremock.version>3.13.0</wiremock.version>
 		<jacoco.version>0.8.13</jacoco.version>
 		<maven-pmd-plugin.version>3.26.0</maven-pmd-plugin.version>
+		<pmd.version>7.13.0</pmd.version>
 		<spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
 	</properties>
 
@@ -150,9 +151,9 @@
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>${maven-pmd-plugin.version}</version>
 				<configuration>
-					<failOnViolation>false</failOnViolation>
 					<linkXRef>false</linkXRef>
 					<outputDirectory>${project.reporting.outputDirectory}/pmd</outputDirectory>
+					<printFailingErrors>true</printFailingErrors>
 				</configuration>
 				<executions>
 					<execution>
@@ -162,6 +163,28 @@
 						</goals>
 					</execution>
 				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-core</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-java</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-javascript</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-jsp</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 
 			<plugin>
@@ -169,7 +192,6 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>${spotbugs-maven-plugin.version}</version>
 				<configuration>
-					<failOnError>false</failOnError>
 					<outputDirectory>${project.reporting.outputDirectory}/spotbugs</outputDirectory>
 				</configuration>
 				<executions>

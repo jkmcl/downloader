@@ -60,7 +60,6 @@ public class ProfileManager {
 		var errors = new ArrayList<String>();
 		for (var i = 0; i < profiles.size(); ++i) {
 			var idx = i; // effectively final
-			logger.info("Validating profile[{}]", idx);
 			validate(profiles.get(i), err -> errors.add("Invalid profile[%d]: %s".formatted(idx, err)));
 		}
 		return errors;
@@ -79,7 +78,7 @@ public class ProfileManager {
 			list.add(inferType(p));
 		}
 
-		logger.info("Profile count: {}", list.size());
+		logger.info("Loaded profile count: {}", list.size());
 		return list;
 	}
 

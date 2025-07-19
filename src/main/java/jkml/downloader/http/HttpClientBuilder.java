@@ -49,7 +49,7 @@ class HttpClientBuilder {
 				.setConnectionManager(connectionManager)
 				.setDefaultRequestConfig(requestConfig)
 				.setIOReactorConfig(ioReactorConfig)
-				.setRedirectStrategy(CustomRedirectStrategy.INSTANCE)
+				.setRedirectStrategy(new CustomRedirectStrategy())
 				.setThreadFactory(new DefaultThreadFactory("http", true))
 				.build();
 	}

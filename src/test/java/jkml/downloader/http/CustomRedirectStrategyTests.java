@@ -23,7 +23,7 @@ class CustomRedirectStrategyTests {
 
 	private static final String REFRESH_HEADER_VALUE = "0;URL=" + TARGET_URL;
 
-	private final RedirectStrategy strategy = CustomRedirectStrategy.INSTANCE;
+	private final RedirectStrategy strategy = new CustomRedirectStrategy();
 
 	@Test
 	void testIsRedirected_default() throws HttpException {

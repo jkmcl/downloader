@@ -7,13 +7,10 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
-import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.Method;
@@ -24,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jkml.downloader.util.LangUtils;
-import jkml.downloader.util.PropertiesHelper;
 import jkml.downloader.util.TimeUtils;
 
 public class WebClient implements Closeable {
@@ -33,21 +29,9 @@ public class WebClient implements Closeable {
 
 	private final Logger logger = LoggerFactory.getLogger(WebClient.class);
 
-	private final Map<UserAgent, String> userAgentStrings = new EnumMap<>(UserAgent.class);
-
-	private final String accept = ContentType.WILDCARD.toString();
-
-	private final String acceptEncoding = String.join(", ", ContentEncoding.strings());
-
-	private final String acceptLanguage;
-
 	private final CloseableHttpAsyncClient httpClient;
 
 	public WebClient() {
-		var propertiesHelper = PropertiesHelper.create("http.properties");
-		userAgentStrings.put(UserAgent.CHROME, propertiesHelper.getRequired("user-agent.chrome"));
-		userAgentStrings.put(UserAgent.CURL, propertiesHelper.getRequired("user-agent.curl"));
-		acceptLanguage = propertiesHelper.getRequired("accept-language");
 		httpClient = new HttpClientBuilder().build();
 		httpClient.start();
 	}
@@ -59,10 +43,6 @@ public class WebClient implements Closeable {
 		} catch (IOException e) {
 			logger.error("Failed to close HTTP client", e);
 		}
-	}
-
-	String getUserAgentString(UserAgent userAgent) {
-		return userAgentStrings.get(userAgent);
 	}
 
 	HttpRequest createRequest(URI uri, RequestOptions options) {
@@ -79,12 +59,12 @@ public class WebClient implements Closeable {
 		if (userAgent == null) {
 			userAgent = DEFAULT_USER_AGENT;
 		}
-		request.setHeader(HttpHeaders.USER_AGENT, getUserAgentString(userAgent));
+		request.setHeader(Headers.userAgent(userAgent));
 
 		// Set Accept, Accept-Encoding and Accept-Language headers
-		request.setHeader(HttpHeaders.ACCEPT, accept);
-		request.setHeader(HttpHeaders.ACCEPT_ENCODING, acceptEncoding);
-		request.setHeader(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
+		request.setHeader(Headers.ACCEPT);
+		request.setHeader(Headers.ACCEPT_ENCODING);
+		request.setHeader(Headers.ACCEPT_LANGUAGE);
 
 		// Set Referer header
 		if (referer == Referer.SELF) {

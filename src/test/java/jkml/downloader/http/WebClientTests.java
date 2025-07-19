@@ -71,26 +71,26 @@ class WebClientTests {
 
 	@Test
 	void testCreateRequest() {
-		var defaultUserAgentString = webClient.getUserAgentString(WebClient.DEFAULT_USER_AGENT);
+		var defaultUserAgent = Headers.userAgent(WebClient.DEFAULT_USER_AGENT);
 
 		var request = webClient.createRequest(mockUrl, null);
-		assertEquals(defaultUserAgentString, request.getFirstHeader(HttpHeaders.USER_AGENT).getValue());
+		assertEquals(defaultUserAgent, request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
 
 		request = webClient.createRequest(mockUrl, new RequestOptions());
-		assertEquals(defaultUserAgentString, request.getFirstHeader(HttpHeaders.USER_AGENT).getValue());
+		assertEquals(defaultUserAgent, request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
 
 		request = webClient.createRequest(mockUrl, new RequestOptions(UserAgent.CHROME, null));
-		assertEquals(webClient.getUserAgentString(UserAgent.CHROME), request.getFirstHeader(HttpHeaders.USER_AGENT).getValue());
+		assertEquals(Headers.userAgent(UserAgent.CHROME), request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
 
 		request = webClient.createRequest(mockUrl, new RequestOptions(UserAgent.CURL, null));
-		assertEquals(webClient.getUserAgentString(UserAgent.CURL), request.getFirstHeader(HttpHeaders.USER_AGENT).getValue());
+		assertEquals(Headers.userAgent(UserAgent.CURL), request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
 
 		request = webClient.createRequest(mockUrl, new RequestOptions(null, Referer.SELF));
-		assertEquals(defaultUserAgentString, request.getFirstHeader(HttpHeaders.USER_AGENT).getValue());
+		assertEquals(defaultUserAgent, request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertEquals(mockUrl.toString(), request.getFirstHeader(HttpHeaders.REFERER).getValue());
 	}
 

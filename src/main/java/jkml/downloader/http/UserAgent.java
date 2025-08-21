@@ -1,5 +1,5 @@
 package jkml.downloader.http;
 
-enum UserAgent {
+public enum UserAgent {
 	CHROME, CURL
 }

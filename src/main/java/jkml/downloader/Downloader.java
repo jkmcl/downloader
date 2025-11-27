@@ -33,10 +33,6 @@ public class Downloader implements Closeable {
 
 	private final WebClient webClient;
 
-	public Downloader(PrintStream printStream) {
-		this(printStream, new WebClient());
-	}
-
 	Downloader(PrintStream printStream, WebClient webClient) {
 		this.printStream = printStream;
 		this.webClient = webClient;
@@ -231,7 +227,7 @@ public class Downloader implements Closeable {
 			return;
 		}
 
-		try (var downloader = new Downloader(System.out)) {
+		try (var downloader = new Downloader(System.out, new WebClient())) {
 			downloader.download(Path.of(args[0]));
 		}
 	}

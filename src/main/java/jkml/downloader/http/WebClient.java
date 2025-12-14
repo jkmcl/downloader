@@ -2,11 +2,9 @@ package jkml.downloader.http;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.function.Function;
 
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
@@ -20,6 +18,7 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.LangUtils;
 import jkml.downloader.util.TimeUtils;
 
@@ -48,18 +47,9 @@ public class WebClient implements Closeable {
 	HttpRequest createRequest(URI uri, RequestOptions options) {
 		var request = new BasicHttpRequest(Method.GET, uri);
 
-		UserAgent userAgent = null;
-		Referer referer = null;
-		if (options != null) {
-			userAgent = options.getUserAgent();
-			referer = options.getReferer();
-		}
-
 		// Set User-Agent header
-		if (userAgent == null) {
-			userAgent = DEFAULT_USER_AGENT;
-		}
-		request.setHeader(Headers.userAgent(userAgent));
+		var userAgent = options.getUserAgent();
+		request.setHeader(Headers.userAgent((userAgent == null) ? DEFAULT_USER_AGENT : userAgent));
 
 		// Set Accept, Accept-Encoding and Accept-Language headers
 		request.setHeader(Headers.ACCEPT);
@@ -67,9 +57,15 @@ public class WebClient implements Closeable {
 		request.setHeader(Headers.ACCEPT_LANGUAGE);
 
 		// Set Referer header
-		if (referer == Referer.SELF) {
+		if (options.getReferer() == Referer.SELF) {
 			// Get the URI from the request as BasicHttpRequest re-assembles it
 			request.setHeader(HttpHeaders.REFERER, HttpUtils.getUri(request).toString());
+		}
+
+		// Set If-Modified-Since header
+		var ifModifiedSince = options.getIfModifiedSince();
+		if (ifModifiedSince != null) {
+			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, ifModifiedSince);
 		}
 
 		return request;
@@ -95,45 +91,23 @@ public class WebClient implements Closeable {
 		return execute(createRequest(uri, options), null, new TextResponseHandler(), ResultUtils::textResult);
 	}
 
-	private static Path createDirectories(Path dir) {
-		try {
-			return Files.createDirectories(dir);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e.getMessage(), e);
-		}
-	}
-
-	private static Instant getLastModifiedTime(Path path) {
-		try {
-			return Files.getLastModifiedTime(path).toInstant();
-		} catch (IOException e) {
-			throw new UncheckedIOException(e.getMessage(), e);
-		}
-	}
-
 	/**
-	 * Download the file if it does not exist locally or if it is newer than the
-	 * local copy.
+	 * Retrieve the response body and save it to file.
 	 */
 	public FileResult saveToFile(URI uri, RequestOptions options, Path path) {
-		var request = createRequest(uri, options);
-
-		// Add If-Modified-Since request header if local file exists, otherwise create
-		// its parent directory
 		if (Files.notExists(path)) {
 			logger.debug("Local file does not exist: {}", path);
 			var dir = path.getParent();
-			if (dir != null && Files.notExists(dir)) {
-				createDirectories(dir);
+			if (dir != null) {
+				FileUtils.createDirectories(dir);
 			}
 		} else {
 			logger.debug("Local file exists: {}", path);
-			var lastMod = getLastModifiedTime(path);
-			logger.atDebug().log("Local file last modified time: {}", TimeUtils.Formatter.format(lastMod));
-			HttpUtils.setTimeHeader(request, HttpHeaders.IF_MODIFIED_SINCE, lastMod);
+			var lastMod = FileUtils.getLastModifiedTime(path);
+			logger.atDebug().log("Local file last modified time: {}", TimeUtils.formatter.format(lastMod));
+			options.setIfModifiedSince(lastMod);
 		}
-
-		return execute(request, null, new FileResponseHandler(uri, path), ResultUtils::fileResult);
+		return execute(createRequest(uri, options), null, new FileResponseHandler(uri, path), ResultUtils::fileResult);
 	}
 
 	/**

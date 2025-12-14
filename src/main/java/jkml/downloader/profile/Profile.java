@@ -29,6 +29,8 @@ public class Profile {
 
 	private RequestOptions requestOptions;
 
+	private boolean skipIfFileExists;
+
 	private Path outputDirectory;
 
 	public String getName() {
@@ -88,11 +90,19 @@ public class Profile {
 	}
 
 	public RequestOptions getRequestOptions() {
-		return requestOptions;
+		return RequestOptions.copy(requestOptions);
 	}
 
 	public void setRequestOptions(RequestOptions requestOptions) {
-		this.requestOptions = requestOptions;
+		this.requestOptions = RequestOptions.copy(requestOptions);
+	}
+
+	public boolean isSkipIfFileExists() {
+		return skipIfFileExists;
+	}
+
+	public void setSkipIfFileExists(boolean skipIfFileExists) {
+		this.skipIfFileExists = skipIfFileExists;
 	}
 
 	public Path getOutputDirectory() {

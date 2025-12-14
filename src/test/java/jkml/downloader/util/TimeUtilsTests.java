@@ -1,6 +1,6 @@
 package jkml.downloader.util;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.Instant;
 
@@ -10,7 +10,7 @@ class TimeUtilsTests {
 
 	@Test
 	void test() {
-		assertDoesNotThrow(() -> TimeUtils.Formatter.format(Instant.now()));
+		assertNotNull(TimeUtils.formatter.format(Instant.now()));
 	}
 
 }

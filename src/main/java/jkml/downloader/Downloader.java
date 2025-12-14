@@ -111,18 +111,23 @@ public class Downloader implements Closeable {
 			return;
 		}
 
-		getFile(fileLink, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName));
+		getFile(fileLink, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName),
+				profile.isSkipIfFileExists());
 	}
 
-	private void getFile(URI uri, RequestOptions options, Path path) {
-		var result = webClient.saveToFile(uri, options, path);
+	private void getFile(URI uri, RequestOptions options, Path path, boolean skipIfFileExists) {
+		if (skipIfFileExists && Files.exists(path)) {
+			printInfo("Local file exists");
+			return;
+		}
 
+		var result = webClient.saveToFile(uri, options, path);
 		switch (result.status()) {
 		case NOT_MODIFIED:
 			printInfo("Local file up to date");
 			break;
 		case OK:
-			printInfo("Downloaded remote file last modified at {}", TimeUtils.Formatter.format(result.lastModified()));
+			printInfo("Downloaded remote file last modified at {}", TimeUtils.formatter.format(result.lastModified()));
 			printInfo("URL:  {}", uri);
 			printInfo("Path: {}", path);
 			break;

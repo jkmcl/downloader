@@ -73,32 +73,35 @@ class WebClientTests {
 	void testCreateRequest() {
 		var defaultUserAgent = Headers.userAgent(WebClient.DEFAULT_USER_AGENT);
 
-		var request = webClient.createRequest(mockUrl, null);
+		var options = new RequestOptions();
+		var request = webClient.createRequest(mockUrl, options);
 		assertEquals(defaultUserAgent, request.getFirstHeader(HttpHeaders.USER_AGENT));
 		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
+		assertNull(request.getFirstHeader(HttpHeaders.IF_MODIFIED_SINCE));
 
-		request = webClient.createRequest(mockUrl, new RequestOptions());
-		assertEquals(defaultUserAgent, request.getFirstHeader(HttpHeaders.USER_AGENT));
-		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
-
-		request = webClient.createRequest(mockUrl, new RequestOptions(UserAgent.CHROME, null));
+		options.setUserAgent(UserAgent.CHROME);
+		request = webClient.createRequest(mockUrl, options);
 		assertEquals(Headers.userAgent(UserAgent.CHROME), request.getFirstHeader(HttpHeaders.USER_AGENT));
-		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
 
-		request = webClient.createRequest(mockUrl, new RequestOptions(UserAgent.CURL, null));
+		options.setUserAgent(UserAgent.CURL);
+		request = webClient.createRequest(mockUrl, options);
 		assertEquals(Headers.userAgent(UserAgent.CURL), request.getFirstHeader(HttpHeaders.USER_AGENT));
-		assertNull(request.getFirstHeader(HttpHeaders.REFERER));
 
-		request = webClient.createRequest(mockUrl, new RequestOptions(null, Referer.SELF));
-		assertEquals(defaultUserAgent, request.getFirstHeader(HttpHeaders.USER_AGENT));
+		options.setReferer(Referer.SELF);
+		request = webClient.createRequest(mockUrl, options);
 		assertEquals(mockUrl.toString(), request.getFirstHeader(HttpHeaders.REFERER).getValue());
+
+		options.setIfModifiedSince(Instant.now());
+		request = webClient.createRequest(mockUrl, options);
+		assertEquals(DateUtils.formatStandardDate(options.getIfModifiedSince()),
+				request.getFirstHeader(HttpHeaders.IF_MODIFIED_SINCE).getValue());
 	}
 
 	@Test
 	void testGetContent_Success() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
 
-		var result = webClient.getContent(mockUrl, null);
+		var result = webClient.getContent(mockUrl, new RequestOptions());
 		assertEquals(Status.OK, result.status());
 		assertFalse(StringUtils.isNullOrBlank(result.text()));
 	}
@@ -107,7 +110,7 @@ class WebClientTests {
 	void testGetContent_Failure() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
-		var result = webClient.getContent(mockUrl, null);
+		var result = webClient.getContent(mockUrl, new RequestOptions());
 		assertEquals(Status.ERROR, result.status());
 		assertNotNull(result.errorMessage());
 	}
@@ -124,7 +127,7 @@ class WebClientTests {
 			TestUtils.deleteDirectories(outDir);
 		}
 
-		var result = webClient.saveToFile(mockUrl, null, localFilePath);
+		var result = webClient.saveToFile(mockUrl, new RequestOptions(), localFilePath);
 
 		assertEquals(Status.OK, result.status());
 		assertTrue(Files.exists(localFilePath));
@@ -149,7 +152,7 @@ class WebClientTests {
 		Files.writeString(localFilePath, StringUtils.EMPTY);
 		Files.setLastModifiedTime(localFilePath, FileTime.from(Instant.now()));
 
-		var result = webClient.saveToFile(mockUrl, null, localFilePath);
+		var result = webClient.saveToFile(mockUrl, new RequestOptions(), localFilePath);
 
 		assertEquals(Status.NOT_MODIFIED, result.status());
 		assertTrue(Files.exists(localFilePath));
@@ -161,7 +164,7 @@ class WebClientTests {
 
 		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
 		Files.deleteIfExists(localFilePath);
-		var result = webClient.saveToFile(mockUrl, null, localFilePath);
+		var result = webClient.saveToFile(mockUrl, new RequestOptions(), localFilePath);
 
 		assertEquals(Status.ERROR, result.status());
 		assertNotNull(result.errorMessage());
@@ -172,7 +175,7 @@ class WebClientTests {
 		var location = "http://localhost/file.txt";
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(seeOther(location)));
 
-		var result = webClient.getLocation(mockUrl, null);
+		var result = webClient.getLocation(mockUrl, new RequestOptions());
 
 		assertEquals(Status.OK, result.status());
 		assertEquals(URI.create(location), result.link());
@@ -182,7 +185,7 @@ class WebClientTests {
 	void testGetLocation_Failure() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok()));
 
-		var result = webClient.getLocation(mockUrl, null);
+		var result = webClient.getLocation(mockUrl, new RequestOptions());
 
 		assertEquals(Status.ERROR, result.status());
 		assertNotNull(result.errorMessage());

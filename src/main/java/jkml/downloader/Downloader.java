@@ -123,17 +123,13 @@ public class Downloader implements Closeable {
 
 		var result = webClient.saveToFile(uri, options, path);
 		switch (result.status()) {
-		case NOT_MODIFIED:
-			printInfo("Local file up to date");
-			break;
-		case OK:
+		case OK -> {
 			printInfo("Downloaded remote file last modified at {}", TimeUtils.formatter.format(result.lastModified()));
 			printInfo("URL:  {}", uri);
 			printInfo("Path: {}", path);
-			break;
-		case ERROR:
-			printErrorDuringOperation("file download", result.errorMessage());
-			break;
+		}
+		case NOT_MODIFIED -> printInfo("Local file up to date");
+		case ERROR -> printErrorDuringOperation("file download", result.errorMessage());
 		}
 	}
 

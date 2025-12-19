@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jkml.downloader.http.RequestOptions;
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.util.StringUtils;
 
@@ -17,7 +18,11 @@ public class ProfileManager {
 
 	private final Logger logger = LoggerFactory.getLogger(ProfileManager.class);
 
-	private static Profile inferType(Profile profile) {
+	private static Profile normalize(Profile profile) {
+		if (profile.getRequestOptions() == null) {
+			profile.setRequestOptions(new RequestOptions());
+		}
+
 		if (profile.getType() != null) {
 			return profile;
 		}
@@ -75,7 +80,7 @@ public class ProfileManager {
 
 		var list = new ArrayList<Profile>(array.length);
 		for (var p : array) {
-			list.add(inferType(p));
+			list.add(normalize(p));
 		}
 
 		logger.info("Loaded profile count: {}", list.size());

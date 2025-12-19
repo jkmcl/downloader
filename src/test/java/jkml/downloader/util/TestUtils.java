@@ -31,7 +31,7 @@ public class TestUtils {
 	}
 
 	public static Path outputDirectory() {
-		return Path.of("target/test-outputs");
+		return Path.of("target/test-output");
 	}
 
 	public static void deleteDirectories(Path dir) throws IOException {

@@ -1,6 +1,5 @@
 package jkml.downloader.util;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -12,7 +11,7 @@ class PropertiesHelperTests {
 
 	@Test
 	void testPropertiesHelper() {
-		assertDoesNotThrow(() -> PropertiesHelper.create(FILE_NAME));
+		assertNotNull(PropertiesHelper.create(FILE_NAME));
 		assertThrows(IllegalArgumentException.class, () -> PropertiesHelper.create("no such file"));
 	}
 

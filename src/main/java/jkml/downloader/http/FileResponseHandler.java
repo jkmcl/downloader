@@ -37,8 +37,6 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private final Path path;
 
-	private ContentEncoding contentEncoding;
-
 	private Instant lastModified;
 
 	private Path tmpPath;
@@ -86,13 +84,11 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 	}
 
 	@Override
-	protected void start(HttpResponse response, ContentEncoding contentEncoding, ContentType contentType) throws IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		if (response.getCode() == HttpStatus.SC_NOT_MODIFIED) {
 			logger.info("Remote file not modified");
 			return;
 		}
-
-		this.contentEncoding = contentEncoding;
 
 		if ((lastModified = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
 			throw new IOException("Remote file last modified time not available");
@@ -116,15 +112,6 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		if (endOfStream) {
 			closeChannel();
 			logger.info("Finished saving remote content");
-
-			// Decode file content
-			if (contentEncoding != null) {
-				logger.debug("Decoding remote content");
-				var decodedPath = Path.of(tmpPath + ".decoded");
-				contentEncoding.decode(tmpPath, decodedPath);
-				Files.move(decodedPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
-				logger.debug("Finished decoding remote content");
-			}
 
 			// Check file content
 			checkFileContent(tmpPath, path);

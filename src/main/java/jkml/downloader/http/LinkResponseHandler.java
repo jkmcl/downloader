@@ -25,7 +25,7 @@ class LinkResponseHandler extends ResponseHandler<LinkResult> {
 	}
 
 	@Override
-	protected void start(HttpResponse response, ContentEncoding contentEncoding, ContentType contentType) throws IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		var header = response.getFirstHeader(HttpHeaders.LOCATION);
 		if (header == null) {
 			throw new IOException("Location header not found in response");

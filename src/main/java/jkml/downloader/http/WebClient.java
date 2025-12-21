@@ -51,9 +51,8 @@ public class WebClient implements Closeable {
 		var userAgent = options.getUserAgent();
 		request.setHeader(Headers.userAgent((userAgent == null) ? DEFAULT_USER_AGENT : userAgent));
 
-		// Set Accept, Accept-Encoding and Accept-Language headers
+		// Set Accept and Accept-Language headers
 		request.setHeader(Headers.ACCEPT);
-		request.setHeader(Headers.ACCEPT_ENCODING);
 		request.setHeader(Headers.ACCEPT_LANGUAGE);
 
 		// Set Referer header

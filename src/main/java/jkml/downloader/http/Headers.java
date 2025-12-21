@@ -14,8 +14,6 @@ class Headers {
 
 	public static final Header ACCEPT = new BasicHeader(HttpHeaders.ACCEPT, ContentType.WILDCARD.toString());
 
-	public static final Header ACCEPT_ENCODING = new BasicHeader(HttpHeaders.ACCEPT_ENCODING, String.join(", ", ContentEncoding.strings()));
-
 	public static final Header ACCEPT_LANGUAGE = new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, "en-US,en;q=0.9");
 
 	private static final Map<UserAgent, Header> USER_AGENTS = new EnumMap<>(UserAgent.class);

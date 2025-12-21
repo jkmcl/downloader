@@ -18,8 +18,6 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 
 	private final Logger logger = LoggerFactory.getLogger(TextResponseHandler.class);
 
-	private ContentEncoding contentEncoding;
-
 	private Charset charset = StandardCharsets.UTF_8;
 
 	private ByteArrayBuffer buffer;
@@ -27,9 +25,7 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 	private String text;
 
 	@Override
-	protected void start(HttpResponse response, ContentEncoding contentEncoding, ContentType contentType) throws IOException {
-		this.contentEncoding = contentEncoding;
-
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
 		}
@@ -44,9 +40,6 @@ class TextResponseHandler extends ResponseHandler<TextResult> {
 		if (endOfStream) {
 			var bytes = buffer.toByteArray();
 			logger.info("Response content length: {}", bytes.length);
-			if (contentEncoding != null) {
-				bytes = contentEncoding.decode(bytes);
-			}
 			text = new String(bytes, charset);
 		}
 	}

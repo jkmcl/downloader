@@ -17,7 +17,7 @@ abstract class ResponseHandler<T> extends AbstractBinResponseConsumer<T> {
 	@Override
 	protected final void start(HttpResponse response, ContentType contentType) throws IOException {
 		if (!isValid(response.getCode())) {
-			throw new IOException("Unexpected status code: " + response.getCode());
+			throw new ResponseException("Unexpected status code: " + response.getCode());
 		}
 		doStart(response, contentType);
 	}

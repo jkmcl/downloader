@@ -102,8 +102,8 @@ class WebClientTests {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
 
 		var result = webClient.getContent(mockUrl, new RequestOptions());
-		assertEquals(Status.OK, result.status());
-		assertFalse(StringUtils.isNullOrBlank(result.text()));
+
+		assertFalse(StringUtils.isNullOrBlank(result));
 	}
 
 	@Test
@@ -172,8 +172,7 @@ class WebClientTests {
 
 		var result = webClient.getLocation(mockUrl, new RequestOptions());
 
-		assertEquals(Status.OK, result.status());
-		assertEquals(URI.create(location), result.link());
+		assertEquals(URI.create(location), result);
 	}
 
 	@Test

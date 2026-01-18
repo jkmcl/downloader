@@ -1,10 +1,10 @@
 package jkml.downloader.http;
 
-public class WebClientException extends Exception {
+class ResponseException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public WebClientException(String message) {
+	public ResponseException(String message) {
 		super(message);
 	}
 

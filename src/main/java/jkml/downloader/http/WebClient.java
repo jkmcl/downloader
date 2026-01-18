@@ -73,20 +73,24 @@ public class WebClient implements Closeable {
 		logger.info("Sending request to {}", HttpUtils.getUri(request));
 		try {
 			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, context, null).get();
-		} catch (ExecutionException | InterruptedException e) {
-			if (e instanceof InterruptedException) {
-				Thread.currentThread().interrupt();
-			}
-			logger.error("Exception caught", e);
+		} catch (ExecutionException e) {
 			var rootCause = LangUtils.getRootCause(e);
+			if (rootCause instanceof ResponseException) {
+				throw new WebClientException(rootCause.getMessage());
+			}
+			logger.error("Asynchronous execution exception", e);
 			throw new WebClientException("%s: %s".formatted(rootCause.getClass().getName(), rootCause.getMessage()));
+		} catch (InterruptedException e) {
+			logger.error("Thread interrupted", e);
+			Thread.currentThread().interrupt();
+			throw new WebClientException("Thread interrupted");
 		}
 	}
 
 	/**
 	 * Retrieve the response body as a String.
 	 */
-	public TextResult getContent(URI uri, RequestOptions options) throws WebClientException {
+	public String getContent(URI uri, RequestOptions options) throws WebClientException {
 		return execute(createRequest(uri, options), null, new TextResponseHandler());
 	}
 
@@ -112,7 +116,7 @@ public class WebClient implements Closeable {
 	/**
 	 * Retrieve the location header value in the redirect (3xx) response.
 	 */
-	public LinkResult getLocation(URI uri, RequestOptions options) throws WebClientException {
+	public URI getLocation(URI uri, RequestOptions options) throws WebClientException {
 		var context = new HttpClientContext();
 
 		// Disable auto-redirect to obtain the location header

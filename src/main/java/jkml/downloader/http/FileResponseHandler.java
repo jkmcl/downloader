@@ -48,11 +48,11 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		this.path = path;
 	}
 
-	static void checkFileName(String fileName, HttpResponse response) throws IOException {
+	static void checkFileName(String fileName, HttpResponse response) {
 		var headerFileName = HttpUtils.getParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		if (headerFileName != null && !headerFileName.equals(fileName)) {
-			throw new IOException("Mismatched file name in response header: " + headerFileName);
+			throw new ResponseException("Mismatched file name in response header: " + headerFileName);
 		}
 	}
 
@@ -62,7 +62,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		}
 
 		if (Files.size(newFile) * 2 < Files.size(oldFile)) {
-			throw new IOException("New file smaller than half of existing file: " + newFile);
+			throw new ResponseException("New file smaller than half of existing file: " + newFile);
 		}
 	}
 
@@ -91,7 +91,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		}
 
 		if ((lastModified = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
-			throw new IOException("Remote file last modified time not available");
+			throw new ResponseException("Remote file last modified time not available");
 		}
 		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.formatter.format(lastModified));
 

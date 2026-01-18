@@ -137,7 +137,7 @@ public class Downloader implements Closeable {
 
 	private String getText(URI uri, RequestOptions options) {
 		try {
-			return webClient.getContent(uri, options).text();
+			return webClient.getContent(uri, options);
 		} catch (WebClientException e) {
 			printErrorDuringOperation("page retrieval", e.getMessage());
 			return null;
@@ -146,7 +146,7 @@ public class Downloader implements Closeable {
 
 	private URI getLink(URI uri, RequestOptions options) {
 		try {
-			return webClient.getLocation(uri, options).link();
+			return webClient.getLocation(uri, options);
 		} catch (WebClientException e) {
 			printErrorDuringOperation("location retrieval", e.getMessage());
 			return null;

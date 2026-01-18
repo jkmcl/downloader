@@ -6,13 +6,18 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.util.ByteArrayBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Based on org.apache.hc.client5.http.async.methods.SimpleAsyncEntityConsumer
  */
 class TextResponseHandler extends ResponseHandler<String> {
+
+	private final Logger logger = LoggerFactory.getLogger(TextResponseHandler.class);
 
 	private Charset charset = StandardCharsets.UTF_8;
 
@@ -23,7 +28,9 @@ class TextResponseHandler extends ResponseHandler<String> {
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
 		}
-		buffer = new ByteArrayBuffer(8192);
+		var header = HttpUtils.getHeader(response, HttpHeaders.CONTENT_LENGTH);
+		var capacity = (header == null) ? 65536 : Integer.parseInt(header);
+		buffer = new ByteArrayBuffer(capacity);
 	}
 
 	@Override
@@ -33,6 +40,7 @@ class TextResponseHandler extends ResponseHandler<String> {
 
 	@Override
 	protected String buildResult() {
+		logger.info("Content length: {}", buffer.length());
 		return new String(buffer.toByteArray(), charset);
 	}
 

@@ -8,8 +8,12 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class LinkResponseHandler extends ResponseHandler<URI> {
+
+	private final Logger logger = LoggerFactory.getLogger(LinkResponseHandler.class);
 
 	private URI location;
 
@@ -22,11 +26,11 @@ class LinkResponseHandler extends ResponseHandler<URI> {
 
 	@Override
 	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
-		var header = response.getFirstHeader(HttpHeaders.LOCATION);
+		var header = HttpUtils.getHeader(response, HttpHeaders.LOCATION);
 		if (header == null) {
 			throw new ResponseException("Location not found in response header");
 		}
-		location = URI.create(header.getValue());
+		location = URI.create(header);
 	}
 
 	@Override
@@ -36,6 +40,7 @@ class LinkResponseHandler extends ResponseHandler<URI> {
 
 	@Override
 	protected URI buildResult() {
+		logger.info("Location: {}", location);
 		return location;
 	}
 

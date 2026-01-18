@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.Function;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
@@ -18,7 +18,6 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.LangUtils;
 import jkml.downloader.util.TimeUtils;
 
@@ -70,55 +69,56 @@ public class WebClient implements Closeable {
 		return request;
 	}
 
-	private <T> T execute(HttpRequest request, HttpContext context, ResponseHandler<T> responseHandler, Function<Throwable, T> exceptionHandler) {
+	private <T> T execute(HttpRequest request, HttpContext context, ResponseHandler<T> responseHandler) throws WebClientException {
 		logger.info("Sending request to {}", HttpUtils.getUri(request));
 		try {
 			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, context, null).get();
-		} catch (Exception e) {
+		} catch (ExecutionException | InterruptedException e) {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();
 			}
 			logger.error("Exception caught", e);
-			return exceptionHandler.apply(LangUtils.getRootCause(e));
+			var rootCause = LangUtils.getRootCause(e);
+			throw new WebClientException("%s: %s".formatted(rootCause.getClass().getName(), rootCause.getMessage()));
 		}
 	}
 
 	/**
 	 * Retrieve the response body as a String.
 	 */
-	public TextResult getContent(URI uri, RequestOptions options) {
-		return execute(createRequest(uri, options), null, new TextResponseHandler(), ResultUtils::textResult);
+	public TextResult getContent(URI uri, RequestOptions options) throws WebClientException {
+		return execute(createRequest(uri, options), null, new TextResponseHandler());
 	}
 
 	/**
 	 * Retrieve the response body and save it to file.
 	 */
-	public FileResult saveToFile(URI uri, RequestOptions options, Path path) {
+	public FileResult saveToFile(URI uri, RequestOptions options, Path path) throws IOException, WebClientException {
 		if (Files.notExists(path)) {
 			logger.debug("Local file does not exist: {}", path);
 			var dir = path.getParent();
 			if (dir != null) {
-				FileUtils.createDirectories(dir);
+				Files.createDirectories(dir);
 			}
 		} else {
 			logger.debug("Local file exists: {}", path);
-			var lastMod = FileUtils.getLastModifiedTime(path);
+			var lastMod = Files.getLastModifiedTime(path).toInstant();
 			logger.atDebug().log("Local file last modified time: {}", TimeUtils.formatter.format(lastMod));
 			options.setIfModifiedSince(lastMod);
 		}
-		return execute(createRequest(uri, options), null, new FileResponseHandler(uri, path), ResultUtils::fileResult);
+		return execute(createRequest(uri, options), null, new FileResponseHandler(uri, path));
 	}
 
 	/**
 	 * Retrieve the location header value in the redirect (3xx) response.
 	 */
-	public LinkResult getLocation(URI uri, RequestOptions options) {
+	public LinkResult getLocation(URI uri, RequestOptions options) throws WebClientException {
 		var context = new HttpClientContext();
 
 		// Disable auto-redirect to obtain the location header
 		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
 
-		return execute(createRequest(uri, options), context, new LinkResponseHandler(), ResultUtils::linkResult);
+		return execute(createRequest(uri, options), context, new LinkResponseHandler());
 	}
 
 }

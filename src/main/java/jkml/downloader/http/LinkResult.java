@@ -2,10 +2,10 @@ package jkml.downloader.http;
 
 import java.net.URI;
 
-public record LinkResult(Status status, URI link, String errorMessage) {
+public record LinkResult(Status status, URI link) {
 
 	public LinkResult(URI link) {
-		this(Status.OK, link, null);
+		this(Status.OK, link);
 	}
 
 }

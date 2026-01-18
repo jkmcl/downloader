@@ -19,7 +19,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<slf4j.version>2.0.17</slf4j.version>
-		<logback.version>1.5.24</logback.version>
+		<logback.version>1.5.25</logback.version>
 		<gson.version>2.13.2</gson.version>
 		<httpcore5.version>5.4</httpcore5.version>
 		<httpclient5.version>5.6</httpclient5.version>

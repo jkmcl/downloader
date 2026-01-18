@@ -1,11 +1,6 @@
 package jkml.downloader.util;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
 
 public class FileUtils {
 
@@ -40,22 +35,6 @@ public class FileUtils {
 		}
 
 		return path.substring(index + 1);
-	}
-
-	public static Path createDirectories(Path dir) {
-		try {
-			return Files.createDirectories(dir);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e.getMessage(), e);
-		}
-	}
-
-	public static Instant getLastModifiedTime(Path path) {
-		try {
-			return Files.getLastModifiedTime(path).toInstant();
-		} catch (IOException e) {
-			throw new UncheckedIOException(e.getMessage(), e);
-		}
 	}
 
 }

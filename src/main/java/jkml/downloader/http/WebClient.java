@@ -78,11 +78,11 @@ public class WebClient implements Closeable {
 		try {
 			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, context, null).get();
 		} catch (ExecutionException e) {
-			logger.error("Execution failed", e);
+			logger.error("Exception occurred during execution", e);
 			var cause = LangUtils.getRootCause(e);
 			throw new WebClientException((cause instanceof ResponseException) ? cause.getMessage() : formatException(cause));
 		} catch (InterruptedException e) {
-			logger.error("Execution interrupted", e);
+			logger.error("Wait for execution completion interrupted", e);
 			var cause = LangUtils.getRootCause(e);
 			Thread.currentThread().interrupt();
 			throw new WebClientException(formatException(cause));

@@ -52,7 +52,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		var headerFileName = HttpUtils.getParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		if (headerFileName != null && !headerFileName.equals(fileName)) {
-			throw new ResponseException("Mismatched file name in response header: " + headerFileName);
+			throw new ResponseException("Mismatched file name in %s header: %s".formatted(HttpHeaders.CONTENT_DISPOSITION, headerFileName));
 		}
 	}
 

@@ -28,7 +28,7 @@ class LinkResponseHandler extends ResponseHandler<URI> {
 	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		var header = HttpUtils.getHeader(response, HttpHeaders.LOCATION);
 		if (header == null) {
-			throw new ResponseException("Location not found in response header");
+			throw new ResponseException(HttpHeaders.LOCATION + " header not found");
 		}
 		location = URI.create(header);
 	}

@@ -18,7 +18,6 @@ import jkml.downloader.html.PageScraper;
 import jkml.downloader.http.RequestOptions;
 import jkml.downloader.http.Status;
 import jkml.downloader.http.WebClient;
-import jkml.downloader.http.WebClientException;
 import jkml.downloader.profile.Profile;
 import jkml.downloader.profile.Profile.Type;
 import jkml.downloader.profile.ProfileManager;
@@ -138,7 +137,7 @@ public class Downloader implements Closeable {
 	private String getText(URI uri, RequestOptions options) {
 		try {
 			return webClient.getContent(uri, options);
-		} catch (WebClientException e) {
+		} catch (Exception e) {
 			printErrorDuringOperation("page retrieval", e.getMessage());
 			return null;
 		}
@@ -147,7 +146,7 @@ public class Downloader implements Closeable {
 	private URI getLink(URI uri, RequestOptions options) {
 		try {
 			return webClient.getLocation(uri, options);
-		} catch (WebClientException e) {
+		} catch (Exception e) {
 			printErrorDuringOperation("location retrieval", e.getMessage());
 			return null;
 		}

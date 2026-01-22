@@ -69,21 +69,23 @@ public class WebClient implements Closeable {
 		return request;
 	}
 
+	private static String formatException(Throwable exception) {
+		return "%s: %s".formatted(exception.getClass().getName(), exception.getMessage());
+	}
+
 	private <T> T execute(HttpRequest request, HttpContext context, ResponseHandler<T> responseHandler) throws WebClientException {
 		logger.info("Sending request to {}", HttpUtils.getUri(request));
 		try {
 			return httpClient.execute(new BasicRequestProducer(request, null), responseHandler, context, null).get();
 		} catch (ExecutionException e) {
-			var rootCause = LangUtils.getRootCause(e);
-			if (rootCause instanceof ResponseException) {
-				throw new WebClientException(rootCause.getMessage());
-			}
-			logger.error("Asynchronous execution exception", e);
-			throw new WebClientException("%s: %s".formatted(rootCause.getClass().getName(), rootCause.getMessage()));
+			logger.error("Execution failed", e);
+			var cause = LangUtils.getRootCause(e);
+			throw new WebClientException((cause instanceof ResponseException) ? cause.getMessage() : formatException(cause));
 		} catch (InterruptedException e) {
-			logger.error("Thread interrupted", e);
+			logger.error("Execution interrupted", e);
+			var cause = LangUtils.getRootCause(e);
 			Thread.currentThread().interrupt();
-			throw new WebClientException("Thread interrupted");
+			throw new WebClientException(formatException(cause));
 		}
 	}
 

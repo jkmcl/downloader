@@ -47,7 +47,7 @@ class FileResponseHandlerTests {
 		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(fileName, response));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"different.zip\"");
-		assertThrows(IOException.class, () -> FileResponseHandler.checkFileName(fileName, response));
+		assertThrows(ResponseException.class, () -> FileResponseHandler.checkFileName(fileName, response));
 	}
 
 	@Test
@@ -75,7 +75,7 @@ class FileResponseHandlerTests {
 		// Different size, source smaller than half the size of target
 		Files.writeString(source, "12");
 		Files.writeString(target, "12345");
-		var ioException = assertThrows(IOException.class, () -> FileResponseHandler.checkFileContent(source, target));
+		var ioException = assertThrows(ResponseException.class, () -> FileResponseHandler.checkFileContent(source, target));
 		assertTrue(ioException.getMessage().contains("smaller"));
 	}
 

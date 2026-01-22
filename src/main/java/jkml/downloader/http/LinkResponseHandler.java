@@ -11,7 +11,7 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class LinkResponseHandler extends ResponseHandler<LinkResult> {
+class LinkResponseHandler extends ResponseHandler<URI> {
 
 	private final Logger logger = LoggerFactory.getLogger(LinkResponseHandler.class);
 
@@ -25,13 +25,12 @@ class LinkResponseHandler extends ResponseHandler<LinkResult> {
 	}
 
 	@Override
-	protected void start(HttpResponse response, ContentEncoding contentEncoding, ContentType contentType) throws IOException {
-		var header = response.getFirstHeader(HttpHeaders.LOCATION);
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
+		var header = HttpUtils.getHeader(response, HttpHeaders.LOCATION);
 		if (header == null) {
-			throw new IOException("Location header not found in response");
+			throw new ResponseException(HttpHeaders.LOCATION + " header not found");
 		}
-		location = URI.create(header.getValue());
-		logger.info("Response location: {}", location);
+		location = URI.create(header);
 	}
 
 	@Override
@@ -40,8 +39,9 @@ class LinkResponseHandler extends ResponseHandler<LinkResult> {
 	}
 
 	@Override
-	protected LinkResult buildResult() {
-		return new LinkResult(location);
+	protected URI buildResult() {
+		logger.info("Location: {}", location);
+		return location;
 	}
 
 	@Override

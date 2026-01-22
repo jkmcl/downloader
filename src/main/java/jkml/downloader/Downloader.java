@@ -120,35 +120,36 @@ public class Downloader implements Closeable {
 			printInfo("Local file exists");
 			return;
 		}
-
-		var result = webClient.saveToFile(uri, options, path);
-		switch (result.status()) {
-		case OK -> {
-			printInfo("Downloaded remote file last modified at {}", TimeUtils.formatter.format(result.lastModified()));
-			printInfo("URL:  {}", uri);
-			printInfo("Path: {}", path);
-		}
-		case NOT_MODIFIED -> printInfo("Local file up to date");
-		case ERROR -> printErrorDuringOperation("file download", result.errorMessage());
+		try {
+			var result = webClient.saveToFile(uri, options, path);
+			if (result.status() == Status.OK) {
+				printInfo("Downloaded remote file last modified at {}", TimeUtils.formatter.format(result.lastModified()));
+				printInfo("URL:  {}", uri);
+				printInfo("Path: {}", path);
+			} else {
+				printInfo("Local file up to date");
+			}
+		} catch (Exception e) {
+			printErrorDuringOperation("file download", e.getMessage());
 		}
 	}
 
 	private String getText(URI uri, RequestOptions options) {
-		var result = webClient.getContent(uri, options);
-		if (result.status() != Status.OK) {
-			printErrorDuringOperation("page retrieval", result.errorMessage());
+		try {
+			return webClient.getContent(uri, options);
+		} catch (Exception e) {
+			printErrorDuringOperation("page retrieval", e.getMessage());
 			return null;
 		}
-		return result.text();
 	}
 
 	private URI getLink(URI uri, RequestOptions options) {
-		var result = webClient.getLocation(uri, options);
-		if (result.status() != Status.OK) {
-			printErrorDuringOperation("location retrieval", result.errorMessage());
+		try {
+			return webClient.getLocation(uri, options);
+		} catch (Exception e) {
+			printErrorDuringOperation("location retrieval", e.getMessage());
 			return null;
 		}
-		return result.link();
 	}
 
 	private void printErrorDuringOperation(String operation, String errorMessage) {

@@ -9,7 +9,6 @@ import java.time.temporal.ChronoUnit;
 
 import org.apache.hc.client5.http.utils.DateUtils;
 import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.HttpMessage;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.Method;
@@ -35,8 +34,8 @@ class HttpUtilsTests {
 
 	@Test
 	void testSetTimeHeader() {
-		HttpMessage message = createResponse();
 		var expected = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+		var message = createResponse();
 
 		HttpUtils.setTimeHeader(message, HttpHeaders.LAST_MODIFIED, expected);
 
@@ -47,7 +46,7 @@ class HttpUtilsTests {
 	@Test
 	void testGetTimeHeader() {
 		var expected = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-		HttpMessage message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, DateUtils.formatStandardDate(expected));
+		var message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, DateUtils.formatStandardDate(expected));
 
 		var value = HttpUtils.getTimeHeader(message, HttpHeaders.LAST_MODIFIED);
 
@@ -56,7 +55,7 @@ class HttpUtilsTests {
 
 	@Test
 	void testGetTimeHeader_noValue() {
-		HttpMessage message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, null);
+		var message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, null);
 
 		var value = HttpUtils.getTimeHeader(message, HttpHeaders.LAST_MODIFIED);
 
@@ -65,7 +64,7 @@ class HttpUtilsTests {
 
 	@Test
 	void testGetTimeHeader_emptyValue() {
-		HttpMessage message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, StringUtils.EMPTY);
+		var message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, StringUtils.EMPTY);
 
 		var value = HttpUtils.getTimeHeader(message, HttpHeaders.LAST_MODIFIED);
 
@@ -74,7 +73,7 @@ class HttpUtilsTests {
 
 	@Test
 	void testGetTimeHeader_invalidValue() {
-		HttpMessage message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, HttpHeaders.LAST_MODIFIED);
+		var message = createResponseWithHeader(HttpHeaders.LAST_MODIFIED, HttpHeaders.LAST_MODIFIED);
 
 		var value = HttpUtils.getTimeHeader(message, HttpHeaders.LAST_MODIFIED);
 
@@ -83,28 +82,28 @@ class HttpUtilsTests {
 
 	@Test
 	void testGetHeader_noHeader() {
-		HttpMessage message = createResponse();
+		var message = createResponse();
 
-		var value = HttpUtils.getHeader(message, HttpHeaders.CONTENT_ENCODING);
+		var value = HttpUtils.getHeader(message, HttpHeaders.SERVER);
 
 		assertNull(value);
 	}
 
 	@Test
 	void testGetHeader_noValue() {
-		HttpMessage message = createResponseWithHeader(HttpHeaders.CONTENT_ENCODING, null);
+		var message = createResponseWithHeader(HttpHeaders.SERVER, null);
 
-		var value = HttpUtils.getHeader(message, HttpHeaders.CONTENT_ENCODING);
+		var value = HttpUtils.getHeader(message, HttpHeaders.SERVER);
 
 		assertNull(value);
 	}
 
 	@Test
 	void testGetHeader() {
-		var expected = "gzip";
-		HttpMessage message = createResponseWithHeader(HttpHeaders.CONTENT_ENCODING, expected);
+		var expected = "MyServer";
+		var message = createResponseWithHeader(HttpHeaders.SERVER, expected);
 
-		var value = HttpUtils.getHeader(message, HttpHeaders.CONTENT_ENCODING);
+		var value = HttpUtils.getHeader(message, HttpHeaders.SERVER);
 
 		assertEquals(expected, value);
 	}

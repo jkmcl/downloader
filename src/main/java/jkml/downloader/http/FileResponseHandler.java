@@ -37,8 +37,6 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private final Path path;
 
-	private ContentEncoding contentEncoding;
-
 	private Instant lastModified;
 
 	private Path tmpPath;
@@ -50,11 +48,11 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		this.path = path;
 	}
 
-	static void checkFileName(String fileName, HttpResponse response) throws IOException {
+	static void checkFileName(String fileName, HttpResponse response) {
 		var headerFileName = HttpUtils.getParameter(response, HttpHeaders.CONTENT_DISPOSITION, "filename");
 
 		if (headerFileName != null && !headerFileName.equals(fileName)) {
-			throw new IOException("Mismatched file name in response header: " + headerFileName);
+			throw new ResponseException("Mismatched file name in %s header: %s".formatted(HttpHeaders.CONTENT_DISPOSITION, headerFileName));
 		}
 	}
 
@@ -64,7 +62,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		}
 
 		if (Files.size(newFile) * 2 < Files.size(oldFile)) {
-			throw new IOException("New file smaller than half of existing file: " + newFile);
+			throw new ResponseException("New file smaller than half of existing file: " + newFile);
 		}
 	}
 
@@ -86,16 +84,14 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 	}
 
 	@Override
-	protected void start(HttpResponse response, ContentEncoding contentEncoding, ContentType contentType) throws IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
 		if (response.getCode() == HttpStatus.SC_NOT_MODIFIED) {
 			logger.info("Remote file not modified");
 			return;
 		}
 
-		this.contentEncoding = contentEncoding;
-
 		if ((lastModified = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
-			throw new IOException("Remote file last modified time not available");
+			throw new ResponseException("Remote file last modified time not available");
 		}
 		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.formatter.format(lastModified));
 
@@ -116,15 +112,6 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		if (endOfStream) {
 			closeChannel();
 			logger.info("Finished saving remote content");
-
-			// Decode file content
-			if (contentEncoding != null) {
-				logger.debug("Decoding remote content");
-				var decodedPath = Path.of(tmpPath + ".decoded");
-				contentEncoding.decode(tmpPath, decodedPath);
-				Files.move(decodedPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
-				logger.debug("Finished decoding remote content");
-			}
 
 			// Check file content
 			checkFileContent(tmpPath, path);

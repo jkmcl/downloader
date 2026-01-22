@@ -8,8 +8,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.seeOther;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -98,21 +98,19 @@ class WebClientTests {
 	}
 
 	@Test
-	void testGetContent_Success() {
+	void testGetContent_Success() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok("Hello world!")));
 
 		var result = webClient.getContent(mockUrl, new RequestOptions());
-		assertEquals(Status.OK, result.status());
-		assertFalse(StringUtils.isNullOrBlank(result.text()));
+
+		assertFalse(StringUtils.isNullOrBlank(result));
 	}
 
 	@Test
 	void testGetContent_Failure() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
-		var result = webClient.getContent(mockUrl, new RequestOptions());
-		assertEquals(Status.ERROR, result.status());
-		assertNotNull(result.errorMessage());
+		assertThrows(WebClientException.class, () -> webClient.getContent(mockUrl, new RequestOptions()));
 	}
 
 	private void testSaveToFile_OK(boolean directoryExists) throws Exception {
@@ -164,31 +162,24 @@ class WebClientTests {
 
 		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
 		Files.deleteIfExists(localFilePath);
-		var result = webClient.saveToFile(mockUrl, new RequestOptions(), localFilePath);
-
-		assertEquals(Status.ERROR, result.status());
-		assertNotNull(result.errorMessage());
+		assertThrows(WebClientException.class, () -> webClient.saveToFile(mockUrl, new RequestOptions(), localFilePath));
 	}
 
 	@Test
-	void testGetLocation_Success() {
+	void testGetLocation_Success() throws Exception {
 		var location = "http://localhost/file.txt";
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(seeOther(location)));
 
 		var result = webClient.getLocation(mockUrl, new RequestOptions());
 
-		assertEquals(Status.OK, result.status());
-		assertEquals(URI.create(location), result.link());
+		assertEquals(URI.create(location), result);
 	}
 
 	@Test
 	void testGetLocation_Failure() {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(ok()));
 
-		var result = webClient.getLocation(mockUrl, new RequestOptions());
-
-		assertEquals(Status.ERROR, result.status());
-		assertNotNull(result.errorMessage());
+		assertThrows(WebClientException.class, () -> webClient.getLocation(mockUrl, new RequestOptions()));
 	}
 
 }

@@ -99,7 +99,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		checkFileName(fileName, response);
 		tmpPath = path.resolveSibling(fileName + ".partial");
 
-		logger.info("Saving remote content");
+		logger.info("Saving remote file content");
 		channel = Files.newByteChannel(tmpPath, openOptions);
 	}
 
@@ -111,7 +111,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 		if (endOfStream) {
 			closeChannel();
-			logger.info("Finished saving remote content");
+			logger.info("Finished saving remote file content");
 
 			// Check file content
 			checkFileContent(tmpPath, path);

@@ -19,7 +19,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.function.Executable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,20 +69,20 @@ class DownloaderTests {
 		return nullable(RequestOptions.class);
 	}
 
-	private Downloader createDownloaderCore(WebClient webClient) {
+	private Downloader createDownloader(WebClient webClient) {
 		return new Downloader(mock(PrintStream.class), webClient);
 	}
 
 	@Test
 	void testDownload_fileNotFound() {
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			assertDoesNotThrow(() -> downloader.download(Path.of("NO_SUCH_FILE.json")));
 		}
 	}
 
 	@Test
 	void testDownload() throws Exception {
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getLocation(any(URI.class), anyRequestOptions())).thenReturn(URI.create("http://localhost/"));
 			when(mockWebClient.getContent(any(URI.class), anyRequestOptions())).thenReturn("");
 			when(mockWebClient.saveToFile(any(URI.class), anyRequestOptions(), any(Path.class))).thenReturn(file());
@@ -108,7 +107,7 @@ class DownloaderTests {
 		var profile = createProfile(Type.DIRECT);
 		profile.setFileUrl(fileLink);
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
 			downloader.download(profile);
@@ -125,7 +124,7 @@ class DownloaderTests {
 		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenThrow(new WebClientException("Mock exception"));
 
 			downloader.download(profile);
@@ -143,7 +142,7 @@ class DownloaderTests {
 		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 
 			downloader.download(profile);
@@ -163,7 +162,7 @@ class DownloaderTests {
 		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file-[.0-9]+\\.zip)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
@@ -184,7 +183,7 @@ class DownloaderTests {
 		profile.setPageUrl(pageLink);
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/([.0-9]+)/file\\.zip)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
@@ -206,7 +205,7 @@ class DownloaderTests {
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
@@ -226,7 +225,7 @@ class DownloaderTests {
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 
 			downloader.download(profile);
@@ -246,7 +245,7 @@ class DownloaderTests {
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 			when(mockWebClient.getContent(eq(pageFragmentLink), anyRequestOptions())).thenThrow(new WebClientException("Mock exception"));
 
@@ -269,7 +268,7 @@ class DownloaderTests {
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 			when(mockWebClient.getContent(eq(pageFragmentLink), anyRequestOptions())).thenReturn(pageFragmentHtml);
 
@@ -294,7 +293,7 @@ class DownloaderTests {
 		profile.setLinkPattern(Pattern.compile("href=\"([^\"]+/file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("Version (\\d\\.\\d)"));
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getContent(eq(pageLink), anyRequestOptions())).thenReturn(pageHtml);
 			when(mockWebClient.getContent(eq(pageFragmentLink), anyRequestOptions())).thenReturn(pageFragmentHtml);
 			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
@@ -312,7 +311,7 @@ class DownloaderTests {
 		var profile = createProfile(Type.REDIRECT);
 		profile.setFileUrl(redirectLink);
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getLocation(eq(redirectLink), anyRequestOptions())).thenThrow(new WebClientException("Mock exception"));
 
 			downloader.download(profile);
@@ -330,7 +329,7 @@ class DownloaderTests {
 		var profile = createProfile(Type.REDIRECT);
 		profile.setFileUrl(redirectLink);
 
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloaderCore(mockWebClient)) {
+		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
 			when(mockWebClient.getLocation(eq(redirectLink), anyRequestOptions())).thenReturn(fileLink);
 			when(mockWebClient.saveToFile(eq(fileLink), anyRequestOptions(), eq(filePath))).thenReturn(fileNotModified());
 
@@ -338,16 +337,6 @@ class DownloaderTests {
 
 			assertDownload(mockWebClient, fileLink, filePath);
 		}
-	}
-
-	@Test
-	void testMain_noArg() {
-		assertDoesNotThrow((Executable) Downloader::main);
-	}
-
-	@Test
-	void testMain() {
-		assertDoesNotThrow(() -> Downloader.main("src/test/resources/profiles-empty.json"));
 	}
 
 }

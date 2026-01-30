@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-	<property name="LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss.SSS" />
+	<property name="LOG_CHARSET" value="${file.encoding:-UTF-8}"/>
 
-	<property name="LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} %-5p [%-6t] %-42.42logger{41} : %m%n" />
+	<property name="LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss.SSS" />
 
 	<property name="LOG_FILE" value="${DOWNLOADER_HOME:-.}/logs/downloader" />
 
+	<property name="CONSOLE_LOG_PATTERN" value="%m%n" />
+
+	<property name="FILE_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} %-5p [%-6t] %-42.42logger{41} : %m%n" />
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<charset>${LOG_CHARSET}</charset>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
 	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<encoder>
-			<charset>UTF-8</charset>
-			<pattern>${LOG_PATTERN}</pattern>
+			<charset>${LOG_CHARSET}</charset>
+			<pattern>${FILE_LOG_PATTERN}</pattern>
 		</encoder>
 		<file>${LOG_FILE}.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -24,6 +35,10 @@
 	<logger name="org.apache.hc.client5.http.headers" level="OFF" />
 
 	<logger name="org.apache.hc.client5.http.wire" level="OFF" />
+
+	<logger name="jkml.downloader.Downloader" level="INFO">
+		<appender-ref ref="CONSOLE" />
+	</logger>
 
 	<root level="DEBUG">
 		<appender-ref ref="FILE" />

@@ -2,7 +2,6 @@ package jkml.downloader;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,19 +28,15 @@ public class Downloader implements Closeable {
 
 	private final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
-	private final PrintStream printStream;
-
 	private final WebClient webClient;
 
-	Downloader(PrintStream printStream, WebClient webClient) {
-		this.printStream = printStream;
+	Downloader(WebClient webClient) {
 		this.webClient = webClient;
 	}
 
 	@Override
 	public void close() {
 		webClient.close();
-		printStream.close();
 	}
 
 	public void download(Path path) {
@@ -123,7 +118,8 @@ public class Downloader implements Closeable {
 		try {
 			var result = webClient.saveToFile(uri, options, path);
 			if (result.status() == Status.OK) {
-				printInfo("Downloaded remote file last modified at {}", TimeUtils.formatter.format(result.lastModified()));
+				printInfo("Downloaded remote file last modified at {}",
+						TimeUtils.formatter.format(result.lastModified()));
 				printInfo("URL:  {}", uri);
 				printInfo("Path: {}", path);
 			} else {
@@ -171,7 +167,8 @@ public class Downloader implements Closeable {
 		}
 
 		var pageScraper = new PageScraper(pageLink, pageHtml);
-		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
+		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
+				profile.getVersionPattern());
 		if (fileInfo == null) {
 			if (isGitHub(pageLink) || profile.getType() == Type.GITHUB) {
 				return findFileInfoInGitHubPageFragments(profile, pageScraper);
@@ -197,7 +194,8 @@ public class Downloader implements Closeable {
 
 			// Use parent base URL for link resolution
 			var fragmentScraper = new PageScraper(profile.getPageUrl(), fragmentHtml);
-			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
+			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
+					profile.getVersionPattern());
 			if (fileInfo != null) {
 				return fileInfo;
 			}
@@ -217,21 +215,20 @@ public class Downloader implements Closeable {
 
 	private void printLine(Level level, String message) {
 		logger.atLevel(level).log(message);
-		if (printStream != null) {
-			printStream.print(message);
-			printStream.println();
-		}
 	}
 
 	public static void main(String... args) {
+		try (var downloader = new Downloader(new WebClient())) {
+			downloader.run(args);
+		}
+	}
+
+	void run(String... args) {
 		if (args.length != 1) {
-			System.out.println("Usage: " + Downloader.class.getName() + " <file>");
+			logger.info("Usage: {} <file>", Downloader.class.getName());
 			return;
 		}
-
-		try (var downloader = new Downloader(System.out, new WebClient())) {
-			downloader.download(Path.of(args[0]));
-		}
+		download(Path.of(args[0]));
 	}
 
 }

@@ -9,7 +9,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -70,7 +69,7 @@ class DownloaderTests {
 	}
 
 	private Downloader createDownloader(WebClient webClient) {
-		return new Downloader(mock(PrintStream.class), webClient);
+		return new Downloader(webClient);
 	}
 
 	@Test

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-	<property name="LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss.SSS" />
+	<property name="LOG_CHARSET" value="${file.encoding:-UTF-8}"/>
 
-	<property name="LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} %-5p [%-6t] %-42.42logger{41} : %m%n" />
+	<property name="LOG_DATEFORMAT_PATTERN" value="HH:mm:ss.SSS" />
+
+	<property name="CONSOLE_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} %-5p [%-6t] %-42.42logger{41} : %m%n" />
 
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<charset>UTF-8</charset>
-			<pattern>${LOG_PATTERN}</pattern>
+			<charset>${LOG_CHARSET}</charset>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
 		</encoder>
 	</appender>
 

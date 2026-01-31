@@ -1,7 +1,6 @@
 package jkml.downloader;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,8 +8,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
-import org.slf4j.helpers.MessageFormatter;
 
 import jkml.downloader.html.FileInfo;
 import jkml.downloader.html.PageScraper;
@@ -30,6 +27,10 @@ public class Downloader implements Closeable {
 
 	private final WebClient webClient;
 
+	public Downloader() {
+		this(new WebClient());
+	}
+
 	Downloader(WebClient webClient) {
 		this.webClient = webClient;
 	}
@@ -41,7 +42,7 @@ public class Downloader implements Closeable {
 
 	public void download(Path path) {
 		if (Files.notExists(path)) {
-			printError("File not found: {}", path);
+			logger.error("File not found: {}", path);
 			return;
 		}
 
@@ -50,22 +51,22 @@ public class Downloader implements Closeable {
 		List<Profile> profiles;
 		try {
 			profiles = profileManager.load(path);
-		} catch (IOException e) {
-			printErrorDuringOperation("profile loading", e.getMessage());
+		} catch (Exception e) {
+			logErrroDuringOperation("profile loading", e.getMessage());
 			return;
 		}
 
 		var errors = profileManager.validate(profiles);
 		if (!errors.isEmpty()) {
 			for (var error : errors) {
-				printError(error);
+				logger.error(error);
 			}
 			return;
 		}
 
 		for (var profile : profiles) {
 			download(profile);
-			printInfo(StringUtils.EMPTY);
+			logger.info(StringUtils.EMPTY);
 		}
 	}
 
@@ -73,7 +74,7 @@ public class Downloader implements Closeable {
 		URI fileLink;
 		String fileName;
 
-		printInfo("Looking for new version of {}", profile.getName());
+		logger.info("Looking for new version of {}", profile.getName());
 
 		var type = profile.getType();
 		if (type == Profile.Type.DIRECT || type == Profile.Type.REDIRECT) {
@@ -102,7 +103,7 @@ public class Downloader implements Closeable {
 				fileName = FileUtils.updateFileName(fileName, version);
 			}
 		} else {
-			printError("Unsupported profile type: {}", type.name());
+			logger.error("Unsupported profile type: {}", type.name());
 			return;
 		}
 
@@ -112,21 +113,21 @@ public class Downloader implements Closeable {
 
 	private void getFile(URI uri, RequestOptions options, Path path, boolean skipIfFileExists) {
 		if (skipIfFileExists && Files.exists(path)) {
-			printInfo("Local file exists");
+			logger.info("Local file exists");
 			return;
 		}
 		try {
 			var result = webClient.saveToFile(uri, options, path);
 			if (result.status() == Status.OK) {
-				printInfo("Downloaded remote file last modified at {}",
+				logger.atInfo().log("Downloaded remote file last modified at {}",
 						TimeUtils.formatter.format(result.lastModified()));
-				printInfo("URL:  {}", uri);
-				printInfo("Path: {}", path);
+				logger.info("URL:  {}", uri);
+				logger.info("Path: {}", path);
 			} else {
-				printInfo("Local file up to date");
+				logger.info("Local file up to date");
 			}
 		} catch (Exception e) {
-			printErrorDuringOperation("file download", e.getMessage());
+			logErrroDuringOperation("file download", e.getMessage());
 		}
 	}
 
@@ -134,7 +135,7 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getContent(uri, options);
 		} catch (Exception e) {
-			printErrorDuringOperation("page retrieval", e.getMessage());
+			logErrroDuringOperation("page retrieval", e.getMessage());
 			return null;
 		}
 	}
@@ -143,13 +144,13 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getLocation(uri, options);
 		} catch (Exception e) {
-			printErrorDuringOperation("location retrieval", e.getMessage());
+			logErrroDuringOperation("location retrieval", e.getMessage());
 			return null;
 		}
 	}
 
-	private void printErrorDuringOperation(String operation, String errorMessage) {
-		printError("Error occurred during {}: {}", operation, errorMessage);
+	private void logErrroDuringOperation(String operation, String errorMessage) {
+		logger.error("Error occurred during {}: {}", operation, errorMessage);
 	}
 
 	private static boolean isGitHub(URI uri) {
@@ -173,7 +174,7 @@ public class Downloader implements Closeable {
 			if (isGitHub(pageLink) || profile.getType() == Type.GITHUB) {
 				return findFileInfoInGitHubPageFragments(profile, pageScraper);
 			}
-			printError("File link not found in page");
+			logger.error("File link not found in page");
 		}
 
 		return fileInfo;
@@ -182,7 +183,7 @@ public class Downloader implements Closeable {
 	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageScraper pageScraper) {
 		var fragmentLinks = pageScraper.extractGitHubPageFragmentLinks();
 		if (fragmentLinks.isEmpty()) {
-			printError("File link and page fragment link not found in page");
+			logger.error("File link and page fragment link not found in page");
 			return null;
 		}
 
@@ -201,34 +202,8 @@ public class Downloader implements Closeable {
 			}
 		}
 
-		printError("File link not found in any page fragment");
+		logger.error("File link not found in any page fragment");
 		return null;
-	}
-
-	private void printInfo(String format, Object... arguments) {
-		printLine(Level.INFO, MessageFormatter.basicArrayFormat(format, arguments));
-	}
-
-	private void printError(String format, Object... arguments) {
-		printLine(Level.ERROR, MessageFormatter.basicArrayFormat(format, arguments));
-	}
-
-	private void printLine(Level level, String message) {
-		logger.atLevel(level).log(message);
-	}
-
-	public static void main(String... args) {
-		try (var downloader = new Downloader(new WebClient())) {
-			downloader.run(args);
-		}
-	}
-
-	void run(String... args) {
-		if (args.length != 1) {
-			logger.info("Usage: {} <file>", Downloader.class.getName());
-			return;
-		}
-		download(Path.of(args[0]));
 	}
 
 }

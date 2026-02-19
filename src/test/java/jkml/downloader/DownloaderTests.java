@@ -1,6 +1,7 @@
 package jkml.downloader;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -32,9 +33,9 @@ import jkml.downloader.util.TestUtils;
 
 class DownloaderTests {
 
-	private static final String PROFILES_JSON_FILE_NAME = "profiles.json";
-
 	private static final Logger logger = LoggerFactory.getLogger(DownloaderTests.class);
+
+	private static final Path inDir = TestUtils.resourcesDirectory();
 
 	private static final Path outDir = TestUtils.outputDirectory();
 
@@ -73,9 +74,23 @@ class DownloaderTests {
 	}
 
 	@Test
-	void testDownload_fileNotFound() {
-		try (var mockWebClient = mock(WebClient.class); var downloader = createDownloader(mockWebClient)) {
-			assertDoesNotThrow(() -> downloader.download(Path.of("NO_SUCH_FILE.json")));
+	void testLoadProfiles() {
+		try (var downloader = new Downloader()) {
+			assertFalse(downloader.loadProfiles(inDir.resolve("profiles.json")).isEmpty());
+		}
+	}
+
+	@Test
+	void testLoadProfiles_noSuchFile() {
+		try (var downloader = new Downloader()) {
+			assertTrue(downloader.loadProfiles(Path.of("no_such_file.json")).isEmpty());
+		}
+	}
+
+	@Test
+	void testLoadProfiles_invalidFile() {
+		try (var downloader = new Downloader()) {
+			assertTrue(downloader.loadProfiles(inDir.resolve("profiles-error.json")).isEmpty());
 		}
 	}
 
@@ -86,7 +101,7 @@ class DownloaderTests {
 			when(mockWebClient.getContent(any(URI.class), anyRequestOptions())).thenReturn("");
 			when(mockWebClient.saveToFile(any(URI.class), anyRequestOptions(), any(Path.class))).thenReturn(file());
 
-			downloader.download(TestUtils.getResoureAsPath(PROFILES_JSON_FILE_NAME));
+			downloader.download(inDir.resolve("profiles.json"));
 
 			verify(mockWebClient).getLocation(any(URI.class), anyRequestOptions());
 			verify(mockWebClient, times(3)).getContent(any(URI.class), anyRequestOptions());

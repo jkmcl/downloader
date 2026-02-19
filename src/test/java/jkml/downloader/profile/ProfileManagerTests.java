@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,8 @@ import jkml.downloader.util.TestUtils;
 class ProfileManagerTests {
 
 	private static final Logger logger = LoggerFactory.getLogger(ProfileManagerTests.class);
+
+	private static final Path inDir = TestUtils.resourcesDirectory();
 
 	@BeforeEach
 	void beforeEach(TestInfo testInfo) {
@@ -93,14 +96,14 @@ class ProfileManagerTests {
 
 	@Test
 	void testLoad() throws IOException {
-		var path = TestUtils.getResoureAsPath("profiles.json");
+		var path = inDir.resolve("profiles.json");
 		var manager = new ProfileManager();
 		assertEquals(5, manager.load(path).size());
 	}
 
 	@Test
 	void testLoad_exception() {
-		var path = TestUtils.getResoureAsPath("profiles-null.json");
+		var path = inDir.resolve("profiles-null.json");
 		var manager = new ProfileManager();
 		assertThrows(JsonParseException.class, () -> manager.load(path));
 	}
@@ -108,7 +111,7 @@ class ProfileManagerTests {
 	@ParameterizedTest
 	@CsvSource({ "profiles.json, 0", "profiles-error.json, 2" })
 	void testValidate(String name, int errorCount) throws IOException {
-		var path = TestUtils.getResoureAsPath(name);
+		var path = inDir.resolve(name);
 		var manager = new ProfileManager();
 		var errors = manager.validate(manager.load(path));
 		if (!errors.isEmpty()) {

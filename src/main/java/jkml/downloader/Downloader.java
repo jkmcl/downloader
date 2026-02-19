@@ -41,33 +41,27 @@ public class Downloader implements Closeable {
 	}
 
 	public void download(Path path) {
-		if (Files.notExists(path)) {
-			logger.error("File not found: {}", path);
-			return;
-		}
-
-		var profileManager = new ProfileManager();
-
-		List<Profile> profiles;
-		try {
-			profiles = profileManager.load(path);
-		} catch (Exception e) {
-			logErrroDuringOperation("profile loading", e.getMessage());
-			return;
-		}
-
-		var errors = profileManager.validate(profiles);
-		if (!errors.isEmpty()) {
-			for (var error : errors) {
-				logger.error(error);
-			}
-			return;
-		}
-
-		for (var profile : profiles) {
+		for (var profile : loadProfiles(path)) {
 			download(profile);
 			logger.info(StringUtils.EMPTY);
 		}
+	}
+
+	List<Profile> loadProfiles(Path path) {
+		try {
+			var profileManager = new ProfileManager();
+			var profiles = profileManager.load(path);
+			var errors = profileManager.validate(profiles);
+			if (errors.isEmpty()) {
+				return profiles;
+			}
+			for (var error : errors) {
+				logger.error(error);
+			}
+		} catch (Exception e) {
+			logError("profile loading", e);
+		}
+		return List.of();
 	}
 
 	void download(Profile profile) {
@@ -127,7 +121,7 @@ public class Downloader implements Closeable {
 				logger.info("Local file up to date");
 			}
 		} catch (Exception e) {
-			logErrroDuringOperation("file download", e.getMessage());
+			logError("file download", e);
 		}
 	}
 
@@ -135,7 +129,7 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getContent(uri, options);
 		} catch (Exception e) {
-			logErrroDuringOperation("page retrieval", e.getMessage());
+			logError("page retrieval", e);
 			return null;
 		}
 	}
@@ -144,13 +138,13 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getLocation(uri, options);
 		} catch (Exception e) {
-			logErrroDuringOperation("location retrieval", e.getMessage());
+			logError("location retrieval", e);
 			return null;
 		}
 	}
 
-	private void logErrroDuringOperation(String operation, String errorMessage) {
-		logger.error("Error occurred during {}: {}", operation, errorMessage);
+	private void logError(String operation, Exception exception) {
+		logger.error("Error occurred during {}: {}: {}", operation, exception.getClass().getSimpleName(), exception.getMessage());
 	}
 
 	private static boolean isGitHub(URI uri) {

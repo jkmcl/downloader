@@ -14,16 +14,20 @@ import org.apache.hc.core5.http.message.BasicHttpResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jkml.downloader.util.TestUtils;
 
 class FileResponseHandlerTests {
 
-	private static Path outDir = TestUtils.outputDirectory();
+	private static final Path outDir = TestUtils.outputDirectory();
 
-	private static Path source = outDir.resolve("source.txt");
+	private static final Path source = outDir.resolve("source.txt");
 
-	private static Path target = outDir.resolve("target.txt");
+	private static final Path target = outDir.resolve("target.txt");
+
+	private static final Logger logger = LoggerFactory.getLogger(FileResponseHandlerTests.class);
 
 	@BeforeAll
 	static void beforeAll() throws IOException {
@@ -47,7 +51,8 @@ class FileResponseHandlerTests {
 		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(fileName, response));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"different.zip\"");
-		assertThrows(ResponseException.class, () -> FileResponseHandler.checkFileName(fileName, response));
+		var ex = assertThrows(ResponseException.class, () -> FileResponseHandler.checkFileName(fileName, response));
+		logger.info("Exception message: {}", ex.getMessage());
 	}
 
 	@Test

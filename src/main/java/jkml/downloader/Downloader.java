@@ -1,8 +1,6 @@
 package jkml.downloader;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,8 +8,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
-import org.slf4j.helpers.MessageFormatter;
 
 import jkml.downloader.html.FileInfo;
 import jkml.downloader.html.PageScraper;
@@ -29,56 +25,50 @@ public class Downloader implements Closeable {
 
 	private final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
-	private final PrintStream printStream;
-
 	private final WebClient webClient;
 
-	Downloader(PrintStream printStream, WebClient webClient) {
-		this.printStream = printStream;
+	public Downloader() {
+		this(new WebClient());
+	}
+
+	Downloader(WebClient webClient) {
 		this.webClient = webClient;
 	}
 
 	@Override
 	public void close() {
 		webClient.close();
-		printStream.close();
 	}
 
 	public void download(Path path) {
-		if (Files.notExists(path)) {
-			printError("File not found: {}", path);
-			return;
-		}
-
-		var profileManager = new ProfileManager();
-
-		List<Profile> profiles;
-		try {
-			profiles = profileManager.load(path);
-		} catch (IOException e) {
-			printErrorDuringOperation("profile loading", e.getMessage());
-			return;
-		}
-
-		var errors = profileManager.validate(profiles);
-		if (!errors.isEmpty()) {
-			for (var error : errors) {
-				printError(error);
-			}
-			return;
-		}
-
-		for (var profile : profiles) {
+		for (var profile : loadProfiles(path)) {
 			download(profile);
-			printInfo(StringUtils.EMPTY);
+			logger.info(StringUtils.EMPTY);
 		}
+	}
+
+	List<Profile> loadProfiles(Path path) {
+		try {
+			var profileManager = new ProfileManager();
+			var profiles = profileManager.load(path);
+			var errors = profileManager.validate(profiles);
+			if (errors.isEmpty()) {
+				return profiles;
+			}
+			for (var error : errors) {
+				logger.error(error);
+			}
+		} catch (Exception e) {
+			logError("profile loading", e);
+		}
+		return List.of();
 	}
 
 	void download(Profile profile) {
 		URI fileLink;
 		String fileName;
 
-		printInfo("Looking for new version of {}", profile.getName());
+		logger.info("Looking for new version of {}", profile.getName());
 
 		var type = profile.getType();
 		if (type == Profile.Type.DIRECT || type == Profile.Type.REDIRECT) {
@@ -107,7 +97,7 @@ public class Downloader implements Closeable {
 				fileName = FileUtils.updateFileName(fileName, version);
 			}
 		} else {
-			printError("Unsupported profile type: {}", type.name());
+			logger.error("Unsupported profile type: {}", type.name());
 			return;
 		}
 
@@ -117,20 +107,21 @@ public class Downloader implements Closeable {
 
 	private void getFile(URI uri, RequestOptions options, Path path, boolean skipIfFileExists) {
 		if (skipIfFileExists && Files.exists(path)) {
-			printInfo("Local file exists");
+			logger.info("Local file exists");
 			return;
 		}
 		try {
 			var result = webClient.saveToFile(uri, options, path);
 			if (result.status() == Status.OK) {
-				printInfo("Downloaded remote file last modified at {}", TimeUtils.formatter.format(result.lastModified()));
-				printInfo("URL:  {}", uri);
-				printInfo("Path: {}", path);
+				logger.atInfo().log("Downloaded remote file last modified at {}",
+						TimeUtils.formatter.format(result.lastModified()));
+				logger.info("URL:  {}", uri);
+				logger.info("Path: {}", path);
 			} else {
-				printInfo("Local file up to date");
+				logger.info("Local file up to date");
 			}
 		} catch (Exception e) {
-			printErrorDuringOperation("file download", e.getMessage());
+			logError("file download", e);
 		}
 	}
 
@@ -138,7 +129,7 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getContent(uri, options);
 		} catch (Exception e) {
-			printErrorDuringOperation("page retrieval", e.getMessage());
+			logError("page retrieval", e);
 			return null;
 		}
 	}
@@ -147,13 +138,13 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getLocation(uri, options);
 		} catch (Exception e) {
-			printErrorDuringOperation("location retrieval", e.getMessage());
+			logError("location retrieval", e);
 			return null;
 		}
 	}
 
-	private void printErrorDuringOperation(String operation, String errorMessage) {
-		printError("Error occurred during {}: {}", operation, errorMessage);
+	private void logError(String operation, Exception exception) {
+		logger.error("Error occurred during {}: {}: {}", operation, exception.getClass().getSimpleName(), exception.getMessage());
 	}
 
 	private static boolean isGitHub(URI uri) {
@@ -171,12 +162,13 @@ public class Downloader implements Closeable {
 		}
 
 		var pageScraper = new PageScraper(pageLink, pageHtml);
-		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
+		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
+				profile.getVersionPattern());
 		if (fileInfo == null) {
 			if (isGitHub(pageLink) || profile.getType() == Type.GITHUB) {
 				return findFileInfoInGitHubPageFragments(profile, pageScraper);
 			}
-			printError("File link not found in page");
+			logger.error("File link not found in page");
 		}
 
 		return fileInfo;
@@ -185,7 +177,7 @@ public class Downloader implements Closeable {
 	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageScraper pageScraper) {
 		var fragmentLinks = pageScraper.extractGitHubPageFragmentLinks();
 		if (fragmentLinks.isEmpty()) {
-			printError("File link and page fragment link not found in page");
+			logger.error("File link and page fragment link not found in page");
 			return null;
 		}
 
@@ -197,41 +189,15 @@ public class Downloader implements Closeable {
 
 			// Use parent base URL for link resolution
 			var fragmentScraper = new PageScraper(profile.getPageUrl(), fragmentHtml);
-			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(), profile.getVersionPattern());
+			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
+					profile.getVersionPattern());
 			if (fileInfo != null) {
 				return fileInfo;
 			}
 		}
 
-		printError("File link not found in any page fragment");
+		logger.error("File link not found in any page fragment");
 		return null;
-	}
-
-	private void printInfo(String format, Object... arguments) {
-		printLine(Level.INFO, MessageFormatter.basicArrayFormat(format, arguments));
-	}
-
-	private void printError(String format, Object... arguments) {
-		printLine(Level.ERROR, MessageFormatter.basicArrayFormat(format, arguments));
-	}
-
-	private void printLine(Level level, String message) {
-		logger.atLevel(level).log(message);
-		if (printStream != null) {
-			printStream.print(message);
-			printStream.println();
-		}
-	}
-
-	public static void main(String... args) {
-		if (args.length != 1) {
-			System.out.println("Usage: " + Downloader.class.getName() + " <file>");
-			return;
-		}
-
-		try (var downloader = new Downloader(System.out, new WebClient())) {
-			downloader.download(Path.of(args[0]));
-		}
 	}
 
 }

@@ -1,6 +1,8 @@
 package jkml.downloader.util;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class LangUtils {
 
@@ -25,6 +27,23 @@ public class LangUtils {
 			throwable = throwable.getCause();
 		}
 		return causes.isEmpty() ? null : causes.get(causes.size() - 1);
+	}
+
+	public static <V> V getUninterruptibly(Future<V> future) throws ExecutionException {
+		var interrupted = false;
+		try {
+			while (true) {
+				try {
+					return future.get();
+				} catch (InterruptedException e) {
+					interrupted = true;
+				}
+			}
+		} finally {
+			if (interrupted) {
+				Thread.currentThread().interrupt();
+			}
+		}
 	}
 
 }

@@ -55,9 +55,7 @@ public class Downloader implements Closeable {
 			if (errors.isEmpty()) {
 				return profiles;
 			}
-			for (var error : errors) {
-				logger.error(error);
-			}
+			errors.forEach(logger::error);
 		} catch (Exception e) {
 			logError("profile loading", e);
 		}
@@ -113,8 +111,7 @@ public class Downloader implements Closeable {
 		try {
 			var result = webClient.saveToFile(uri, options, path);
 			if (result.status() == Status.OK) {
-				logger.atInfo().log("Downloaded remote file last modified at {}",
-						TimeUtils.formatter.format(result.lastModified()));
+				logger.atInfo().log("Downloaded remote file last modified at {}", TimeUtils.format(result.lastModified()));
 				logger.info("URL:  {}", uri);
 				logger.info("Path: {}", path);
 			} else {
@@ -144,7 +141,7 @@ public class Downloader implements Closeable {
 	}
 
 	private void logError(String operation, Exception exception) {
-		logger.error("Error occurred during {}: {}: {}", operation, exception.getClass().getSimpleName(), exception.getMessage());
+		logger.atError().log("Error occurred during {}: {}", operation, exception.toString());
 	}
 
 	private static boolean isGitHub(URI uri) {

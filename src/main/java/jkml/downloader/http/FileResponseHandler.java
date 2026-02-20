@@ -93,7 +93,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		if ((lastModified = HttpUtils.getTimeHeader(response, HttpHeaders.LAST_MODIFIED)) == null) {
 			throw new ResponseException("Remote file last modified time not available");
 		}
-		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.formatter.format(lastModified));
+		logger.atDebug().log("Remote file last modified time: {}", TimeUtils.format(lastModified));
 
 		var fileName = FileUtils.getFileName(uri);
 		checkFileName(fileName, response);

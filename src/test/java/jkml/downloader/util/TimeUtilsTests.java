@@ -10,7 +10,7 @@ class TimeUtilsTests {
 
 	@Test
 	void test() {
-		assertNotNull(TimeUtils.formatter.format(Instant.now()));
+		assertNotNull(TimeUtils.format(Instant.now()));
 	}
 
 }

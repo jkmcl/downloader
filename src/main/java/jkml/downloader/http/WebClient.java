@@ -69,10 +69,6 @@ public class WebClient implements Closeable {
 		return request;
 	}
 
-	private static String formatException(Throwable exception) {
-		return "%s: %s".formatted(exception.getClass().getName(), exception.getMessage());
-	}
-
 	private <T> T execute(HttpRequest request, HttpContext context, ResponseHandler<T> responseHandler) throws WebClientException {
 		logger.info("Sending request to {}", HttpUtils.getUri(request));
 		try {
@@ -80,7 +76,7 @@ public class WebClient implements Closeable {
 		} catch (ExecutionException e) {
 			logger.error("Exception occurred during execution", e);
 			var cause = LangUtils.getRootCause(e);
-			throw new WebClientException((cause instanceof ResponseException) ? cause.getMessage() : formatException(cause));
+			throw new WebClientException(cause.toString());
 		}
 	}
 
@@ -103,9 +99,9 @@ public class WebClient implements Closeable {
 			}
 		} else {
 			logger.debug("Local file exists: {}", path);
-			var lastMod = Files.getLastModifiedTime(path).toInstant();
-			logger.atDebug().log("Local file last modified time: {}", TimeUtils.formatter.format(lastMod));
-			options.setIfModifiedSince(lastMod);
+			var lastModified = Files.getLastModifiedTime(path).toInstant();
+			logger.atDebug().log("Local file last modified time: {}", TimeUtils.format(lastModified));
+			options.setIfModifiedSince(lastModified);
 		}
 		return execute(createRequest(uri, options), null, new FileResponseHandler(uri, path));
 	}

@@ -10,7 +10,7 @@ class PropertiesHelperTests {
 	private static final String FILE_NAME = "test.properties";
 
 	@Test
-	void testPropertiesHelper() {
+	void testCreate() {
 		assertNotNull(PropertiesHelper.create(FILE_NAME));
 		assertThrows(IllegalArgumentException.class, () -> PropertiesHelper.create("no such file"));
 	}

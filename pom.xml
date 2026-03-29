@@ -8,13 +8,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.4</version>
+		<version>4.0.5</version>
 		<relativePath/>
 	</parent>
 
 	<groupId>jkml</groupId>
 	<artifactId>downloader</artifactId>
-	<version>3.5.2</version>
+	<version>3.5.3-SNAPSHOT</version>
 
 	<properties>
 		<java.version>17</java.version>
@@ -26,8 +26,8 @@
 		<wiremock.version>3.13.2</wiremock.version>
 		<jacoco.version>0.8.14</jacoco.version>
 		<maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
-		<pmd.version>7.22.0</pmd.version>
-		<spotbugs-maven-plugin.version>4.9.8.2</spotbugs-maven-plugin.version>
+		<pmd.version>7.23.0</pmd.version>
+		<spotbugs-maven-plugin.version>4.9.8.3</spotbugs-maven-plugin.version>
 		<spotbugs.version>4.9.8</spotbugs.version>
 		<maven-fluido-skin.version>2.1.0</maven-fluido-skin.version>
 	</properties>

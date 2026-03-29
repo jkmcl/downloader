@@ -49,17 +49,26 @@ public class Downloader implements Closeable {
 
 	List<Profile> loadProfiles(Path path) {
 		try {
-			var profileManager = new ProfileManager();
-			var profiles = profileManager.load(path);
-			var errors = profileManager.validate(profiles);
-			if (errors.isEmpty()) {
+			var profiles = new ProfileManager().load(path);
+			if (validateProfiles(profiles)) {
 				return profiles;
 			}
-			errors.forEach(logger::error);
 		} catch (Exception e) {
 			logError("profile loading", e);
 		}
 		return List.of();
+	}
+
+	private boolean validateProfiles(List<Profile> profiles) {
+		var valid = true;
+		for (var i = 0; i < profiles.size(); ++i) {
+			var errors = ProfileManager.validate(profiles.get(i));
+			if (!errors.isEmpty()) {
+				valid = false;
+				logger.atError().log("Invalid profile[{}]: {}", i, String.join("; ", errors));
+			}
+		}
+		return valid;
 	}
 
 	void download(Profile profile) {

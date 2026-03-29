@@ -6,14 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +43,7 @@ class ProfileManagerTests {
 	}
 
 	private static void testValidate(Profile profile, int errorCount) {
-		var errors = new ArrayList<String>();
-		ProfileManager.validate(profile, errors::add);
+		var errors = ProfileManager.validate(profile);
 		if (!errors.isEmpty()) {
 			logger.info("Errors:");
 			errors.forEach(e -> logger.info("  {}", e));
@@ -106,19 +102,6 @@ class ProfileManagerTests {
 		var path = inDir.resolve("profiles-null.json");
 		var manager = new ProfileManager();
 		assertThrows(JsonParseException.class, () -> manager.load(path));
-	}
-
-	@ParameterizedTest
-	@CsvSource({ "profiles.json, 0", "profiles-error.json, 2" })
-	void testValidate(String name, int errorCount) throws IOException {
-		var path = inDir.resolve(name);
-		var manager = new ProfileManager();
-		var errors = manager.validate(manager.load(path));
-		if (!errors.isEmpty()) {
-			logger.info("Errors:");
-			errors.forEach(e -> logger.info("  {}", e));
-		}
-		assertEquals(errorCount, errors.size());
 	}
 
 }

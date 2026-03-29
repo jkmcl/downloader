@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,37 +35,31 @@ public class ProfileManager {
 		return profile;
 	}
 
-	static void validate(Profile profile, Consumer<String> errorHandler) {
+	public static List<String> validate(Profile profile) {
+		var errors = new ArrayList<String>();
 
 		if (StringUtils.isNullOrBlank(profile.getName())) {
-			errorHandler.accept("Profile must contain a name");
+			errors.add("Profile must contain a name");
 		}
 
 		if (profile.getOutputDirectory() == null) {
-			errorHandler.accept("Profile must contain an outputDirectory");
+			errors.add("Profile must contain an outputDirectory");
 		}
 
 		var type = profile.getType();
 		if (type == Type.DIRECT || type == Type.REDIRECT) {
 			if (profile.getFileUrl() == null) {
-				errorHandler.accept(type.name() + " profile must contain a fileUrl");
+				errors.add(type.name() + " profile must contain a fileUrl");
 			}
 		} else {
 			if (profile.getPageUrl() == null) {
-				errorHandler.accept(type.name() + " profile must contain a pageUrl");
+				errors.add(type.name() + " profile must contain a pageUrl");
 			}
 			if (profile.getLinkPattern() == null) {
-				errorHandler.accept(type.name() + " profile must contain a linkPattern");
+				errors.add(type.name() + " profile must contain a linkPattern");
 			}
 		}
-	}
 
-	public List<String> validate(List<Profile> profiles) {
-		var errors = new ArrayList<String>();
-		for (var i = 0; i < profiles.size(); ++i) {
-			var idx = i; // effectively final
-			validate(profiles.get(i), err -> errors.add("Invalid profile[%d]: %s".formatted(idx, err)));
-		}
 		return errors;
 	}
 

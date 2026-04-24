@@ -20,6 +20,7 @@ class GsonUtils {
 	public static Gson createGson() {
 		return new GsonBuilder()
 				.disableHtmlEscaping()
+				.disableInnerClassSerialization()
 				.disableJdkUnsafe()
 				.registerTypeAdapter(Pattern.class, PatternAdapter)
 				.registerTypeAdapter(Instant.class, InstantAdapter)

@@ -8,21 +8,21 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.5</version>
+		<version>4.0.6</version>
 		<relativePath/>
 	</parent>
 
 	<groupId>jkml</groupId>
 	<artifactId>downloader</artifactId>
-	<version>3.5.3-SNAPSHOT</version>
+	<version>3.5.3</version>
 
 	<properties>
 		<java.version>17</java.version>
 		<slf4j.version>2.0.17</slf4j.version>
 		<logback.version>1.5.32</logback.version>
-		<gson.version>2.13.2</gson.version>
+		<gson.version>2.14.0</gson.version>
 		<httpcore5.version>5.4.2</httpcore5.version>
-		<httpclient5.version>5.6</httpclient5.version>
+		<httpclient5.version>5.6.1</httpclient5.version>
 		<wiremock.version>3.13.2</wiremock.version>
 		<jacoco.version>0.8.14</jacoco.version>
 		<maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>

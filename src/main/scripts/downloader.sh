@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOWNLOADER_HOME="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+DOWNLOADER_HOME="${BASH_SOURCE%/*}"
 
 if [[ -z "$JAVA_HOME" ]]; then
 	echo 'The required JAVA_HOME environment variable is not defined' >&2

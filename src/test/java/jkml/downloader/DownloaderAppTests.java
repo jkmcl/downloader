@@ -8,12 +8,12 @@ class DownloaderAppTests {
 
 	@Test
 	void testMain_noArg() {
-		assertDoesNotThrow(() -> DownloaderApp.main(new String[] {}));
+		assertDoesNotThrow(() -> DownloaderApp.main());
 	}
 
 	@Test
 	void testMain() {
-		assertDoesNotThrow(() -> DownloaderApp.main(new String[] { "no_such_file.json" }));
+		assertDoesNotThrow(() -> DownloaderApp.main("no_such_file.json"));
 	}
 
 }

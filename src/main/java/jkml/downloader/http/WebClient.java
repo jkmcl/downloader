@@ -76,7 +76,7 @@ public class WebClient implements Closeable {
 		} catch (ExecutionException e) {
 			logger.error("Exception occurred during execution", e);
 			var cause = LangUtils.getRootCause(e);
-			throw new WebClientException(cause.toString());
+			throw new WebClientException(String.valueOf(cause));
 		}
 	}
 

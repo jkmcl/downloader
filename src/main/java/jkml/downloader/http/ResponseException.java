@@ -7,7 +7,7 @@ class ResponseException extends RuntimeException {
 	@Serial
 	private static final long serialVersionUID = 1L;
 
-	public ResponseException(String message) {
+	ResponseException(String message) {
 		super(message);
 	}
 

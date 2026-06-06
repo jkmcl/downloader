@@ -43,7 +43,7 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 
 	private WritableByteChannel channel;
 
-	public FileResponseHandler(URI uri, Path path) {
+	FileResponseHandler(URI uri, Path path) {
 		this.uri = uri;
 		this.path = path;
 	}
@@ -72,7 +72,6 @@ class FileResponseHandler extends ResponseHandler<FileResult> {
 		}
 		try {
 			channel.close();
-			channel = null;
 		} catch (IOException e) {
 			throw new UncheckedIOException(e.getMessage(), e);
 		}

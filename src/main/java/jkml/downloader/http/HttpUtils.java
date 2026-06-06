@@ -14,21 +14,21 @@ class HttpUtils {
 	private HttpUtils() {
 	}
 
-	public static void setTimeHeader(HttpMessage message, String name, Instant value) {
+	static void setTimeHeader(HttpMessage message, String name, Instant value) {
 		message.setHeader(name, DateUtils.formatStandardDate(value));
 	}
 
-	public static Instant getTimeHeader(HttpMessage message, String name) {
+	static Instant getTimeHeader(HttpMessage message, String name) {
 		var value = getHeader(message, name);
 		return (value == null) ? null : DateUtils.parseStandardDate(value);
 	}
 
-	public static String getHeader(HttpMessage message, String name) {
+	static String getHeader(HttpMessage message, String name) {
 		var header = message.getFirstHeader(name);
 		return (header == null) ? null : header.getValue();
 	}
 
-	public static String getParameter(HttpMessage message, String headerName, String parameterName) {
+	static String getParameter(HttpMessage message, String headerName, String parameterName) {
 		var header = message.getFirstHeader(headerName);
 		if (header == null) {
 			return null;
@@ -44,7 +44,7 @@ class HttpUtils {
 		return null;
 	}
 
-	public static URI getUri(HttpRequest request) {
+	static URI getUri(HttpRequest request) {
 		try {
 			return request.getUri();
 		} catch (URISyntaxException e) {

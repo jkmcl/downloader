@@ -15,7 +15,7 @@ class HttpClientBuilder {
 
 	private static final Timeout TIMEOUT = Timeout.ofSeconds(30);
 
-	public CloseableHttpAsyncClient build() {
+	CloseableHttpAsyncClient build() {
 		var connectionConfig = ConnectionConfig.custom()
 				.setConnectTimeout(TIMEOUT)
 				.setSocketTimeout(TIMEOUT)

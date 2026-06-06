@@ -5,6 +5,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +155,7 @@ public class Downloader implements Closeable {
 	}
 
 	private static boolean isGitHub(URI uri) {
-		var host = uri.getHost().toLowerCase();
+		var host = uri.getHost().toLowerCase(Locale.ROOT);
 		return "github.com".equals(host) || host.endsWith(".github.com");
 	}
 

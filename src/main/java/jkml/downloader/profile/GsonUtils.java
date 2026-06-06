@@ -14,21 +14,6 @@ import com.google.gson.stream.JsonWriter;
 
 class GsonUtils {
 
-	private GsonUtils() {
-	}
-
-	public static Gson createGson() {
-		return new GsonBuilder()
-				.disableHtmlEscaping()
-				.disableInnerClassSerialization()
-				.disableJdkUnsafe()
-				.registerTypeAdapter(Pattern.class, PatternAdapter)
-				.registerTypeAdapter(Instant.class, InstantAdapter)
-				.registerTypeHierarchyAdapter(Path.class, PathAdapter)
-				.setStrictness(Strictness.STRICT)
-				.create();
-	}
-
 	private static final TypeAdapter<Pattern> PatternAdapter = new TypeAdapter<Pattern>() {
 
 		@Override
@@ -70,5 +55,20 @@ class GsonUtils {
 		}
 
 	}.nullSafe();
+
+	private GsonUtils() {
+	}
+
+	static Gson createGson() {
+		return new GsonBuilder()
+				.disableHtmlEscaping()
+				.disableInnerClassSerialization()
+				.disableJdkUnsafe()
+				.registerTypeAdapter(Pattern.class, PatternAdapter)
+				.registerTypeAdapter(Instant.class, InstantAdapter)
+				.registerTypeHierarchyAdapter(Path.class, PathAdapter)
+				.setStrictness(Strictness.STRICT)
+				.create();
+	}
 
 }

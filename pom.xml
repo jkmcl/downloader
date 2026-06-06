@@ -24,7 +24,7 @@
 		<httpcore5.version>5.4.2</httpcore5.version>
 		<httpclient5.version>5.6.1</httpclient5.version>
 		<wiremock.version>3.13.2</wiremock.version>
-		<jacoco.version>0.8.14</jacoco.version>
+		<jacoco.version>0.8.15</jacoco.version>
 		<maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
 		<pmd.version>7.25.0</pmd.version>
 		<spotbugs-maven-plugin.version>4.9.8.3</spotbugs-maven-plugin.version>
@@ -155,6 +155,9 @@
 					<linkXRef>false</linkXRef>
 					<outputDirectory>${project.reporting.outputDirectory}/pmd</outputDirectory>
 					<printFailingErrors>true</printFailingErrors>
+					<rulesets>
+						<ruleset>src/pmd/ruleset.xml</ruleset>
+					</rulesets>
 				</configuration>
 				<executions>
 					<execution>

@@ -19,6 +19,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -351,6 +353,18 @@ class DownloaderTests {
 
 			assertDownload(mockWebClient, fileLink, filePath);
 		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://a.github.com", "https://github.com" })
+	void testIsGitHub_true(String uri) {
+		assertTrue(Downloader.isGitHub(URI.create(uri)));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://google.com" })
+	void testIsGitHub_false(String uri) {
+		assertFalse(Downloader.isGitHub(URI.create(uri)));
 	}
 
 }

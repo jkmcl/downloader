@@ -132,15 +132,6 @@ public class Downloader implements Closeable {
 		}
 	}
 
-	private String getText(URI uri, RequestOptions options) {
-		try {
-			return webClient.getContent(uri, options);
-		} catch (Exception e) {
-			logError("page retrieval", e);
-			return null;
-		}
-	}
-
 	private URI getLink(URI uri, RequestOptions options) {
 		try {
 			return webClient.getLocation(uri, options);
@@ -154,49 +145,44 @@ public class Downloader implements Closeable {
 		logger.atError().log("Error occurred during {}: {}", operation, exception.toString());
 	}
 
-	private static boolean isGitHub(URI uri) {
+	static boolean isGitHub(URI uri) {
 		var host = uri.getHost().toLowerCase(Locale.ROOT);
 		return "github.com".equals(host) || host.endsWith(".github.com");
 	}
 
 	private FileInfo findFileInfo(Profile profile) {
-		var pageLink = profile.getPageUrl();
-
-		// Download page containing file info
-		var pageHtml = getText(pageLink, profile.getRequestOptions());
-		if (pageHtml == null) {
+		var pageScraper = createPageScraper(profile, profile.getPageUrl());
+		if (pageScraper == null) {
 			return null;
 		}
 
-		var pageScraper = new PageScraper(pageLink, pageHtml);
 		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
 				profile.getVersionPattern());
-		if (fileInfo == null) {
-			if (isGitHub(pageLink) || profile.getType() == Type.GITHUB) {
-				return findFileInfoInGitHubPageFragments(profile, pageScraper);
-			}
-			logger.error("File link not found in page");
+		if (fileInfo != null) {
+			return fileInfo;
 		}
 
-		return fileInfo;
+		if (isGitHub(profile.getPageUrl()) || profile.getType() == Type.GITHUB) {
+			var fragmentLinks = pageScraper.extractGitHubPageFragmentLinks();
+			if (fragmentLinks.isEmpty()) {
+				logger.error("File link and page fragment link not found in page");
+				return null;
+			}
+			return findFileInfoInGitHubPageFragments(profile, fragmentLinks);
+		}
+
+		logger.error("File link not found in page");
+		return null;
 	}
 
-	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, PageScraper pageScraper) {
-		var fragmentLinks = pageScraper.extractGitHubPageFragmentLinks();
-		if (fragmentLinks.isEmpty()) {
-			logger.error("File link and page fragment link not found in page");
-			return null;
-		}
-
+	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, List<URI> fragmentLinks) {
 		for (var link : fragmentLinks) {
-			var fragmentHtml = getText(link, profile.getRequestOptions());
-			if (fragmentHtml == null) {
+			var pageScraper = createPageScraper(profile, link);
+			if (pageScraper == null) {
 				return null;
 			}
 
-			// Use parent base URL for link resolution
-			var fragmentScraper = new PageScraper(profile.getPageUrl(), fragmentHtml);
-			var fileInfo = fragmentScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
+			var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
 					profile.getVersionPattern());
 			if (fileInfo != null) {
 				return fileInfo;
@@ -205,6 +191,16 @@ public class Downloader implements Closeable {
 
 		logger.error("File link not found in any page fragment");
 		return null;
+	}
+
+	private PageScraper createPageScraper(Profile profile, URI actualUri) {
+		try {
+			var html = webClient.getContent(actualUri, profile.getRequestOptions());
+			return new PageScraper(profile.getPageUrl(), html);
+		} catch (Exception e) {
+			logError("page retrieval", e);
+			return null;
+		}
 	}
 
 }

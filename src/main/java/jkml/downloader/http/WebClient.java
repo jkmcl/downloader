@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -110,10 +111,10 @@ public class WebClient implements Closeable {
 	 * Retrieve the location header value in the redirect (3xx) response.
 	 */
 	public URI getLocation(URI uri, RequestOptions options) throws WebClientException {
-		var context = new HttpClientContext();
-
 		// Disable auto-redirect to obtain the location header
-		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
+		var requestConfig = RequestConfig.copy(HttpClientBuilder.requestConfig).setRedirectsEnabled(false).build();
+		var context = new HttpClientContext();
+		context.setRequestConfig(requestConfig);
 
 		return execute(createRequest(uri, options), context, new LinkResponseHandler());
 	}

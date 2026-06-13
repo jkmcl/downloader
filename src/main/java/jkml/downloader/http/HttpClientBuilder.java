@@ -13,13 +13,20 @@ import org.apache.hc.core5.util.Timeout;
 
 class HttpClientBuilder {
 
+	private static final TimeValue TIME_TO_LIVE = TimeValue.ofMinutes(1);
+
 	private static final Timeout TIMEOUT = Timeout.ofSeconds(30);
+
+	static final RequestConfig requestConfig = RequestConfig.custom()
+			.setConnectionKeepAlive(TIME_TO_LIVE)
+			.setConnectionRequestTimeout(TIMEOUT)
+			.build();
 
 	CloseableHttpAsyncClient build() {
 		var connectionConfig = ConnectionConfig.custom()
 				.setConnectTimeout(TIMEOUT)
 				.setSocketTimeout(TIMEOUT)
-				.setTimeToLive(TimeValue.ofMinutes(1))
+				.setTimeToLive(TIME_TO_LIVE)
 				.setValidateAfterInactivity(TimeValue.ZERO_MILLISECONDS)
 				.build();
 
@@ -30,10 +37,6 @@ class HttpClientBuilder {
 		var connectionManager = PoolingAsyncClientConnectionManagerBuilder.create()
 				.setDefaultConnectionConfig(connectionConfig)
 				.setDefaultTlsConfig(tlsConfig)
-				.build();
-
-		var requestConfig = RequestConfig.custom()
-				.setConnectionKeepAlive(TimeValue.ofMinutes(1))
 				.build();
 
 		var ioReactorConfig = IOReactorConfig.custom()

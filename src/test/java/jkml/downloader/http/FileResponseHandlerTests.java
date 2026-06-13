@@ -1,7 +1,6 @@
 package jkml.downloader.http;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -51,8 +50,7 @@ class FileResponseHandlerTests {
 		assertDoesNotThrow(() -> FileResponseHandler.checkFileName(fileName, response));
 
 		response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"different.zip\"");
-		var ex = assertThrows(ResponseException.class, () -> FileResponseHandler.checkFileName(fileName, response));
-		logger.info("Exception message: {}", ex.getMessage());
+		TestUtils.assertAndLogThrows(ResponseException.class, () -> FileResponseHandler.checkFileName(fileName, response), logger);
 	}
 
 	@Test
@@ -80,7 +78,7 @@ class FileResponseHandlerTests {
 		// Different size, source smaller than half the size of target
 		Files.writeString(source, "12");
 		Files.writeString(target, "12345");
-		var ioException = assertThrows(ResponseException.class, () -> FileResponseHandler.checkFileContent(source, target));
+		var ioException = TestUtils.assertAndLogThrows(ResponseException.class, () -> FileResponseHandler.checkFileContent(source, target), logger);
 		assertTrue(ioException.getMessage().contains("smaller"));
 	}
 

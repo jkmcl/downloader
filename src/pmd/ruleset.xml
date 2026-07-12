@@ -7,14 +7,18 @@
 
 	<description>Custom rules</description>
 
-	<rule ref="category/java/bestpractices.xml">
-		<exclude name="SystemPrintln" />
-	</rule>
+	<rule ref="category/java/bestpractices.xml" />
 
 	<rule ref="category/java/bestpractices.xml/GuardLogStatement">
 		<properties>
 			<property name="logLevels" value="trace,debug,log,finest,finer,fine" />
 			<property name="guardsMethods" value="isTraceEnabled,isDebugEnabled,isLoggable" />
+		</properties>
+	</rule>
+
+	<rule ref="category/java/bestpractices.xml/SystemPrintln">
+		<properties>
+			<property name="violationSuppressXPath" value="./ancestor-or-self::ClassDeclaration[@SimpleName='DownloaderApp']" />
 		</properties>
 	</rule>
 
@@ -30,7 +34,12 @@
 		<exclude name="OnlyOneReturn" />
 		<exclude name="ShortVariable" />
 		<exclude name="UseExplicitTypes" />
-		<exclude name="UseUnderscoresInNumericLiterals" />
+	</rule>
+
+	<rule ref="category/java/codestyle.xml/UseUnderscoresInNumericLiterals">
+		<properties>
+			<property name="acceptableDecimalLength" value="6" />
+		</properties>
 	</rule>
 
 	<rule ref="category/java/design.xml">
@@ -56,6 +65,12 @@
 	<rule ref="category/java/errorprone.xml/AssignmentInOperand">
 		<properties>
 			<property name="allowIf" value="true" />
+		</properties>
+	</rule>
+
+	<rule ref="category/java/errorprone.xml/NullAssignment">
+		<properties>
+			<property name="violationSuppressXPath" value="./ancestor-or-self::ClassDeclaration[@SimpleName='SrcAttributeFinder']" />
 		</properties>
 	</rule>
 

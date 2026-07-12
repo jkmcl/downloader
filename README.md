@@ -88,7 +88,7 @@ Properties:
 
 * `pageUrl`: page URL
 
-* `linkPattern`: A regular expression used to extract the file URL from the page and, optionally, the file version from the file URL. The first capturing group provides the file URL. If defined, the second capturing group provides the file version.
+* `linkPattern`: A regular expression used to extract the file URL from the page and, optionally, the file version from the file URL. The first capturing group provides the file URL. If present, the second capturing group provides the file version.
 
 * `versionPattern` (optional): A regular expression used to extract the file version from the page. The first capturing group provides the file version.
 
@@ -100,9 +100,7 @@ If both regular expressions capture a version, the value from `versionPattern` i
 
 This profile type is an extension of `STANDARD` and is inferred when `pageUrl` points to a `github.com` URL.
 
-On GitHub release pages, the links to downloadable files are often embedded in page fragments loaded from other URLs. These fragments are typically added to the page by JavaScript in the browser.
-
-Downloader extracts the URLs of these fragments and then retrieves them. If the file URL is not found on the original page, it performs the same file URL and version extraction on the fragments.
+GitHub release pages often contain fragments loaded dynamically from other URLs. Downloader retrieves these fragments and performs the same file URL and version extraction on the fragments if the file URL is not found on the page.
 
 # Common Features
 

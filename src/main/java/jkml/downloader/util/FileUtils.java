@@ -9,10 +9,13 @@ public class FileUtils {
 
 	public static String updateFileName(String fileName, String version) {
 		var index = fileName.lastIndexOf('.');
-		if (index <= 0) {
-			return fileName + "-" + version;
+		var sb = new StringBuilder();
+		if (index > 0) {
+			sb.append(fileName.substring(0, index)).append('-').append(version).append(fileName.substring(index));
+		} else {
+			sb.append(fileName).append('-').append(version);
 		}
-		return fileName.substring(0, index) + "-" + version + fileName.substring(index);
+		return sb.toString();
 	}
 
 	public static String getFileName(URI uri) {

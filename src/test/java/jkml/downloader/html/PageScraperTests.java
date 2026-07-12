@@ -80,16 +80,19 @@ class PageScraperTests {
 
 	@Test
 	void testExtractGitHubPageFragmentLinks() {
-		var baseUri = URI.create("https://github.com/google/guetzli/releases");
-		var html = "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0.1\" >"
-				+ "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0\" >";
+		var baseUri = URI.create("https://github.com/owner/repo/releases");
+		var html = """
+				<include-fragment loading="lazy" src="https://github.com/owner/repo/releases/expanded_assets/v1.0.1" >
+				<include-fragment loading="lazy" src="https://github.com/owner/repo/releases/expanded_assets/v1.0" >
+				<img src="image.png" />
+				""";
 
 		// Found
 		var scraper = new PageScraper(baseUri, html);
 		var actual = scraper.extractGitHubPageFragmentLinks();
 		assertEquals(2, actual.size());
-		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0.1", actual.get(0).toString());
-		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0", actual.get(1).toString());
+		assertEquals("https://github.com/owner/repo/releases/expanded_assets/v1.0.1", actual.get(0).toString());
+		assertEquals("https://github.com/owner/repo/releases/expanded_assets/v1.0", actual.get(1).toString());
 
 		// Not found
 		scraper = new PageScraper(baseUri, StringUtils.EMPTY);

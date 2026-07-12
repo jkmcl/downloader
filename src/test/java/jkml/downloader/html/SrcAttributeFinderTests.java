@@ -29,13 +29,17 @@ class SrcAttributeFinderTests {
 	}
 
 	@Test
-	void testFind() {
+	void testGetValue() {
 		var finder = new SrcAttributeFinder("src=\"\" src=\"a\"");
+
 		assertThrows(IllegalStateException.class, finder::getValue);
+
 		assertTrue(finder.find());
 		assertEquals("", finder.getValue());
+
 		assertTrue(finder.find());
 		assertEquals("a", finder.getValue());
+
 		assertFalse(finder.find());
 		assertThrows(IllegalStateException.class, finder::getValue);
 	}

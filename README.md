@@ -4,7 +4,7 @@ Downloader is a profile-driven tool for downloading new files or newer versions 
 
 # Usage
 
-Downloader is packaged as an executable JAR file. At runtime, it expects one command-line argument: the path to a JSON file that defines one or more download profiles.
+Downloader is packaged as an executable JAR file. At runtime, it expects one command-line argument: the path to a JSON file that defines one or more download profiles:
 
 ```shell
 java -jar "${DOWNLOADER_JAR_FILE_PATH}" "${DOWNLOAD_PROFILES_JSON_FILE_PATH}"
@@ -30,19 +30,19 @@ Files to download are defined by download profiles in a JSON file. Example:
 	{
 		"name": "File with or without version number in file name",
 		"pageUrl": "https://site.com/page.html",
-		"linkPattern": "href=\"([^\"]*file\\.zip)",
+		"linkPattern": "href=\"([^\"]*/file\\.zip)",
 		"outputDirectory": "target/test-classes/testOutput"
 	},
 	{
 		"name": "File with version number in parent component of path",
 		"pageUrl": "https://site.com/page.html",
-		"linkPattern": "href=\"([^\"]*v([.0-9]+)/file\\.zip)",
+		"linkPattern": "href=\"([^\"]*/v([.0-9]+)/file\\.zip)",
 		"outputDirectory": "target/test-classes/testOutput"
 	},
 	{
 		"name": "File with version number in page",
 		"pageUrl": "https://site.com/page.html",
-		"linkPattern": "href=\"([^\"]*file\\.zip)",
+		"linkPattern": "href=\"([^\"]*/file\\.zip)",
 		"versionPattern": "<b>File v([.0-9]+)</b>",
 		"outputDirectory": "target/test-classes/testOutput"
 	}

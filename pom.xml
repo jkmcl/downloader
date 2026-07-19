@@ -27,8 +27,8 @@
 		<jacoco.version>0.8.15</jacoco.version>
 		<maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
 		<pmd.version>7.26.0</pmd.version>
-		<spotbugs-maven-plugin.version>4.10.2.0</spotbugs-maven-plugin.version>
-		<spotbugs.version>4.10.2</spotbugs.version>
+		<spotbugs-maven-plugin.version>4.10.3.0</spotbugs-maven-plugin.version>
+		<spotbugs.version>4.10.3</spotbugs.version>
 		<maven-fluido-skin.version>2.1.0</maven-fluido-skin.version>
 	</properties>
 

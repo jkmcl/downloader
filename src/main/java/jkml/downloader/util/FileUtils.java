@@ -11,7 +11,7 @@ public class FileUtils {
 		var index = fileName.lastIndexOf('.');
 		var sb = new StringBuilder();
 		if (index > 0) {
-			sb.append(fileName.substring(0, index)).append('-').append(version).append(fileName.substring(index));
+			sb.append(fileName, 0, index).append('-').append(version).append(fileName, index, fileName.length());
 		} else {
 			sb.append(fileName).append('-').append(version);
 		}

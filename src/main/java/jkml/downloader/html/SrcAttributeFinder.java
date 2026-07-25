@@ -5,16 +5,19 @@ package jkml.downloader.html;
  */
 class SrcAttributeFinder {
 
-	private static final String START = "src=\"";
+	private static final String MARKER = "src=\"";
 
 	private final String html;
 
 	private int pos;
 
-	private String value;
+	private int start;
+
+	private int end;
 
 	SrcAttributeFinder(String html) {
 		this.html = html;
+		start = -1;
 	}
 
 	/**
@@ -23,21 +26,19 @@ class SrcAttributeFinder {
 	 * @return {@code true} if a {@code src} attribute is found
 	 */
 	boolean find() {
-		var start = html.indexOf(START, pos);
+		start = html.indexOf(MARKER, pos);
 		if (start == -1) {
-			value = null;
 			return false;
 		}
-		start += START.length();
+		start += MARKER.length();
 
-		var end = html.indexOf('"', start);
+		end = html.indexOf('"', start);
 		if (end == -1) {
-			value = null;
+			start = -1;
 			return false;
 		}
 
 		pos = end + 1;
-		value = html.substring(start, end);
 		return true;
 	}
 
@@ -49,10 +50,10 @@ class SrcAttributeFinder {
 	 *                               previous call returned {@code false}.
 	 */
 	String getValue() {
-		if (value == null) {
+		if (start == -1) {
 			throw new IllegalStateException();
 		}
-		return value;
+		return html.substring(start, end);
 	}
 
 }

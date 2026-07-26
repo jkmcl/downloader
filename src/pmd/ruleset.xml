@@ -45,7 +45,6 @@
 	</rule>
 
 	<rule ref="category/java/design.xml">
-		<exclude name="AvoidDeeplyNestedIfStmts" />
 		<exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal" />
 		<exclude name="CognitiveComplexity" />
 		<exclude name="CyclomaticComplexity" />

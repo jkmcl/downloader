@@ -79,47 +79,47 @@ public class Downloader implements Closeable {
 		logger.info("Looking for new version of {}", profile.getName());
 
 		var type = profile.getType();
-		if (type == Profile.Type.DIRECT || type == Profile.Type.REDIRECT) {
-			fileLink = profile.getFileUrl();
-			// Get actual file URL from location header in response
-			if (type == Profile.Type.REDIRECT) {
-				fileLink = getLink(fileLink, profile.getRequestOptions());
-				if (fileLink == null) {
+		switch (type) {
+			case Profile.Type.DIRECT, Profile.Type.REDIRECT -> {
+				fileLink = profile.getFileUrl();
+				// Get actual file URL from location header in response
+				if (type == Profile.Type.REDIRECT) {
+					fileLink = getLink(fileLink, profile.getRequestOptions());
+					if (fileLink == null) {
+						return;
+					}
+					fileLink = profile.getFileUrl().resolve(fileLink);
+				}
+				fileName = FileUtils.getFileName(fileLink);
+				getFile(profile, fileLink, fileName);
+			}
+			case Profile.Type.STANDARD, Profile.Type.GITHUB -> {
+				// Find file link from page
+				var fileInfo = findFileInfo(profile);
+				if (fileInfo == null) {
 					return;
 				}
-				fileLink = profile.getFileUrl().resolve(fileLink);
-			}
-			fileName = FileUtils.getFileName(fileLink);
-		} else if (type == Profile.Type.STANDARD || type == Profile.Type.GITHUB) {
-			// Find file link from page
-			var fileInfo = findFileInfo(profile);
-			if (fileInfo == null) {
-				return;
-			}
-			fileLink = fileInfo.uri();
-			fileName = FileUtils.getFileName(fileLink);
+				fileLink = fileInfo.uri();
+				fileName = FileUtils.getFileName(fileLink);
 
-			// Add version if it is not already part of the file name
-			var version = fileInfo.version();
-			if (!StringUtils.isNullOrBlank(version) && !fileName.contains(version)) {
-				fileName = FileUtils.updateFileName(fileName, version);
+				// Add version if it is not already part of the file name
+				var version = fileInfo.version();
+				if (!StringUtils.isNullOrBlank(version) && !fileName.contains(version)) {
+					fileName = FileUtils.updateFileName(fileName, version);
+				}
+				getFile(profile, fileLink, fileName);
 			}
-		} else {
-			logger.error("Unsupported profile type: {}", type.name());
-			return;
 		}
-
-		getFile(fileLink, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName),
-				profile.isSkipIfFileExists());
 	}
 
-	private void getFile(URI uri, RequestOptions options, Path path, boolean skipIfFileExists) {
-		if (skipIfFileExists && Files.exists(path)) {
+	private void getFile(Profile profile, URI uri, String name) {
+		var path = profile.getOutputDirectory().resolve(name);
+		if (profile.isSkipIfFileExists() && Files.exists(path)) {
 			logger.info("Local file exists");
 			return;
 		}
 		try {
-			var result = webClient.saveToFile(uri, options, path);
+			var result = webClient.saveToFile(uri, profile.getRequestOptions(), path);
 			if (result.status() == Status.OK) {
 				logger.atInfo().log("Downloaded remote file last modified at {}", TimeUtils.format(result.lastModified()));
 				logger.info("URL:  {}", uri);

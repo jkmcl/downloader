@@ -55,7 +55,7 @@ public class Downloader implements Closeable {
 				return profiles;
 			}
 		} catch (Exception e) {
-			logError("profile loading", e);
+			logException(logger, "profile loading", e);
 		}
 		return List.of();
 	}
@@ -128,7 +128,16 @@ public class Downloader implements Closeable {
 				logger.info("Local file up to date");
 			}
 		} catch (Exception e) {
-			logError("file download", e);
+			logException(logger, "file download", e);
+		}
+	}
+
+	private String getText(URI uri, RequestOptions options) {
+		try {
+			return webClient.getContent(uri, options);
+		} catch (Exception e) {
+			logException(logger, "page retrieval", e);
+			return null;
 		}
 	}
 
@@ -136,12 +145,12 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getLocation(uri, options);
 		} catch (Exception e) {
-			logError("location retrieval", e);
+			logException(logger, "location retrieval", e);
 			return null;
 		}
 	}
 
-	private void logError(String operation, Exception exception) {
+	private static void logException(Logger logger, String operation, Exception exception) {
 		logger.atError().log("Error occurred during {}: {}", operation, exception.toString());
 	}
 
@@ -151,13 +160,13 @@ public class Downloader implements Closeable {
 	}
 
 	private FileInfo findFileInfo(Profile profile) {
-		var pageScraper = createPageScraper(profile, profile.getPageUrl());
-		if (pageScraper == null) {
+		var html = getText(profile.getPageUrl(), profile.getRequestOptions());
+		if (html == null) {
 			return null;
 		}
 
-		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
-				profile.getVersionPattern());
+		var pageScraper = new PageScraper(profile.getPageUrl(), html);
+		var fileInfo = extractFileInfo(profile, pageScraper);
 		if (fileInfo != null) {
 			return fileInfo;
 		}
@@ -177,13 +186,12 @@ public class Downloader implements Closeable {
 
 	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, List<URI> fragmentLinks) {
 		for (var link : fragmentLinks) {
-			var pageScraper = createPageScraper(profile, link);
-			if (pageScraper == null) {
+			var html = getText(link, profile.getRequestOptions());
+			if (html == null) {
 				return null;
 			}
 
-			var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
-					profile.getVersionPattern());
+			var fileInfo = extractFileInfo(profile, html);
 			if (fileInfo != null) {
 				return fileInfo;
 			}
@@ -193,14 +201,13 @@ public class Downloader implements Closeable {
 		return null;
 	}
 
-	private PageScraper createPageScraper(Profile profile, URI actualUri) {
-		try {
-			var html = webClient.getContent(actualUri, profile.getRequestOptions());
-			return new PageScraper(profile.getPageUrl(), html);
-		} catch (Exception e) {
-			logError("page retrieval", e);
-			return null;
-		}
+	private static FileInfo extractFileInfo(Profile profile, PageScraper pageScraper) {
+		return pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
+				profile.getVersionPattern());
+	}
+
+	private static FileInfo extractFileInfo(Profile profile, String html) {
+		return extractFileInfo(profile, new PageScraper(profile.getPageUrl(), html));
 	}
 
 }

@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 public class PageScraper {
 
-	private static final Pattern GITHUB_PAGE_FRAGMENT_URI_PATTERN = Pattern.compile("src=(\"?)(\\S+/expanded_assets/\\S+)(\\1)");
-
 	private final Logger logger = LoggerFactory.getLogger(PageScraper.class);
 
 	private final URI baseUri;
@@ -74,11 +72,13 @@ public class PageScraper {
 	public List<URI> extractGitHubPageFragmentLinks() {
 		var result = new ArrayList<URI>();
 
-		var matcher = GITHUB_PAGE_FRAGMENT_URI_PATTERN.matcher(html);
-		while (matcher.find()) {
-			var link = matcher.group(2);
-			logger.info("Page fragment link found: {}", link);
-			result.add(baseUri.resolve(link));
+		var finder = new SrcAttributeFinder(html);
+		while (finder.find()) {
+			var link = finder.getValue();
+			if (link.contains("/expanded_assets/")) {
+				logger.info("Page fragment link found: {}", link);
+				result.add(baseUri.resolve(link));
+			}
 		}
 
 		if (result.isEmpty()) {

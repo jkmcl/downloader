@@ -1,7 +1,6 @@
 package jkml.downloader.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,35 +12,31 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jkml.downloader.util.TestUtils;
+
 class LinkResponseHandlerTests {
 
 	private static final Logger logger = LoggerFactory.getLogger(LinkResponseHandlerTests.class);
 
 	@Test
-	void testStart_invalidCode() throws IOException {
+	void testStart_invalidCode() {
 		var response = new BasicHttpResponse(HttpStatus.SC_OK);
 
 		var handler = new LinkResponseHandler();
 		try {
-			handler.start(response, null);
-			fail();
-		} catch (ResponseException e) {
-			logger.info("Exception message: {}", e.getMessage());
+			TestUtils.assertAndLogThrows(ResponseException.class, () -> handler.start(response, null), logger);
 		} finally {
 			handler.releaseResources();
 		}
 	}
 
 	@Test
-	void testStart_noLocation() throws IOException {
+	void testStart_noLocation() {
 		var response = new BasicHttpResponse(HttpStatus.SC_MOVED_TEMPORARILY);
 
 		var handler = new LinkResponseHandler();
 		try {
-			handler.start(response, null);
-			fail();
-		} catch (ResponseException e) {
-			logger.info("Exception message: {}", e.getMessage());
+			TestUtils.assertAndLogThrows(ResponseException.class, () -> handler.start(response, null), logger);
 		} finally {
 			handler.releaseResources();
 		}

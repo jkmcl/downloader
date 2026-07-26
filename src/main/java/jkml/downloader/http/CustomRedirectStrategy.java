@@ -23,14 +23,8 @@ import org.apache.hc.core5.http.protocol.HttpContext;
  */
 class CustomRedirectStrategy implements RedirectStrategy {
 
-	static final String DISABLE_REDIRECT = "downloader.disable-redirect";
-
 	@Override
 	public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
-		if (Boolean.TRUE.equals(context.getAttribute(DISABLE_REDIRECT))) {
-			return false;
-		}
-
 		if (DefaultRedirectStrategy.INSTANCE.isRedirected(request, response, context)) {
 			return true;
 		}

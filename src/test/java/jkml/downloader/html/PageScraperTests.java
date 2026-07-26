@@ -35,10 +35,9 @@ class PageScraperTests {
 		var baseUri = URI.create("https://localhost/dir1");
 		var html = "<a href=\"dir2/v1.0/file.txt\">File v2.0</a>\n<a href=\"dir4/v3.0/other.txt\">Other v4.0</a>";
 		var scraper = new PageScraper(baseUri, html);
-		FileInfo fileInfo;
 
 		// Link not found (no match)
-		fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"([^\"]+/not_exist\\.txt)"), Occurrence.FIRST, null);
+		var fileInfo = scraper.extractFileInfo(Pattern.compile("href=\"([^\"]+/not_exist\\.txt)"), Occurrence.FIRST, null);
 		assertNull(fileInfo);
 
 		// Link not found (no capturing group)
@@ -74,22 +73,29 @@ class PageScraperTests {
 	@Test
 	void testExtractVersion() {
 		var scraper = new PageScraper(URI.create("https://localhost/"), "<a>Exist 1.0</a>");
+
+		// Found
 		assertEquals("1.0", scraper.extractVersion(Pattern.compile(">Exist ([.0-9]+)<")));
+
+		// Not found
 		assertNull(scraper.extractVersion(Pattern.compile(">NotExist ([.0-9]+)<")));
 	}
 
 	@Test
 	void testExtractGitHubPageFragmentLinks() {
-		var baseUri = URI.create("https://github.com/google/guetzli/releases");
-		var html = "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0.1\" >"
-				+ "<include-fragment loading=\"lazy\" src=\"https://github.com/google/guetzli/releases/expanded_assets/v1.0\" >";
+		var baseUri = URI.create("https://github.com/owner/repo/releases");
+		var html = """
+				<include-fragment loading="lazy" src="https://github.com/owner/repo/releases/expanded_assets/v1.0.1" >
+				<include-fragment loading="lazy" src="https://github.com/owner/repo/releases/expanded_assets/v1.0" >
+				<img src="image.png" />
+				""";
 
 		// Found
 		var scraper = new PageScraper(baseUri, html);
 		var actual = scraper.extractGitHubPageFragmentLinks();
 		assertEquals(2, actual.size());
-		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0.1", actual.get(0).toString());
-		assertEquals("https://github.com/google/guetzli/releases/expanded_assets/v1.0", actual.get(1).toString());
+		assertEquals("https://github.com/owner/repo/releases/expanded_assets/v1.0.1", actual.get(0).toString());
+		assertEquals("https://github.com/owner/repo/releases/expanded_assets/v1.0", actual.get(1).toString());
 
 		// Not found
 		scraper = new PageScraper(baseUri, StringUtils.EMPTY);

@@ -5,16 +5,22 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
+	<!-- PMD documentation: https://docs.pmd-code.org/latest/ -->
+
 	<description>Custom rules</description>
 
-	<rule ref="category/java/bestpractices.xml">
-		<exclude name="SystemPrintln" />
-	</rule>
+	<rule ref="category/java/bestpractices.xml" />
 
 	<rule ref="category/java/bestpractices.xml/GuardLogStatement">
 		<properties>
 			<property name="logLevels" value="trace,debug,log,finest,finer,fine" />
 			<property name="guardsMethods" value="isTraceEnabled,isDebugEnabled,isLoggable" />
+		</properties>
+	</rule>
+
+	<rule ref="category/java/bestpractices.xml/SystemPrintln">
+		<properties>
+			<property name="violationSuppressXPath" value="./ancestor-or-self::ClassDeclaration[@SimpleName='DownloaderApp']" />
 		</properties>
 	</rule>
 
@@ -30,11 +36,15 @@
 		<exclude name="OnlyOneReturn" />
 		<exclude name="ShortVariable" />
 		<exclude name="UseExplicitTypes" />
-		<exclude name="UseUnderscoresInNumericLiterals" />
+	</rule>
+
+	<rule ref="category/java/codestyle.xml/UseUnderscoresInNumericLiterals">
+		<properties>
+			<property name="acceptableDecimalLength" value="6" />
+		</properties>
 	</rule>
 
 	<rule ref="category/java/design.xml">
-		<exclude name="AvoidDeeplyNestedIfStmts" />
 		<exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal" />
 		<exclude name="CognitiveComplexity" />
 		<exclude name="CyclomaticComplexity" />
@@ -60,14 +70,12 @@
 	</rule>
 
 	<rule ref="category/java/errorprone.xml/AvoidCatchingGenericException">
-		<!-- jkml.downloader.Downloader handles java.lang.Exception -->
 		<properties>
-			<property name="typesThatShouldNotBeCaught" value="java.lang.NullPointerException,java.lang.RuntimeException,java.lang.Throwable,java.lang.Error" />
+			<property name="violationSuppressXPath" value="./ancestor-or-self::ClassDeclaration[@SimpleName='Downloader']" />
 		</properties>
 	</rule>
 
 	<rule ref="category/java/multithreading.xml">
-		<!-- jkml.downloader.util.LangUtils.getUninterruptibly(Future<V>) handles possible InterruptedException -->
 		<exclude name="DoNotUseThreads" />
 	</rule>
 

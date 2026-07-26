@@ -7,21 +7,26 @@
 
 	<property name="CONSOLE_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} %-5p [%-6t] %-42.42logger{41} : %m%n"/>
 
+	<property name="CONSOLE_LOG_THRESHOLD" value="DEBUG"/>
+
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>${CONSOLE_LOG_THRESHOLD}</level>
+		</filter>
 		<encoder>
 			<charset>${LOG_CHARSET}</charset>
 			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
 		</encoder>
 	</appender>
 
-	<logger name="org" level="INFO"/>
+	<root level="INFO">
+		<appender-ref ref="CONSOLE"/>
+	</root>
+
+	<logger name="jkml.downloader" level="DEBUG"/>
 
 	<logger name="org.apache.hc.client5.http.headers" level="OFF"/>
 
 	<logger name="org.apache.hc.client5.http.wire" level="OFF"/>
-
-	<root level="DEBUG">
-		<appender-ref ref="CONSOLE"/>
-	</root>
 
 </configuration>

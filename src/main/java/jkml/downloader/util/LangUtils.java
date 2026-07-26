@@ -24,7 +24,7 @@ public class LangUtils {
 			causes.add(cause);
 			cause = cause.getCause();
 		}
-		return causes.isEmpty() ? null : causes.get(causes.size() - 1);
+		return causes.isEmpty() ? null : causes.getLast();
 	}
 
 	public static <V> V getUninterruptibly(Future<V> future) throws ExecutionException {
@@ -33,7 +33,7 @@ public class LangUtils {
 			while (true) {
 				try {
 					return future.get();
-				} catch (InterruptedException e) {
+				} catch (InterruptedException _) {
 					interrupted = true;
 				}
 			}

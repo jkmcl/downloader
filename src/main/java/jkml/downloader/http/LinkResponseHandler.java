@@ -1,6 +1,5 @@
 package jkml.downloader.http;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 
@@ -25,7 +24,7 @@ class LinkResponseHandler extends ResponseHandler<URI> {
 	}
 
 	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) {
 		var header = HttpUtils.getHeader(response, HttpHeaders.LOCATION);
 		if (header == null) {
 			throw new ResponseException(HttpHeaders.LOCATION + " header not found");
@@ -34,7 +33,7 @@ class LinkResponseHandler extends ResponseHandler<URI> {
 	}
 
 	@Override
-	protected void data(ByteBuffer src, boolean endOfStream) throws IOException {
+	protected void data(ByteBuffer src, boolean endOfStream) {
 		// Skip data processing
 	}
 

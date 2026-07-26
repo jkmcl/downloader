@@ -110,10 +110,9 @@ public class WebClient implements Closeable {
 	 * Retrieve the location header value in the redirect (3xx) response.
 	 */
 	public URI getLocation(URI uri, RequestOptions options) throws WebClientException {
-		var context = new HttpClientContext();
-
 		// Disable auto-redirect to obtain the location header
-		context.setAttribute(CustomRedirectStrategy.DISABLE_REDIRECT, Boolean.TRUE);
+		var context = new HttpClientContext();
+		context.setRequestConfig(Constants.NO_REDIRECT_REQUEST_CONFIG);
 
 		return execute(createRequest(uri, options), context, new LinkResponseHandler());
 	}

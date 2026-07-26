@@ -55,7 +55,7 @@ public class Downloader implements Closeable {
 				return profiles;
 			}
 		} catch (Exception e) {
-			logError("profile loading", e);
+			logException(logger, "profile loading", e);
 		}
 		return List.of();
 	}
@@ -79,47 +79,47 @@ public class Downloader implements Closeable {
 		logger.info("Looking for new version of {}", profile.getName());
 
 		var type = profile.getType();
-		if (type == Profile.Type.DIRECT || type == Profile.Type.REDIRECT) {
-			fileLink = profile.getFileUrl();
-			// Get actual file URL from location header in response
-			if (type == Profile.Type.REDIRECT) {
-				fileLink = getLink(fileLink, profile.getRequestOptions());
-				if (fileLink == null) {
+		switch (type) {
+			case Profile.Type.DIRECT, Profile.Type.REDIRECT -> {
+				fileLink = profile.getFileUrl();
+				// Get actual file URL from location header in response
+				if (type == Profile.Type.REDIRECT) {
+					fileLink = getLink(fileLink, profile.getRequestOptions());
+					if (fileLink == null) {
+						return;
+					}
+					fileLink = profile.getFileUrl().resolve(fileLink);
+				}
+				fileName = FileUtils.getFileName(fileLink);
+				getFile(profile, fileLink, fileName);
+			}
+			case Profile.Type.STANDARD, Profile.Type.GITHUB -> {
+				// Find file link from page
+				var fileInfo = findFileInfo(profile);
+				if (fileInfo == null) {
 					return;
 				}
-				fileLink = profile.getFileUrl().resolve(fileLink);
-			}
-			fileName = FileUtils.getFileName(fileLink);
-		} else if (type == Profile.Type.STANDARD || type == Profile.Type.GITHUB) {
-			// Find file link from page
-			var fileInfo = findFileInfo(profile);
-			if (fileInfo == null) {
-				return;
-			}
-			fileLink = fileInfo.uri();
-			fileName = FileUtils.getFileName(fileLink);
+				fileLink = fileInfo.uri();
+				fileName = FileUtils.getFileName(fileLink);
 
-			// Add version if it is not already part of the file name
-			var version = fileInfo.version();
-			if (!StringUtils.isNullOrBlank(version) && !fileName.contains(version)) {
-				fileName = FileUtils.updateFileName(fileName, version);
+				// Add version if it is not already part of the file name
+				var version = fileInfo.version();
+				if (!StringUtils.isNullOrBlank(version) && !fileName.contains(version)) {
+					fileName = FileUtils.updateFileName(fileName, version);
+				}
+				getFile(profile, fileLink, fileName);
 			}
-		} else {
-			logger.error("Unsupported profile type: {}", type.name());
-			return;
 		}
-
-		getFile(fileLink, profile.getRequestOptions(), profile.getOutputDirectory().resolve(fileName),
-				profile.isSkipIfFileExists());
 	}
 
-	private void getFile(URI uri, RequestOptions options, Path path, boolean skipIfFileExists) {
-		if (skipIfFileExists && Files.exists(path)) {
+	private void getFile(Profile profile, URI uri, String name) {
+		var path = profile.getOutputDirectory().resolve(name);
+		if (profile.isSkipIfFileExists() && Files.exists(path)) {
 			logger.info("Local file exists");
 			return;
 		}
 		try {
-			var result = webClient.saveToFile(uri, options, path);
+			var result = webClient.saveToFile(uri, profile.getRequestOptions(), path);
 			if (result.status() == Status.OK) {
 				logger.atInfo().log("Downloaded remote file last modified at {}", TimeUtils.format(result.lastModified()));
 				logger.info("URL:  {}", uri);
@@ -128,7 +128,16 @@ public class Downloader implements Closeable {
 				logger.info("Local file up to date");
 			}
 		} catch (Exception e) {
-			logError("file download", e);
+			logException(logger, "file download", e);
+		}
+	}
+
+	private String getText(URI uri, RequestOptions options) {
+		try {
+			return webClient.getContent(uri, options);
+		} catch (Exception e) {
+			logException(logger, "page retrieval", e);
+			return null;
 		}
 	}
 
@@ -136,12 +145,12 @@ public class Downloader implements Closeable {
 		try {
 			return webClient.getLocation(uri, options);
 		} catch (Exception e) {
-			logError("location retrieval", e);
+			logException(logger, "location retrieval", e);
 			return null;
 		}
 	}
 
-	private void logError(String operation, Exception exception) {
+	private static void logException(Logger logger, String operation, Exception exception) {
 		logger.atError().log("Error occurred during {}: {}", operation, exception.toString());
 	}
 
@@ -151,13 +160,13 @@ public class Downloader implements Closeable {
 	}
 
 	private FileInfo findFileInfo(Profile profile) {
-		var pageScraper = createPageScraper(profile, profile.getPageUrl());
-		if (pageScraper == null) {
+		var html = getText(profile.getPageUrl(), profile.getRequestOptions());
+		if (html == null) {
 			return null;
 		}
 
-		var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
-				profile.getVersionPattern());
+		var pageScraper = new PageScraper(profile.getPageUrl(), html);
+		var fileInfo = extractFileInfo(profile, pageScraper);
 		if (fileInfo != null) {
 			return fileInfo;
 		}
@@ -177,13 +186,12 @@ public class Downloader implements Closeable {
 
 	private FileInfo findFileInfoInGitHubPageFragments(Profile profile, List<URI> fragmentLinks) {
 		for (var link : fragmentLinks) {
-			var pageScraper = createPageScraper(profile, link);
-			if (pageScraper == null) {
+			var html = getText(link, profile.getRequestOptions());
+			if (html == null) {
 				return null;
 			}
 
-			var fileInfo = pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
-					profile.getVersionPattern());
+			var fileInfo = extractFileInfo(profile, html);
 			if (fileInfo != null) {
 				return fileInfo;
 			}
@@ -193,14 +201,13 @@ public class Downloader implements Closeable {
 		return null;
 	}
 
-	private PageScraper createPageScraper(Profile profile, URI actualUri) {
-		try {
-			var html = webClient.getContent(actualUri, profile.getRequestOptions());
-			return new PageScraper(profile.getPageUrl(), html);
-		} catch (Exception e) {
-			logError("page retrieval", e);
-			return null;
-		}
+	private static FileInfo extractFileInfo(Profile profile, PageScraper pageScraper) {
+		return pageScraper.extractFileInfo(profile.getLinkPattern(), profile.getLinkOccurrence(),
+				profile.getVersionPattern());
+	}
+
+	private static FileInfo extractFileInfo(Profile profile, String html) {
+		return extractFileInfo(profile, new PageScraper(profile.getPageUrl(), html));
 	}
 
 }

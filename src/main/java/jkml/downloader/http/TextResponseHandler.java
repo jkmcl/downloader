@@ -1,6 +1,5 @@
 package jkml.downloader.http;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +23,7 @@ class TextResponseHandler extends ResponseHandler<String> {
 	private ByteArrayBuffer buffer;
 
 	@Override
-	protected void doStart(HttpResponse response, ContentType contentType) throws IOException {
+	protected void doStart(HttpResponse response, ContentType contentType) {
 		if (contentType != null) {
 			charset = contentType.getCharset(charset);
 		}
@@ -34,7 +33,7 @@ class TextResponseHandler extends ResponseHandler<String> {
 	}
 
 	@Override
-	protected void data(ByteBuffer src, boolean endOfStream) throws IOException {
+	protected void data(ByteBuffer src, boolean endOfStream) {
 		buffer.append(src);
 	}
 

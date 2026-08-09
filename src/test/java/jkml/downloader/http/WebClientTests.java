@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,6 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 import jkml.downloader.util.FileUtils;
 import jkml.downloader.util.StringUtils;
-import jkml.downloader.util.TestUtils;
 
 class WebClientTests {
 
@@ -43,14 +43,15 @@ class WebClientTests {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebClientTests.class);
 
-	private static final Path outDir = TestUtils.outputDirectory();
-
 	private static URI mockUrl;
 
 	private WebClient webClient;
 
 	@RegisterExtension
-	private static final WireMockExtension wireMockExt = WireMockExtension.newInstance().options(WireMockConfiguration.wireMockConfig().dynamicPort()).build();
+	static final WireMockExtension wireMockExt = WireMockExtension.newInstance().options(WireMockConfiguration.wireMockConfig().dynamicPort()).build();
+
+	@TempDir
+	static Path tempDir;
 
 	@BeforeAll
 	static void beforeAll() {
@@ -117,13 +118,8 @@ class WebClientTests {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(
 				ok("Hello world!").withHeader(HttpHeaders.LAST_MODIFIED, DateUtils.formatStandardDate(Instant.now()))));
 
-		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
-		Files.deleteIfExists(localFilePath);
-		if (directoryExists) {
-			Files.createDirectories(outDir);
-		} else {
-			TestUtils.deleteDirectories(outDir);
-		}
+		var dir = directoryExists ? tempDir : tempDir.resolve("noSuchDir");
+		var localFilePath = dir.resolve(FileUtils.getFileName(mockUrl));
 
 		var result = webClient.saveToFile(mockUrl, new RequestOptions(), localFilePath);
 
@@ -145,8 +141,7 @@ class WebClientTests {
 	void testSaveToFile_NotModified() throws Exception {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(aResponse().withStatus(304)));
 
-		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
-		Files.createDirectories(outDir);
+		var localFilePath = tempDir.resolve(FileUtils.getFileName(mockUrl));
 		Files.writeString(localFilePath, StringUtils.EMPTY);
 		Files.setLastModifiedTime(localFilePath, FileTime.from(Instant.now()));
 
@@ -160,7 +155,7 @@ class WebClientTests {
 	void testSaveToFile_Failure() throws IOException {
 		wireMockExt.stubFor(get(urlPathEqualTo(MOCK_URL_PATH)).willReturn(notFound()));
 
-		var localFilePath = outDir.resolve(FileUtils.getFileName(mockUrl));
+		var localFilePath = tempDir.resolve(FileUtils.getFileName(mockUrl));
 		Files.deleteIfExists(localFilePath);
 		assertThrows(WebClientException.class, () -> webClient.saveToFile(mockUrl, new RequestOptions(), localFilePath));
 	}

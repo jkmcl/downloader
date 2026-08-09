@@ -10,9 +10,9 @@ import java.nio.file.Path;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.message.BasicHttpResponse;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,23 +20,19 @@ import jkml.downloader.util.TestUtils;
 
 class FileResponseHandlerTests {
 
-	private static final Path outDir = TestUtils.outputDirectory();
-
-	private static final Path source = outDir.resolve("source.txt");
-
-	private static final Path target = outDir.resolve("target.txt");
-
 	private static final Logger logger = LoggerFactory.getLogger(FileResponseHandlerTests.class);
 
-	@BeforeAll
-	static void beforeAll() throws IOException {
-		Files.createDirectories(outDir);
-	}
+	private static Path source;
 
-	@AfterAll
-	static void afterAll() throws IOException {
-		Files.deleteIfExists(source);
-		Files.deleteIfExists(target);
+	private static Path target;
+
+	@TempDir
+	static Path tempDir;
+
+	@BeforeAll
+	static void beforeAll() {
+		source = tempDir.resolve("source.txt");
+		target = tempDir.resolve("target.txt");
 	}
 
 	@Test

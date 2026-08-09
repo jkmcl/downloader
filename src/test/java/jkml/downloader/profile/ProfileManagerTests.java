@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,9 @@ class ProfileManagerTests {
 
 	private static final Path inDir = TestUtils.resourcesDirectory();
 
+	@TempDir
+	static Path tempDir;
+
 	@BeforeEach
 	void beforeEach(TestInfo testInfo) {
 		logger.info("# Executing {}", testInfo.getDisplayName());
@@ -38,7 +42,7 @@ class ProfileManagerTests {
 		profile.setPageUrl(URI.create("https://localhost/page.html"));
 		profile.setLinkPattern(Pattern.compile("(file\\.zip)"));
 		profile.setVersionPattern(Pattern.compile("[.0-9]+"));
-		profile.setOutputDirectory(TestUtils.outputDirectory());
+		profile.setOutputDirectory(tempDir);
 		return profile;
 	}
 

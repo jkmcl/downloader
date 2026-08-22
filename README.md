@@ -17,7 +17,7 @@ Files to download are defined by download profiles in a JSON file. Example:
 ```json
 [
 	{
-		"name": "Direct download",
+		"name": "Download directly",
 		"fileUrl": "https://site.com/file.zip",
 		"outputDirectory": "target/test-classes/testOutput"
 	},
@@ -38,6 +38,13 @@ Files to download are defined by download profiles in a JSON file. Example:
 		"pageUrl": "https://site.com/page.html",
 		"linkPattern": "href=\"([^\"]*/v([.0-9]+)/file\\.zip)",
 		"outputDirectory": "target/test-classes/testOutput"
+	},
+	{
+		"name": "File with version number in parent component of path and template-based local file name",
+		"pageUrl": "https://site.com/page.html",
+		"linkPattern": "href=\"([^\"]*/v([.0-9]+)/file\\.zip)",
+		"outputDirectory": "target/test-classes/testOutput",
+		"fileNameTemplate": "file-v${version}.zip"
 	},
 	{
 		"name": "File with version number in page",
@@ -92,9 +99,13 @@ Properties:
 
 * `versionPattern` (optional): A regular expression used to extract the file version from the page. The first capturing group provides the file version.
 
+* `fileNameTemplate` (optional): A template that defines the local name of the downloaded file.
+
 If either regular expression captures a file version and the file URL does not already include that version in its base name, the version is appended to the downloaded file's base name. For example, a file originally named `file.zip` with version `1.0` found on the page is renamed to `file-1.0.zip`.
 
 If both regular expressions capture a version, the value from `versionPattern` is used.
+
+If `fileNameTemplate` is defined, its value will be used instead as the name of the downloaded file. The template supports the placeholder ${version}, which is replaced with the captured version, or with the empty string if no version is captured.
 
 ## GITHUB
 

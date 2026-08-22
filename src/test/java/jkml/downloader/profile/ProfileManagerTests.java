@@ -98,7 +98,7 @@ class ProfileManagerTests {
 	void testLoad() throws IOException {
 		var path = inDir.resolve("profiles.json");
 		var manager = new ProfileManager();
-		assertEquals(5, manager.load(path).size());
+		assertEquals(6, manager.load(path).size());
 	}
 
 	@Test

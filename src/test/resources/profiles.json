@@ -1,6 +1,6 @@
 [
 	{
-		"name": "Direct download",
+		"name": "Download directly",
 		"fileUrl": "https://site.com/file.zip",
 		"outputDirectory": "target/test-classes/testOutput"
 	},
@@ -21,6 +21,13 @@
 		"pageUrl": "https://site.com/page.html",
 		"linkPattern": "href=\"([^\"]*/v([.0-9]+)/file\\.zip)",
 		"outputDirectory": "target/test-classes/testOutput"
+	},
+	{
+		"name": "File with version number in parent component of path and template-based local file name",
+		"pageUrl": "https://site.com/page.html",
+		"linkPattern": "href=\"([^\"]*/v([.0-9]+)/file\\.zip)",
+		"outputDirectory": "target/test-classes/testOutput",
+		"fileNameTemplate": "file-v${version}.zip"
 	},
 	{
 		"name": "File with version number in page",

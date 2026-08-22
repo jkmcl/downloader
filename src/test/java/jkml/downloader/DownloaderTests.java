@@ -172,7 +172,7 @@ class DownloaderTests {
 			downloader.download(inDir.resolve("profiles.json"));
 
 			verify(mockWebClient).getLocation(any(URI.class), anyRequestOptions());
-			verify(mockWebClient, times(3)).getContent(any(URI.class), anyRequestOptions());
+			verify(mockWebClient, times(4)).getContent(any(URI.class), anyRequestOptions());
 			verify(mockWebClient, times(2)).saveToFile(any(URI.class), anyRequestOptions(), any(Path.class));
 		}
 	}

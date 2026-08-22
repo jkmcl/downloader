@@ -33,6 +33,8 @@ public class Profile {
 
 	private Path outputDirectory;
 
+	private String fileNameTemplate;
+
 	public String getName() {
 		return name;
 	}
@@ -111,6 +113,14 @@ public class Profile {
 
 	public void setOutputDirectory(Path outputDirectory) {
 		this.outputDirectory = outputDirectory;
+	}
+
+	public String getFileNameTemplate() {
+		return fileNameTemplate;
+	}
+
+	public void setFileNameTemplate(String fileNameTemplate) {
+		this.fileNameTemplate = fileNameTemplate;
 	}
 
 }

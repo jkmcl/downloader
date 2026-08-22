@@ -29,10 +29,13 @@ class DownloadUtilsTests {
 
 	@Test
 	void testGetFileName() {
-		assertEquals(FILE_NAME, DownloadUtils.getFileName(FILE_LINK, null));
-		assertEquals(FILE_NAME, DownloadUtils.getFileName(FILE_LINK, ""));
-		assertEquals("a-1.0.txt", DownloadUtils.getFileName(URI.create("a-1.0.txt"), "1.0"));
-		assertEquals("a-1.0-2.0.txt", DownloadUtils.getFileName(URI.create("a-1.0.txt"), "2.0"));
+		assertEquals(FILE_NAME, DownloadUtils.getFileName(FILE_LINK, "", null));
+		assertEquals("a-1.0.txt", DownloadUtils.getFileName(URI.create("a-1.0.txt"), "1.0", null));
+		assertEquals("a-1.0.txt", DownloadUtils.getFileName(FILE_LINK, "1.0", null));
+
+		var template = "file_v${version}.txt";
+		assertEquals("file_v.txt", DownloadUtils.getFileName(FILE_LINK, "", template));
+		assertEquals("file_v1.0.txt", DownloadUtils.getFileName(FILE_LINK, "1.0", template));
 	}
 
 }

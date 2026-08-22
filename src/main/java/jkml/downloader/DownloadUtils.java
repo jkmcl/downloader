@@ -16,11 +16,16 @@ class DownloadUtils {
 		return "github.com".equals(host) || host.endsWith(".github.com");
 	}
 
-	static String getFileName(URI uri, String version) {
+	static String getFileName(URI uri, String version, String template) {
+		if (!StringUtils.isNullOrBlank(template)) {
+			return FileUtils.createFileName(template, version);
+		}
+
 		var fileName = FileUtils.getFileName(uri);
 		if (StringUtils.isNullOrBlank(version) || fileName.contains(version)) {
 			return fileName;
 		}
+
 		return FileUtils.updateFileName(fileName, version);
 	}
 

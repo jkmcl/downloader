@@ -119,7 +119,8 @@ public class Downloader implements Closeable {
 	Downloadable findInPage(Profile profile) {
 		var fileInfo = findFileInfo(profile);
 		return (fileInfo != null)
-				? new Downloadable(fileInfo.uri(), DownloadUtils.getFileName(fileInfo.uri(), fileInfo.version()))
+				? new Downloadable(fileInfo.uri(),
+						DownloadUtils.getFileName(fileInfo.uri(), fileInfo.version(), profile.getFileNameTemplate()))
 				: null;
 	}
 

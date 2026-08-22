@@ -7,14 +7,28 @@ public class FileUtils {
 	private FileUtils() {
 	}
 
+	public static String createFileName(String template, String version) {
+		return template.replace("${version}", StringUtils.isNullOrBlank(version) ? StringUtils.EMPTY : version);
+	}
+
 	public static String updateFileName(String fileName, String version) {
-		var index = fileName.lastIndexOf('.');
 		var sb = new StringBuilder();
+
+		var index = fileName.lastIndexOf('.');
 		if (index > 0) {
-			sb.append(fileName, 0, index).append('-').append(version).append(fileName, index, fileName.length());
+			sb.append(fileName, 0, index);
 		} else {
-			sb.append(fileName).append('-').append(version);
+			sb.append(fileName);
 		}
+
+		if (!StringUtils.isNullOrBlank(version)) {
+			sb.append('-').append(version);
+		}
+
+		if (index > 0) {
+			sb.append(fileName, index, fileName.length());
+		}
+
 		return sb.toString();
 	}
 

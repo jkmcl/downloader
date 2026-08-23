@@ -11,14 +11,14 @@ public class FileUtils {
 		return template.replace("${version}", StringUtils.isNullOrBlank(version) ? StringUtils.EMPTY : version);
 	}
 
-	public static String updateFileName(String fileName, String version) {
+	public static String updateFileName(String name, String version) {
 		var sb = new StringBuilder();
 
-		var index = fileName.lastIndexOf('.');
+		var index = name.lastIndexOf('.');
 		if (index > 0) {
-			sb.append(fileName, 0, index);
+			sb.append(name, 0, index);
 		} else {
-			sb.append(fileName);
+			sb.append(name);
 		}
 
 		if (!StringUtils.isNullOrBlank(version)) {
@@ -26,7 +26,7 @@ public class FileUtils {
 		}
 
 		if (index > 0) {
-			sb.append(fileName, index, fileName.length());
+			sb.append(name, index, name.length());
 		}
 
 		return sb.toString();

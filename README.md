@@ -105,7 +105,7 @@ If either regular expression captures a file version and the file URL does not a
 
 If both regular expressions capture a version, the value from `versionPattern` is used.
 
-If `fileNameTemplate` is defined, its value will be used instead as the name of the downloaded file. The template supports the placeholder ${version}, which is replaced with the captured version, or with the empty string if no version is captured.
+If `fileNameTemplate` is defined, its value will be used instead as the name of the downloaded file. This template supports the placeholder ${version}, which is replaced with the captured version, or with the empty string if no version is captured.
 
 ## GITHUB
 

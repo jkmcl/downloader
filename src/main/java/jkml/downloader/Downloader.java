@@ -22,7 +22,7 @@ import jkml.downloader.util.TimeUtils;
 
 public class Downloader implements Closeable {
 
-	private final Logger logger = LoggerFactory.getLogger(Downloader.class);
+	private static final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
 	private final WebClient webClient;
 
@@ -37,6 +37,18 @@ public class Downloader implements Closeable {
 	@Override
 	public void close() {
 		webClient.close();
+	}
+
+	public static void main(String... args) {
+		if (args.length != 1) {
+			System.out.printf("Usage: %s <file>%n", Downloader.class.getName());
+			return;
+		}
+		try (var downloader = new Downloader()) {
+			downloader.download(Path.of(args[0]));
+		} catch (Exception e) {
+			logger.error("Error occurred: " + e.getMessage(), e);
+		}
 	}
 
 	public void download(Path path) {

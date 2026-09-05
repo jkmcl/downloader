@@ -20,7 +20,7 @@
 
 	<rule ref="category/java/bestpractices.xml/SystemPrintln">
 		<properties>
-			<property name="violationSuppressXPath" value="./ancestor-or-self::ClassDeclaration[@SimpleName='DownloaderApp']" />
+			<property name="violationSuppressXPath" value="./ancestor-or-self::ClassDeclaration[@SimpleName='Downloader']" />
 		</properties>
 	</rule>
 

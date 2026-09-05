@@ -1,5 +1,6 @@
 package jkml.downloader;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
@@ -139,6 +141,16 @@ class DownloaderTests {
 
 	private static Throwable exception() {
 		return new WebClientException("Mock exception");
+	}
+
+	@Test
+	void testMain_noArg() {
+		assertDoesNotThrow((Executable) Downloader::main);
+	}
+
+	@Test
+	void testMain() {
+		assertDoesNotThrow(() -> Downloader.main("no_such_file.json"));
 	}
 
 	@Test

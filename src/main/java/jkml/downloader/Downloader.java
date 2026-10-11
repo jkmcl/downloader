@@ -47,7 +47,7 @@ public class Downloader implements Closeable {
 		try (var downloader = new Downloader()) {
 			downloader.download(Path.of(args[0]));
 		} catch (Exception e) {
-			logger.error("Error occurred: " + e.getMessage(), e);
+			logger.error("Error occurred: {}", e.getMessage(), e);
 		}
 	}
 
@@ -186,7 +186,7 @@ public class Downloader implements Closeable {
 		return null;
 	}
 
-	static void logException(Logger logger, String operation, Exception exception) {
+	private static void logException(Logger logger, String operation, Exception exception) {
 		logger.atError().log("Error occurred during {}: {}", operation, exception.toString());
 	}
 

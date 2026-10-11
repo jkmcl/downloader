@@ -1,7 +1,6 @@
 package jkml.downloader.http;
 
 import org.apache.hc.client5.http.config.ConnectionConfig;
-import org.apache.hc.client5.http.config.TlsConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClientBuilder;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
@@ -19,13 +18,8 @@ class HttpClientBuilder {
 				.setValidateAfterInactivity(TimeValue.ZERO_MILLISECONDS)
 				.build();
 
-		var tlsConfig = TlsConfig.custom()
-				.setHandshakeTimeout(Constants.TIMEOUT)
-				.build();
-
 		var connectionManager = PoolingAsyncClientConnectionManagerBuilder.create()
 				.setDefaultConnectionConfig(connectionConfig)
-				.setDefaultTlsConfig(tlsConfig)
 				.build();
 
 		var ioReactorConfig = IOReactorConfig.custom()
